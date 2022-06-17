@@ -1,0 +1,23 @@
+.error-msg {
+	color: red;
+}
+.invalid-fld {
+	border: 1px solid red!important;
+    box-shadow: 0 0 2px red!important;
+}
+.valid-fld {
+	border: 1px solid #747474!important;
+    box-shadow: 0 0 2px green!important;
+}
+.container-vl {
+	background: #4a6e35;
+    color: white;
+    font-weight: bold;
+}
+.container-vl label {
+	color: white;
+    font-weight: 100;
+}
+.assignfieldcolor{	
+	background: #7fffd4 !important;
+}

@@ -1,0 +1,21 @@
+.error-msg {
+	color: red;
+}
+.invalid-fld {
+	border: 1px solid red!important;
+    box-shadow: 0 0 2px red!important;
+}
+.valid-fld {
+	border: 1px solid #747474!important;
+    box-shadow: 0 0 2px green!important;
+}
+.sec_divi {
+	margin-bottom: 15px;
+}
+.chk-div {
+	max-height: 345px;
+    overflow-x: auto;
+}
+.opt-disable {
+	background: #e8e8e8;
+}

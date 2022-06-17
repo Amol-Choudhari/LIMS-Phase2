@@ -1,0 +1,29 @@
+.track_tbl td.track_dot {
+    width: 50px;
+    position: relative;
+    padding: 0;
+    text-align: center;
+}
+.track_tbl td.track_dot:after {
+    content: "\f111";
+    font-family: FontAwesome;
+    position: absolute;
+    margin-left: -5px;
+    top: 11px;
+}
+.track_tbl td.track_dot span.track_line {
+    background: #000;
+    width: 3px;
+    min-height: 50px;
+    position: absolute;
+    height: 101%;
+}
+.track_tbl tbody tr:first-child td.track_dot span.track_line {
+    top: 30px;
+    min-height: 25px;
+}
+.track_tbl tbody tr:last-child td.track_dot span.track_line {
+    top: 0;
+    min-height: 25px;
+    height: 10%;
+}

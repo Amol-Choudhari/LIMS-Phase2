@@ -1,0 +1,15 @@
+<?php
+
+namespace app\Model\Table;
+use Cake\ORM\Table;
+use App\Model\Model;
+use Cake\ORM\TableRegistry;
+
+class CodeDecodeTable extends Table{
+	
+	var $name = "CodeDecode";
+	var $useTable = 'code_decode';
+
+}
+
+?>

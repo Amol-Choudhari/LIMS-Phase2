@@ -1,0 +1,1 @@
+<?php /*intensionally created for displaying message boxes, left blank*/ ?>

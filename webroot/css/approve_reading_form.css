@@ -1,0 +1,87 @@
+
+    #test_parameter li {
+        cursor: pointer;
+    }
+.container-fluid {
+
+	overflow-x: hidden;
+    }
+    .abc{
+        padding:20px;
+        border-radius:3px;
+        margin-top: -9em; /*set to a negative number 1/2 of your height*/
+        margin-left: -15em; /*set to a negative number 1/2 of your width*/
+        border: 1px solid #ccc;
+        background-color: #f3f3f3;
+    }
+    .Absolute-Center {
+        margin: auto;
+        border: 1px solid #ccc;
+        background-color: #f3fafe;
+        padding:20px;
+        border-radius:3px;
+        top: 0; left: 0; bottom: 0; right: 0;
+    }
+
+    body{
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+   .modal-dialog {
+    width: 900px;
+    margin: 30px auto;
+    }
+	#approvedresultsmodal{
+	   margin: 14px 0px 25px 0px;
+    }
+	#c1{
+	  color: #00b04f;
+	  background-color: #00b04f; /*color block*/
+	  margin-left:10px;
+    }
+    #c2{
+	   color: #ffba66;
+	   background-color: #ffba66; /*color block*/
+	    margin-left:10px;
+    }
+	#c3{
+		color: #d2ff4d;
+		background-color: #d2ff4d;   /*color block*/
+		margin-left:10px;
+	}
+	#d1 tbody tr:hover {
+        background: #E6E6FA !important;
+		cursor: pointer;
+
+    }
+	#approvedresulttable{
+		border: 1px solid black;
+    background-color: #ADD8E6;
+	  animation: mymove 5s;
+		text-shadow: 5px 5px 10px #666;
+}
+
+@keyframes mymove {
+  from {
+		background-color: #808080;
+		border: 1px solid black;
+	}
+  to {
+
+			 background-color: #ADD8E6;
+			 border-bottom-color: hsl(60, 90%, 50%, .8);
+    }
+}
+
+.fsStyle1{margin-top:10px;border:1px solid #747474;}
+.fsStyle2{margin-top:10px;border:1px solid #747474;}
+.progress_code{margin-top:10px;}
+table{color:#000; margin-bottom:0 !important;}
+#button_id{margin-bottom:10px;}
+.add_master .btn{background:#30a5ff !important;}
+.dnone { display:none }
+.bgbe { background-color: #BEBEBE; }
+.textAlignCenter { text-align: center; }
+.fiz { display:none;padding-top:10px; }
+.d1gcolor00 { background-color: #00b04f; }
+.d1gcolorff { background-color: #ffba66 }

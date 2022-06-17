@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+
+<IfModule mod_headers.c>
+     RewriteEngine On
+     Header set Test-Output-Request_URI "%{Request_URI}e"
+    <If "%{THE_REQUEST} =~ m#/report/*#">
+        Header set Content-Security-Policy: "default-src 'self' 'unsafe-inline' 'unsafe-eval';"
+    </If>
+	<If "%{THE_REQUEST} =~ m#/test/*#">
+        Header set Content-Security-Policy: "default-src 'self' 'unsafe-inline' 'unsafe-eval';"
+    </If>
+    <Else>   
+    </Else>
+</IfModule>

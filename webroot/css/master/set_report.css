@@ -1,0 +1,56 @@
+.mvh-500{ min-height : 500px }
+
+fieldset legend.legendStyle {
+    color: #252525;
+    border-top: 1px solid #2d682d;
+    border-left: 1px solid #2d682d;
+    border-right: 1px solid #2d682d;
+    border-radius: 5px 5px 0px 0px;
+    -webkit-border-radius: 5px 5px 0px 0px;
+    -moz-border-radius: 5px 5px 0px 0px;
+    background: #f3fafe;
+    padding: 0px 8px 3px 8px;
+    box-shadow: -0px -1px 2px #F1F1F1;
+    -moz-box-shadow: -0px -1px 2px #F1F1F1;
+    -webkit-box-shadow: -0px -1px 2px #F1F1F1;
+    font-weight: normal;
+    font-size: 14px;
+    width: initial;
+}
+
+fieldset.fsStyle {
+    font-family: Verdana, Arial, sans-serif;
+    font-size: small;
+    font-weight: normal;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    margin: 0px 0px 25px 0px;
+    border: 1px solid #2d682d;
+    padding: 20px;
+    background: #f3fafe;
+    box-shadow: inset 0px 0px 8px #2d682d;
+    -moz-box-shadow: inset 0px 0px 8px #2d682d;
+    -webkit-box-shadow: inset 0px 0px 8px #2d682d;
+    text-align: center;
+    min-height: 400px;
+}
+
+fieldset legend {
+    margin-bottom: 0px;
+}
+
+.input .ms-options-wrap button {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 9px;
+    max-width: 260px;
+    overflow: auto;
+}
+
+.mss{
+
+	min-height: 200px;overflow: auto;max-height: 400px;text-align: left;
+}
+
+.w-25-p { width: 25px; }

@@ -1,0 +1,15 @@
+h4 {
+  padding: 5px;
+  font-family: times;
+  font-size: 12pt;
+  }
+
+table{
+    padding: 5px;
+    font-size: 10pt;
+    font-family: times;
+  }
+
+.p-6px { padding: 6px }
+.va { vertical-align:top; }
+.mt-px { margin-top: 20px }

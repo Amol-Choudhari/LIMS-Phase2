@@ -1,0 +1,124 @@
+/****************************************
+*										*                                        
+*   Author: CodexWorld                  *
+*	Published Date: 01-12-2014			*
+*	Contact: contact@codexworld.com		*
+*										*
+****************************************/
+.cwdialog-overlay {
+  background-color:#000;
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	z-index:9999;
+	width: 100%;
+	opacity: 0.7 !important;
+}
+
+div.cwdialog {
+	background: #fff;
+	border: 1px solid #aaa;
+	box-shadow: 0px 2px 15px rgba(0,0,0,0.2);
+		-mox-box-shadow: 0px 2px 15px rgba(0,0,0,0.2);
+		-webkit-box-shadow: 0px 2px 15px rgba(0,0,0,0.2);
+	color: #111;
+	display: none;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	left: 32% !important;
+	max-height: 90%;
+	overflow: hidden;
+	width:40% !important;
+	border-radius:7px;
+	position: fixed;
+	top: -100%;
+	z-index:9999;
+	/*width: 20%;*/
+}
+
+div.cwdialog .cwdialog-inner {
+	padding: 20px 20px 30px 20px;
+	font-family: 'Comic Sans MS';
+	font-size: 16px;
+	color: #156A07;
+}
+
+div.cwdialog .cwdialog-input {
+	margin-top: 10px;
+	padding: 10px 0;
+}
+
+div.cwdialog .cwdialog-input input {
+	border: 1px solid rgba(0,0,0,0.3);
+	border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+	box-shadow: inset 0px 0px 5px rgba(0,0,0,0.1);
+		-mox-box-shadow: inset 0px 0px 5px rgba(0,0,0,0.1);
+		-webkit-box-shadow: inset 0px 0px 5px rgba(0,0,0,0.1);
+	display: block;
+	font-size: 13px;
+	margin: 0 auto;
+	padding: 5px 10px;
+	width: 90%;
+}
+
+div.cwdialog .cwdialog-input input:focus {
+	border-color: #01AEF0;
+	outline: none;
+}
+
+div.cwdialog .cwdialog-buttons {
+	
+	border-top: 1px solid #e5e5e5;
+	box-shadow: inset 0px 1px 0px #fff;
+		-moz-box-shadow: inset 0px 1px 0px #fff;
+		-webkit-box-shadow: inset 0px 1px 0px #fff;
+	padding: 20px 20px;
+	text-align: right;
+}
+
+div.cwdialog .cwdialog-buttons button {
+	background-color: #3276b1;
+	border:1px solid #285e8e;
+	border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
+
+	cursor: pointer;
+	font-size: 14px;
+	margin: 0 2px;
+	overflow: hidden;
+	border-radius:5px;
+	font-family: 'Comic Sans MS';
+	padding: 6px 12px;
+	color:#FFF;
+	
+}
+
+div.cwdialog .cwdialog-buttons button.blue {
+	background: #01AEF0;
+}
+
+div.cwdialog .cwdialog-buttons button.red {
+	background: #D23A30;
+}
+
+div.cwdialog .cwdialog-buttons button.blue, div.cwdialog .cwdialog-buttons button.red {
+	color: #fff;
+	text-shadow: 0px -1px 0px rgba(0,0,0,0.4);
+}
+
+div.cwdialog .cwdialog-buttons button:hover {
+	box-shadow: inset 0px 1px 0px rgba(255,255,255,0.5), 0px 1px 3px rgba(0,0,0,0.4);
+		-moz-box-shadow: inset 0px 1px 0px rgba(255,255,255,0.5), 0px 1px 3px rgba(0,0,0,0.4);
+		-webkit-box-shadow: inset 0px 1px 0px rgba(255,255,255,0.5), 0px 1px 3px rgba(0,0,0,0.4);
+}
+
+div.cwdialog .cwdialog-buttons button:active {
+	box-shadow: inset 0px 1px 2px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,0.8);
+		-moz-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,0.8);
+		-webkit-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,0.8);
+}

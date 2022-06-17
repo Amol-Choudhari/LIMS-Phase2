@@ -1,0 +1,49 @@
+.gord {
+	    overflow-y: scroll;
+    	max-height: 400px;
+}
+.w-10{
+	width: 10%;
+	padding-left: 1.1rem !important;
+}
+
+.w-45{
+	width: 45%;
+}
+
+.h-tab { border: .4px solid #dee2e6; }
+.radio {     margin: 0px 10px; }
+.table td {
+    padding: 0.3rem;
+    padding-top: 0.65rem !important;
+}
+
+.modal .table td {
+	font-size: 12px;
+}
+
+.modal .table th {
+	font-size: 14px;
+}
+
+.modal .h4, h4 {
+    font-size: 1.1rem;
+}
+
+.modal-header{
+	display: block;
+}
+
+@media (min-width: 992px){
+
+	.modal-lg, .modal-xl {
+	    max-width: 98% !important;
+	}
+}
+
+@media (min-width: 576px){
+	.modal-dialog {
+    	max-width: 500px;
+    	margin: 1.5rem 0rem 0rem 18rem;
+	}
+}

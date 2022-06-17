@@ -1,0 +1,99 @@
+.mod {
+	display: none;
+}
+.mod-bg {
+	position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: black;
+    opacity: 0.5;
+    z-index: 1038;
+}
+.mod-bg-remove {
+	background: none;
+	opacity: 0;
+}
+.mod {
+	position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+    z-index: 1050;
+}
+.mod-con {
+	margin: 40px 28%;
+    background: white;
+    border-radius: 5px;
+}
+.mod-header {
+	background-color: #0d72ae;
+    border: 0;
+    -webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+    padding: 6px 21px;
+    margin: 0;
+    font-size: 17px;
+    color: #fff;
+    text-align: left;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+.mod-header-success {
+	background-color: #28a745 !important;
+}
+.mod-header-failed {
+	background-color: #dc3545 !important;
+}
+.mod-header-warning {
+
+	color: black !important;
+	background-color: #fad20b !important;
+}
+.mod-header-alertinfo {
+	background-color: #ff7a5a !important;
+}
+#mod-close {
+	float: right;
+    color: #017dab;
+    font-weight: bold;
+    font-family: monospace;
+    cursor: pointer;
+}
+#mod-close:hover {
+	color: #00455f;
+}
+.mod-body p {
+	font-size: 16px;
+	line-height: 25px;
+    text-align: left;
+    padding-top: 15px;
+    padding-left: 25px;
+	padding-right: 10px;
+}
+.mod-footer {
+	border-top: 1px solid gainsboro;
+    text-align: left;
+    padding: 7px 20px;
+}
+.mod-footer button {
+	border-style: none;
+    padding: 2px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 1px 1px gainsboro;
+}
+.mod-footer button:nth-child(2) {
+	margin-left: 8px;
+}
+.mod-footer button:nth-child(1):hover {
+	background: #54c9f5;
+    color: white;
+}
+.mod-footer button:nth-child(2):hover {
+	background: gray;
+    color: white;
+}

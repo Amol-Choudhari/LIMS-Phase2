@@ -1,0 +1,17 @@
+
+.form_spinner {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    backdrop-filter: blur(2px);
+    z-index: 9999;
+	/*-webkit-filter: blur(2px) grayscale(90%);;
+    -moz-filter: blur(2px) grayscale(90%);;*/
+	/*transition: all .33s ease-in-out;
+	transform:scale(0.7);*/
+	-webkit-backdrop-filter: blur(2em)
+	
+}
+.form_spinner_icon {
+    margin-top: 48vh;
+}

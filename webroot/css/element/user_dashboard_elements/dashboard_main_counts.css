@@ -1,0 +1,18 @@
+.main-count-circle{border:1px solid #f7ff97;
+	border-radius:50%;
+	width:70px;
+	font-weight:bold;
+	height:70px;color:#fff;
+	padding-top:20px;text-align:center;margin:10px auto;
+	color:#fff;}
+.main-count-circle span{font-size:13px;}
+
+#dasboard_main_count_popop{display:block;color:#fff;background-color: rgba(0,0,0,0.7);z-index: 2;cursor: pointer;}
+.modal-content{background:linear-gradient(#343a40,#17a2b8,#343a40);border:2px solid #fff;}
+.modal-header{padding:5px 10px !important;}
+.role_section{border-bottom:1px solid #eee;margin-bottom:10px;padding-bottom:5px;}
+.role_section tr td{padding-left:15px !important;color:#f9f9f9;}
+.role_section a{color:yellow;}
+.role_section h6{font-weight:bold;}
+.modal-dialog{max-width:700px !important;}
+.close{color:#fff;}

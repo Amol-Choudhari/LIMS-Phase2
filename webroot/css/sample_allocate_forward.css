@@ -1,0 +1,5 @@
+#moveleft{float:left}
+	#moveright{float:right}
+	#select_test_div{margin-top:10px;}
+	#select_test_div select{min-height:200px;}
+	#select_test_div select option{margin:5px 0; font-weight:bold;cursor:pointer;}

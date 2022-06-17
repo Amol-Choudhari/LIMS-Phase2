@@ -1,0 +1,16 @@
+.error-msg {
+	color: red;
+}
+.invalid-fld {
+	border: 1px solid red!important;
+    box-shadow: 0 0 2px red!important;
+}
+.valid-fld {
+	border: 1px solid #747474!important;
+    box-shadow: 0 0 2px green!important;
+}
+
+.disable-btn {
+	color: gray;
+    cursor: not-allowed;
+}
