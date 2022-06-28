@@ -22,6 +22,7 @@ class DashboardController extends AppController{
 			
 			$username = $this->getRequest()->getSession()->read('username');
 			
+			unset($_SESSION['sample']);			  
 			
 			if ($username == null) {						
 				echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">Please Login</a><?php

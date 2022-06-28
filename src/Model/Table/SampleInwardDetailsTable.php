@@ -6,9 +6,11 @@ use App\Model\Model;
 use Cake\ORM\TableRegistry;
 
 class SampleInwardDetailsTable extends Table{
-	
-	var $name = "SampleInwardDetails";
+
+	var string $name = "SampleInwardDetails";
+
+
+
+
 
 }
-
-?>

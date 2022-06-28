@@ -77,6 +77,8 @@ class AppController extends Controller
 			//$this->redirect('/');
 		}
 
+		//For the Payment Section - Akash - 24-06-2022
+		$this->Session->write('is_payment_applicable','no');
 		$this->Beforepageload->setLogoutTime();
 		$this->Beforepageload->getFooterContent();
 		$this->Beforepageload->homePageContent();

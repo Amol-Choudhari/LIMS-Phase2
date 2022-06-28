@@ -21,20 +21,21 @@
 
 ?>
 
-<div class="content-header">
-	<div class="container-fluid">
-		<div class="row mb-2">
-			<div class="col-sm-6"></div>
+	<div class="content-header">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-6"></div>
 				<div class="col-sm-6">
 					<ol class="breadcrumb float-sm-right">
 						<li class="breadcrumb-item"><?php echo $this->Html->link('Dashboard', array('controller' => 'dashboard', 'action'=>'home')); ?></li>
-						<li class="breadcrumb-item"><?php echo $this->Html->link('Code Files', array('controller' => 'master', 'action'=>'code_master_home')); ?></li>
+						<li class="breadcrumb-item"><?php echo $this->Html->link('Code Master', array('controller' => 'master', 'action'=>'code_master_home')); ?></li>
 						<li class="breadcrumb-item"><?php echo $this->Html->link('Categories', array('controller' => 'master', 'action'=>'saved_category')); ?></li>
 						<li class="breadcrumb-item active"><?php echo $title; ?></li>
 					</ol>
 				</div>
 			</div>
 		</div>
+
 		<section class="content form-middle">
 			<div class="container-fluid">
 				<div class="row">
@@ -42,13 +43,13 @@
 						<?php echo $this->Form->create(null, array('id'=>'frm_category', 'name'=>'categoryForm','class'=>'form-group')); ?>
 							<div class="card card-lims">
 								<div class="card-header"><h3 class="card-title-new"><?php echo $title; ?></h3></div>
-									<div class="form-horizontal">
-										<div class="card-body">
-											<div class="row">
+								<div class="form-horizontal">
+									<div class="card-body">
+										<div class="row">
 											<?php echo $this->Form->control('category_code', array('type'=>'hidden', 'id'=>'category_code', 'value'=>$category_code, 'label'=>false)); ?>
-												<?php if(!empty($validate_err)){ ?>
-													<div class="text-center;text-dange"><?php echo $validate_err; ?></div>
-												<?php } ?>
+											<?php if(!empty($validate_err)){ ?>
+												<div class="text-center;text-dange"><?php echo $validate_err; ?></div>
+											<?php } ?>
 
 											<div class="col-md-4">
 												<label>Category Name <span class="required-star">*</span></label>
@@ -70,19 +71,14 @@
 										</div>
 									</div>
 								</div>
+
 								<div class="card-footer mt-4">
-
-									<?php
-										if(isset($_SESSION['category_code']) && isset($_SESSION['category_data'])){
-
+									<?php if(isset($_SESSION['category_code']) && isset($_SESSION['category_data'])){
 											echo $this->Form->submit('Update', array('name'=>'update', 'id'=>'update', 'label'=>false, 'class'=>'float-left btn btn-success'));
-
 										} else {
-
 											echo $this->Form->submit('Save', array('name'=>'save', 'id'=>'save', 'label'=>false, 'class'=>'float-left btn btn-success'));
-
-										} ?>
-									
+										} 
+									?>
 									<a href="saved_category" class="btn btn-danger float-right">Cancel</a>
 								</div>
 							</div>
@@ -92,4 +88,4 @@
 			</div>
 		</section>
 	</div>
-	<?php echo $this->Html->Script("master/category.js"); ?>
+	<?php echo $this->Html->Script('master/category'); ?>

@@ -1,5 +1,6 @@
 <?php echo $this->Html->css('sampleinward'); ?>
-	
+<?php if (!empty($_SESSION['sample'])){ $sample_type_code = $_SESSION['sample']; } else { $sample_type_code=''; } ?>
+
 	<div class="content-header">
 		<div class="container-fluid">
 			<div class="row mb-2">
@@ -128,7 +129,7 @@
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Type Of Sample <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('sample_type_code', array('type'=>'select','options'=>$Sample_Type,'value'=>$sample_inward_data['sample_type_code'], 'id'=>'sample_type_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('sample_type_code', array('type'=>'select','options'=>$Sample_Type,'value'=>$sample_type_code, 'id'=>'sample_type_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
 														<span id="error_Sample_Type" class="error invalid-feedback"></span>
 													</div>
 												</div>
@@ -283,9 +284,7 @@
 									} ?>
 
 									<div class="col-md-1 float-right"><a href="../Dashboard/home" class="btn btn-danger">Cancel</a></div>
-												<!--<?php //if ($_SESSION['sample']=='3') { ?>
-													<div class="col-md-1 float-left"><a href="../inward/payment" class="btn btn-primary">Next Section</a></div>
-												<?php //} ?>	-->
+								
 									<?php if ($_SESSION['user_flag']=='RO' || $_SESSION['user_flag']=='SO') { ?>
 
 										<?php if (!(trim($sample_inward_data['status_flag'])=='')) { ?>
@@ -329,5 +328,12 @@
 <input type="hidden" id="org_sample_code" value="<?php echo $org_sample_code; ?> ">
 <input type="hidden" id="sample_status" value="<?php echo trim($sample_inward_data['status_flag']); ?>">
 <input type="hidden" id="receivedfrom" value="<?php echo $receivedfrom; ?>">
+<?php if(empty($sample_type_code)){ 
+		$sample_type = ''; 
+	}else{ 
+		$sample_type = $sample_type_code; 
+	} 
+?>
+<input type="hidden" id="sample_type" value="<?php echo $sample_type; ?>">
 <?php echo $this->Html->Script('inward/sample_inward'); ?>
 <?php echo $this->Html->Script('sample_reg_form'); ?>

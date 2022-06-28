@@ -88,7 +88,7 @@ class DmiUsersTable extends Table
 		}
 		//till here
 
-		// Import another model in this model							
+		// Import another model in this model
 		$Dmi_user_role = TableRegistry::getTableLocator()->get('DmiUserRoles');
 
 
@@ -103,12 +103,12 @@ class DmiUsersTable extends Table
 			// Now Display all MO/SMO's list in allocation mo_list dropdown and Display the only allocated MO's under each RO on dashborad
 			//Done By pravin 15-09-2017
 
-			//	$table = 'Dmi_allocation';	
+			//	$table = 'Dmi_allocation';
 			$find_user_belongs = $Dmi_allocation->find('all', array('fields' => 'level_1', 'conditions' => array('level_3 IS' => $username, 'level_1 !=' => null), 'group' => 'level_1'))->toArray();
 
 			/*	if($current_action == 'renewal_home')
-				
-			{	
+
+			{
 				$table = 'Dmi_renewal_allocation';
 				$find_user_belongs = $Dmi_renewal_allocation->find('all',array('fields'=>'level_1','conditions'=>array('level_3'=>$username,'level_1 !='=>null),'group'=>'level_1'));
 			}
@@ -145,7 +145,7 @@ class DmiUsersTable extends Table
 
 
 
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//		
+	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
 
 
 	public function findIoList($current_action)
@@ -176,7 +176,7 @@ class DmiUsersTable extends Table
 		}
 		//till here
 
-		// Import another model in this model							
+		// Import another model in this model
 		$Dmi_user_role = TableRegistry::getTableLocator()->get('DmiUserRoles');
 
 		//changes query logic from "first" to "list" while getting multiple RO ids, on 13-02-2018 by Amol
@@ -188,14 +188,14 @@ class DmiUsersTable extends Table
 			//$find_user_belongs = $this->find('all',array('conditions'=>array('posted_ro_office'=>$ro_id)));
 			// Change logic for Display Multiple IO's under each RO by posted office to allocated IO's under each RO on dashborad
 			// Now Display all IO's list in allocation IO_list dropdown and Display the only allocated IO's under each RO on dashborad
-			//Done By pravin 03/03/2018	
+			//Done By pravin 03/03/2018
 
 			//	$table = 'Dmi_allocation';
 			$find_user_belongs = $Dmi_allocation->find('all', array('fields' => 'level_2', 'conditions' => array('level_3 IS' => $username, 'level_2 !=' => null), 'group' => 'level_2'))->toArray();
 
 
-			/*	if($current_action == 'renewal_home')					
-			{	
+			/*	if($current_action == 'renewal_home')
+			{
 				$table = 'Dmi_renewal_allocation';
 				$find_user_belongs = $Dmi_renewal_allocation->find('all',array('fields'=>'level_2','conditions'=>array('level_3'=>$username,'level_2 !='=>null),'group'=>'level_2'));
 			}
@@ -236,14 +236,14 @@ class DmiUsersTable extends Table
 
 
 		if ($lab == $_SESSION['user_flag']) {
-			$ralLab = "SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab,CONCAT(o.id,'~', r.user_flag) AS ral_lab_key from dmi_users as u 
+			$ralLab = "SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab,CONCAT(o.id,'~', r.user_flag) AS ral_lab_key from dmi_users as u
 					Inner Join dmi_ro_offices as o On u.posted_ro_office = o.id
 					Inner Join dmi_user_roles as r on r.user_email_id = u.email
 					and r.user_flag = '" . $_SESSION['user_flag'] . "' AND u.posted_ro_office = '" . $_SESSION['posted_ro_office'] . "'
 					WHERE u.status = 'active'
 					GROUP BY r.user_flag,o.id,o.ro_office order by o.id asc";
 		} else {
-			$ralLab = "SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab,CONCAT(o.id,'~', r.user_flag) AS ral_lab_key from dmi_users as u 
+			$ralLab = "SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab,CONCAT(o.id,'~', r.user_flag) AS ral_lab_key from dmi_users as u
 					Inner Join dmi_ro_offices as o On u.posted_ro_office=o.id
 					Inner Join dmi_user_roles as r on r.user_email_id=u.email
 					and r.user_flag='$lab'
@@ -276,8 +276,8 @@ class DmiUsersTable extends Table
 	{
 		$conn = ConnectionManager::get('default');
 
-		$users = "SELECT du.id,CONCAT(du.f_name,' ',du.l_name) AS chemist_name 
-				FROM dmi_users AS du 
+		$users = "SELECT du.id,CONCAT(du.f_name,' ',du.l_name) AS chemist_name
+				FROM dmi_users AS du
 				INNER JOIN dmi_user_roles AS dur ON dur.user_email_id=du.email
 				INNER JOIN dmi_ro_offices AS o ON o.id=du.posted_ro_office AND
 				dur.user_flag='$lab' AND o.id='$ral_lab_no' AND du.role IN('Jr Chemist','Sr Chemist','Cheif Chemist')
@@ -321,4 +321,23 @@ class DmiUsersTable extends Table
 			$fullname = $getName['f_name']. " ".$getName['l_name'];
 			return $fullname;
 		}
+
+        //GET Username by ID
+        public function getTableID($tableId){
+
+           $getId =  $this->find('all')->select(['email'])->where(['id IS' => $tableId, 'status !=' => 'disactive'])->first();
+
+           if (!empty($getId)) {
+             return $getId['email'];
+           }
+
+        }
+
+
+        public function getUserDetailsById($id){
+
+           return $details =  $this->find('all')->where(['id IS' => $id, 'status !=' => 'disactive'])->first();
+
+        }
+
 }

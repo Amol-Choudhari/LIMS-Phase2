@@ -1,2 +1,0 @@
-<?php echo $this->Html->link('', array('controller' => 'masters', 'action'=>'fetch_master_id', $each_record['id'],$masterId),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit')); ?> | 
-<?php echo $this->Html->link('', array('controller' => 'masters', 'action'=>'delete_master_id', $each_record['id'],$masterId),array('class'=>'glyphicon glyphicon-remove','title'=>'Delete','confirm'=>'Are You Sure to Delete this Record?')); ?>

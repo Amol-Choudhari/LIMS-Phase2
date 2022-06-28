@@ -19,17 +19,17 @@ class InwardDetailsController extends AppController {
 		}
 
 /****************************************************************************************************************************************************************************************************************************************************************/
-	
+
 	public function errormsg(){}
 
-/****************************************************************************************************************************************************************************************************************************************************************/		
-	
+/****************************************************************************************************************************************************************************************************************************************************************/
+
 	//TO VALIDATE LOGIN USER
 	public function authenticateUser() {
 
 		$this->loadModel('DmiUserRoles');
 		$user_access = $this->DmiUserRoles->find('all',array('conditions'=>array('user_email_id IS'=>$this->Session->read('username'))))->first();
-		
+
 		if (!empty($user_access)) {
 			//proceed
 		} else {
@@ -39,66 +39,74 @@ class InwardDetailsController extends AppController {
 		}
 	}
 
-/****************************************************************************************************************************************************************************************************************************************************************/	
-		
+/****************************************************************************************************************************************************************************************************************************************************************/
+
 	//TO OPEN SAMPLE INWARD FORM in EDIT MODE
 	public function fetchInwardId($id) {
 
 		//Get Original Sample Code by Inward Id
 		$this->loadModel('SampleInwardDetails');
 		$get_sample_code = $this->SampleInwardDetails->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('id IS'=>$id)))->first();
-		
+
 		$this->Session->write('inward_id',$get_sample_code['inward_id']);
 		$this->Session->write('org_sample_code',$get_sample_code['org_sample_code']);
-		
+
 		$this->redirect('/InwardDetails/sample_inward_details');
 	}
-		
-/****************************************************************************************************************************************************************************************************************************************************************/	
+  
+																																																																   
+
+/****************************************************************************************************************************************************************************************************************************************************************/
 
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>----------<Sample Inward Details>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-	
-		
+
+
 	//SAMPLE INWARD DETAILS METHOD
 	public function sampleInwardDetails(){
-			
+
 		$this->authenticateUser();
 
 		//Load MODELS
 		$this->loadModel('SampleInward');
 		$this->loadModel('Workflow');
-		$this->loadModel('DmiUsers'); 
+		$this->loadModel('DmiUsers');
 		$this->loadModel('DmiUserRoles');
 		$this->loadModel('SampleInwardDetails');
-		
+
 		//Variables To Show the Message From View Files
 		$message = '';
 		$message_theme = '';
 		$redirect_to = '';
 
+	
+		//payment progress
+		if (null !== ($_SESSION['sample'])) {
+			
+			if ($_SESSION['sample'] == 3) {
+				$_SESSION['is_payment_applicable'] = 'yes';
+			}
+		}
+
+	
 		//To Execute Query in Core Format
 		$conn = ConnectionManager::get('default');
+  		$user_flag = $_SESSION['user_flag'];
 		
-		/*	$res = $this->SampleInward->find('all',array('conditions' => array('display' => 'Y','status_flag' => 'D','user_code'=>$_SESSION['user_code'],'acc_rej_flg' => 'A')))->toArray();		
-		$this->set('res',$res);*/
-
-		$user_flag = $_SESSION['user_flag'];
-
 		//To Show List of Sample Type From Database
 		$this->loadModel('MSampleType');
 		$sam_type = $this->MSampleType->find('list',array('keyField'=>'sample_type_code','valueField'=>'sample_type_desc','order' => array('sample_type_desc' => 'ASC'),'conditions' => array('display' => 'Y')))->toArray();
 		$this->set('Sample_Type',$sam_type);
-		
+
 		//To Show Sample Drawing Locations
 		$drawal_locations = array('P'=>'Premises','M'=>'Market','O'=>'Other');
 		$this->set('drawal_locations',$drawal_locations);
-		
+
 		//To Fetch Record Data To Show in Update/View Mode
 		$sample_Details_data=array();
 		$SaveUpdatebtn = 'save';
 		$sample_Details_data = $this->SampleInwardDetails->find('all',array('conditions'=>array('org_sample_code IS'=>$this->Session->read('org_sample_code')),'order'=>'id desc'))->first();
-			
+		
 			if (!empty($sample_Details_data)) {
 
 				//For Progress-Bar
@@ -133,20 +141,20 @@ class InwardDetailsController extends AppController {
 				$sample_Details_data['acc_rej_flg']='';
 				$sample_Details_data['rej_code']='';
 				$sample_Details_data['rej_reason']='';
-					
+
 				//For Progress-Bar
 				$sample_details_form_status='';
-				
+
 			}
-			
+
 			//Get Status Flag
 			$get_status = $this->SampleInward->find('all',array('conditions' => array('org_sample_code IS'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
-			
+
 			if (!empty($get_status)) {
 
 				$sample_Details_data['status_flag'] = $get_status['status_flag'];
 				$inward_id = $get_status['inward_id'];
-			
+
 			} else {
 
 				$sample_Details_data['status_flag']='';
@@ -156,101 +164,65 @@ class InwardDetailsController extends AppController {
 			$this->set('SaveUpdatebtn',$SaveUpdatebtn);
 			$this->set('sample_Details_data',$sample_Details_data);
 			$this->set('sample_details_form_status',$sample_details_form_status);
-			
+
 			//For Sample Details Progress-Bar
-			if (!empty($this->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))) {			
-				
+			if (!empty($this->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))) {
+	
 				$sample_inward_form_status = 'saved';
-			
+   
 			} else {
-				
+	
 				$sample_inward_form_status = '';
 			}
-			
+
 			$this->set('sample_inward_form_status',$sample_inward_form_status);
-			
+
 			//To Show/Hide Confirm BUTTON on Form
 			$confirmBtnStatus = $this->Customfunctions->showHideConfirmBtn();
-			
 			$this->set('confirmBtnStatus',$confirmBtnStatus);
-			
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			//   																																												  //
-			//   /*	$stage_sample_code=$_SESSION['stage_sample_code'];																															  //	
-			//   	$res1 = $this->SampleInwardDetails->find('all',array('conditions' => array('org_sample_code'=>$stage_sample_code)))->toArray();												  //
-			//   																																												  //	
-			//   	if(count($res1)){																																							  //
-			//   		$this->set('Sample_data',$res1);																																		  //
-			//   }*/																																											  //
-			//   /*	$sample_type_code = $_SESSION['sample'];																																	  //
-			//   	$username = $this->Session->read('username');																																  //
-			//   	$this->set('username',$username);*/																																			  //
-			//   																																												  //
-			//   /*	$this->loadModel('MCommodityCategory');																																		  //
-			//   	$query = $conn->execute("select * from m_commodity_category where category_code IN(SELECT category_code FROM sample_inward GROUP BY sample_inward.category_code)");		      //
-			//   	$commodity_category = $query ->fetchAll('assoc');																															  //
-			//   	$this->set('commodity_category',$commodity_category);*/																														  //
-			//   																																												  //
-			//   /*	$sam_type = $this->MSampleType->find('all',array('conditions' => array('display' => 'Y')))->toArray();																		  //
-			//   	$this->set('Sample_Type',$sam_type);*/																																		  //
-			//   																																												  //
-			//		below query converted to core																																				  //
-			//   /*	$query = $conn->execute("select isf.*,idf.inw_field_name from inw_sample_fields as isf 																						  //
-			//   	INNER JOIN m_inw_detail_fields as idf on idf.inw_field_code = isf.inw_field_code																							  //
-			//   	where sample_type_code = '$sample_type_code'");																																  //
-			//   																																												  //
-			//   	$sample_fields1 = $query ->fetchAll('assoc');*/																																  //
-			//   																																												  //
-			//   /*$sample_fields1=$this->inw_sample_fields->find('all',array('joins' => array(array(																							  //
-			//   															  'table' => 'm_inw_detail_fields','alias' => 'b','type' => 'INNER',												  //
-			//   															  'conditions' => array('b.inw_field_code = inw_sample_fields.inw_field_code'))),									  //
-			//   															  'fields' => array('b.inw_field_name','inw_sample_fields.*'),														  //
-			//   															  'conditions' => array('sample_type_code' => $sample_type_code)));*/												  //
-			//   //pr($sample_fields1);exit;																																					  //
-			//  /*	$this->set('sample_fi',$sample_fields1);*/																																	  //
-			//   																																												  //
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+
+
 			if ($this->request->is('post')) {
-				
+
 				//HTML Encoding
 				$postData = $this->request->getData();
 
-				foreach ($postData as $key => $value) {	
+				foreach ($postData as $key => $value) {
 
 					$postData[$key] = htmlentities($postData[$key], ENT_QUOTES);
 				}
-				
+
 				//Create Sample Code
-				if ($this->Session->read('org_sample_code') == null) {				
-					
+				if ($this->Session->read('org_sample_code') == null) {
+
 					$org_sample_code = $this->Customfunctions->createSampleCode();
-				
+
 				} else {
-					
+
 					$org_sample_code = $this->Session->read('org_sample_code');
 				}
-				
+
 				if (null!==($this->request->getData('save'))) {
-					
+
 					//Check POST Data Validations
 					$validate_err = $this->detailsPostValidations($this->request->getData());
-					
+
 					if ($validate_err != '') {
 
 						$this->set('validate_err',$validate_err);
 						return null;
 					}
-					
-					
+
+					$_SESSION["sample"] = $postData['sample_type_code'];
+
 					$replica_serial_no=array();
-					
+
 					for ($i=1;$i<=$postData['no_of_packets'];$i++) {
-							
+
 						$replica_serial_no[$i]=$postData['replica_serial_no'.$i];
 
 					}
-				
+
 					$postData['replica_serial_no'] = implode(",", $replica_serial_no);
 
 					if ($postData['smpl_drwl_dt']!='') {
@@ -258,28 +230,36 @@ class InwardDetailsController extends AppController {
 						$dStart = new \DateTime(date('Y-m-d H:i:s'));
 
 						$date = $dStart->createFromFormat('d/m/Y', $postData['smpl_drwl_dt']);
-						
+
 						$smpl_drwl_dt = $date->format('Y/m/d');
-						
+
 						$smpl_drwl_dt = date('Y-m-d',strtotime($smpl_drwl_dt));
-			
+
 						$postData['smpl_drwl_dt'] = $smpl_drwl_dt;
-					
+
 					} else {
-					
+
 						$postData['smpl_drwl_dt'] = "";
 					}
-					
+
 					$dst = $this->DmiUsers->find('all',array('conditions'=>array('role IN'=>array('RO/SO OIC','RAL/CAL OIC'),'status'=>'active','posted_ro_office'=>$_SESSION['posted_ro_office'])))->first();
-						
-					if ($dst==null) {
+	  
+					  
+
+                    if ($this->request->getData('sample_type_code') == '3') {
+                        $isPaymentApplicable = 'Yes';
+                    } else {
+                        $isPaymentApplicable = 'No';
+                    }
+
+                    if ($dst==null) {
 
 						$message = 'Please create Office Incharge!!!';
 						$message_theme = 'warning';
 						$redirect_to = 'sample_inward_details';
-						
+
 					} else {
-						
+
 						//In Below Array the First 5 Primary Key Fields Needs to be Present to Save the Record [inward_id, loc_id, org_sample_code, sample_type_code, fin_year]
 						$dataArray = array(
 
@@ -289,7 +269,7 @@ class InwardDetailsController extends AppController {
 							'sample_type_code'=>$postData['sample_type_code'],
 							'fin_year'=>$postData['fin_year'],
 							'smpl_drwl_dt'=>$postData['smpl_drwl_dt'],
-							'tran_date'=>$postData['tran_date'],						
+							'tran_date'=>$postData['tran_date'],
 							'drawal_loc'=>$postData['drawal_loc'],
 							'shop_name'=>$postData['shop_name'],
 							'shop_address'=>$postData['shop_address'],
@@ -305,34 +285,35 @@ class InwardDetailsController extends AppController {
 							'no_of_packets'=>$postData['no_of_packets'],
 							'replica_serial_no'=>$postData['replica_serial_no'],
 							'user_code'=>$_SESSION["user_code"],
-							'created'=>date('Y-m-d H:i:s')
-							
+							'created'=>date('Y-m-d H:i:s'),
+                            'is_payment_applicable'=>$isPaymentApplicable
+
 						);
 
 						$SampleInwardDetailsEntity = $this->SampleInwardDetails->newEntity($dataArray);
-						
-						if ($this->SampleInwardDetails->save($SampleInwardDetailsEntity)) {						
-							
+
+						if ($this->SampleInwardDetails->save($SampleInwardDetailsEntity)) {
+
 							$tran_date	= $postData["tran_date"];
 
-							$query = $conn->execute("SELECT u.id 
-														FROM dmi_users AS u 
-														INNER JOIN dmi_user_roles AS r ON u.email=r.user_email_id					
+							$query = $conn->execute("SELECT u.id
+														FROM dmi_users AS u
+														INNER JOIN dmi_user_roles AS r ON u.email=r.user_email_id
 														WHERE u.role IN('RO/SO OIC','RAL/CAL OIC') AND u.posted_ro_office='".$_SESSION["posted_ro_office"]."'AND r.user_flag='$user_flag'AND u.status != 'disactive' ");
-							
+
 							$user = $query->fetchAll('assoc');
-							
+
 							if (!empty($user)) {
 
 								$user_code	= $user[0]['id'];
-								
+
 							} else {
-								
-								$user_code = null; 
+
+								$user_code = null;
 							}
-							
-							$workflow_data	 = array("org_sample_code"=>$org_sample_code, 
-													"src_loc_id"=>$_SESSION["posted_ro_office"], 
+
+							$workflow_data	 = array("org_sample_code"=>$org_sample_code,
+													"src_loc_id"=>$_SESSION["posted_ro_office"],
 													"src_usr_cd"=>$_SESSION["user_code"],
 													"dst_loc_id"=>$_SESSION["posted_ro_office"],
 													"dst_usr_cd"=>$user_code,
@@ -341,14 +322,14 @@ class InwardDetailsController extends AppController {
 													"tran_date"=>$tran_date,
 													"stage"=>"2",
 													"stage_smpl_flag"=>"SD");
-							
+
 							$workflowEntity = $this->Workflow->newEntity($workflow_data);
-							
-							if ($this->Workflow->save($workflowEntity)) { 
-								
+
+							if ($this->Workflow->save($workflowEntity)) {
+
 								$sampDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code'),'conditions'=>array('org_sample_code'=>$org_sample_code),'order'=>'id desc'))->first();
 								$_SESSION["org_sample_code"] =$sampDetails['org_sample_code'];//store in session to use in edit mode
-								
+
 								$message = 'You have successfully saved Sample details. Please note Sample Code is '.$org_sample_code;
 								$message_theme = 'success';
 								$redirect_to = 'sample_inward_details';
@@ -358,58 +339,65 @@ class InwardDetailsController extends AppController {
 								$message = 'Invalid parameters while saving workflow data, Please check parameters.';
 								$message_theme = 'failed';
 								$redirect_to = 'sample_inward_details';
-			
+
 							}
-							
-							
+
+
 						} else {
-							
+
 							$message = 'Sorry... The sample details did not saved properly.';
 							$message_theme = 'failed';
 							$redirect_to = 'sample_inward_details';
-		
+
 						}
 					}
 
 				}
 
-				//To Update The Sample Details	
+				//To Update The Sample Details
 				if (null!== ($this->request->getData('update'))) {
-					
+
 					//Check POST Data Validations
 					$validate_err = $this->detailsPostValidations($this->request->getData());
-					
+
 					if ($validate_err != '') {
-						
+
 						$this->set('validate_err',$validate_err);
 						return null;
 					}
 
 					$replica_serial_no=array();
-					
+
 					for ($i=1;$i<=$postData['no_of_packets'];$i++) {
-							
+
 						$replica_serial_no[$i]=$postData['replica_serial_no'.$i];
 
 					}
-				
+
 					$postData['replica_serial_no']=implode(",", $replica_serial_no);
-					
+
 					if ($postData['smpl_drwl_dt']!='') {
-						
+
 						$dStart = new \DateTime(date('Y-m-d H:i:s'));
 						$date = $dStart->createFromFormat('d/m/Y', $postData['smpl_drwl_dt']);
 						$smpl_drwl_dt=$date->format('Y/m/d');
 						$postData['smpl_drwl_dt']=$smpl_drwl_dt;
-					
+
 					} else {
-						
+
 						$postData['smpl_drwl_dt'] ="";
 					}
-					
+
+
+                    if ($this->request->getData('sample_type_code') == '3') {
+                        $isPaymentApplicable = 'Yes';
+                    } else {
+                        $isPaymentApplicable = 'No';
+                    }
+
 					//Fetch Sample Details
 					$InwardDetails = $this->SampleInwardDetails->find('all',array('conditions' => array('org_sample_code IS' => $org_sample_code),'order'=>'id desc'))->first();
-					
+
 					//Below is Package of 5 Primary Key Fields Needs to be Unique To Update the Record Else it Will Save a New Record
 					$postData['id'] = $InwardDetails['id'];//this is not
 					$postData['inward_id'] = $InwardDetails['inward_id'];
@@ -417,9 +405,10 @@ class InwardDetailsController extends AppController {
 					$postData['org_sample_code'] = $InwardDetails['org_sample_code'];
 					$postData['fin_year'] = $InwardDetails['fin_year'];
 					$postData['sample_type_code'] = $InwardDetails['sample_type_code'];
-					
+
 					$dataArray = array(
-					
+
+						
 						'id'=>$postData['id'],
 						'inward_id'=>$postData['inward_id'],
 						'org_sample_code'=>$postData['org_sample_code'],
@@ -442,312 +431,208 @@ class InwardDetailsController extends AppController {
 						'lot_no'=>$postData['lot_no'],
 						'no_of_packets'=>$postData['no_of_packets'],
 						'replica_serial_no'=>$postData['replica_serial_no'],
-						'modified'=>date('Y-m-d H:i:s')
-						
+						'modified'=>date('Y-m-d H:i:s'),
+                        'is_payment_applicable'=>$isPaymentApplicable
+
 					);
-					
+
 					$SampleInwardDetailsEntity = $this->SampleInwardDetails->newEntity($dataArray);
-						
+
 					if ($this->SampleInwardDetails->save($SampleInwardDetailsEntity)) {
 
 						$message = 'Sample details has been updated';
 						$message_theme = 'success';
 						$redirect_to = 'sample_inward_details';
-					
-						
+
+
 					} else {
-						
+
 						$message = 'Sorry... The sample details did not updated properly.';
 						$message_theme = 'failed';
 						$redirect_to = 'sample_inward_details';
-					
+
 					}
-						
-					
-					
+
+
+
 				}
 
 				//To Confirm the Registered Sample
 				elseif (null!==($this->request->getData('confirm'))) {
-					
+
 					$this->loadModel('DmiUsers');
 					$this->loadModel('SampleInward');
 					$conn = ConnectionManager::get('default');
-					
+
 					$org_sample_code = $this->Session->read('org_sample_code');
 
 					$user_role = $this->SampleInward->find('all',array('fields'=>array('loc_id','users'),'conditions'=>array('org_sample_code'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
-					
+
 					$usercode = $user_role['users'];
-					
+
 					$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
-					
+
 
 					//update status
 					$this->SampleInward->updateAll(array('status_flag'=>'S'),array('org_sample_code'=>$org_sample_code));
-					
+
 					//get role and office where sample available after confirmed
-					$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office 
+					$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
 												FROM sample_inward AS si
 												INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
 												INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
-												INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id 
+												INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
 												WHERE si.org_sample_code='$org_sample_code'");
-			
+
 					$get_info = $query->fetchAll('assoc');
 
 						//Calling Common SMS/Email Sending Method
 						$this->loadModel('DmiSmsEmailTemplates');
 
 							if ($user_role['role'] == 'RO/SO OIC') {
-								
-								
+
+
 								//Message When RO/SO OIC Confirmed the Sample
 								//$this->DmiSmsEmailTemplates->sendMessage(2004,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
-								
+
 							} else {
-								
+
 								//Message When Sample is Confirmed by RO / SO Officer.
 								//$this->DmiSmsEmailTemplates->sendMessage(2002,$org_sample_code,$userCode=$get_info[1]['dst_usr_cd']);
-														
-								//message to the RO/SO OIC for available sample confirmed by RO / SO Offier 
+
+								//message to the RO/SO OIC for available sample confirmed by RO / SO Offier
 								//$this->DmiSmsEmailTemplates->sendMessage(2003,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
 							}
 
-						
+	  
 
-						
-					
+
+
+
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 					$message_theme = 'success';
 					$redirect_to = '../inward/confirmed_samples';
-				
+
 				}
-				
+
 				//to fetch common details for current location to prefilled the common fields
 				elseif (null!==($this->request->getData('fetch_common_details'))) {
-					
+
 					$loc_id = $this->Session->read('posted_ro_office');
-					
+
 					//get laat sample details filled by this office
 					$sample_Details_data = $this->SampleInwardDetails->find('all',array('conditions'=>array('loc_id IS'=>$loc_id),'order'=>'id desc'))->first();
-					
+
 					if (!empty($sample_Details_data)) {
-						
+
 						$this->set('sample_Details_data',$sample_Details_data);
-					
+
 					} else {
-						
+
 						$message = 'Sorry.. Currently there is no previous data available.';
 						$message_theme = 'failed';
 						$redirect_to = 'sample_inward_details';
 					}
-					
+
 				}
 
 			}
-			
+
 			// set variables to show popup messages from view file
 			$this->set('message',$message);
 			$this->set('message_theme',$message_theme);
 			$this->set('redirect_to',$redirect_to);
-				
+
 	}
 
-/****************************************************************************************************************************************************************************************************************************************************************/	
+/****************************************************************************************************************************************************************************************************************************************************************/
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// to show list of saved sample by current user
+/****************************************************************************************************************************************************************************************************************************************************************/
 
-		/*	public function savedSamples(){
-				
-				$conn = ConnectionManager::get('default');
-				$user_cd=$this->Session->read('user_code');
-				$user_loc_id = $this->Session->read('posted_ro_office');
-				
-				$query = $conn->execute("select sid.id,sid.loc_id,sid.inward_id,sid.org_sample_code,sid.smpl_drwl_dt,ml.ro_office
-						from sample_inward_details as sid
-						INNER JOIN dmi_ro_offices as ml on ml.id=sid.loc_id
-						and sid.display='Y' and sid.loc_id='$user_loc_id' group by sid.id,sid.loc_id,sid.inward_id,sid.org_sample_code,sid.smpl_drwl_dt,ml.ro_office,sid.created order by sid.created desc  ");
-
-				$res = $query ->fetchAll('assoc');
-				$this->set('res',$res);
-			}*/
-				
-			/*	public function logout_user(){
-							if ($this->referer() != '' || $this->referer() != '/') {
-					if (strpos($this->referer(), $this->webroot) == false) {
-					$this->redirect('http://'.$_SERVER['SERVER_NAME'].Router::url('/'));
-						exit;
-					}
-				}
-							
-							
-							$Dmi_user_log = ClassRegistry::init('Dmi_user_log');//initialize model in component
-							if($this->Session->read('username') != null){
-							
-								$username_id 	= $this->Session->read('username');	
-								$proper_email 	= Validation::email($username_id);// cake email validation
-								if($proper_email){
-									$find_id_list = $Dmi_user_log->find('list', array('fields'=>'id','conditions'=>array('email_id'=>$username_id)));
-									
-									if(!empty($find_id_list))	
-									{
-										$find_max_id = $Dmi_user_log->find('first', array('fields'=>'id','conditions'=>array('id'=>max($find_id_list))));
-													
-										$max_id = $find_max_id['Dmi_user_log']['id'];
-												
-										$Dmi_user_log->save(array(
-														
-										'id'=>$max_id,
-										'time_out'=>date('H:i:s'),//date('H:i:s')
-										'islogout'=> 1
-															
-										)); 
-									}
-									
-									$this->Session->destroy();		
-									$this->redirect('http://'.$_SERVER['SERVER_NAME'].Router::url('/'));
-									exit;							
-								}
-								
-							}
-							
-						}
-				*/		
-		/*
-
-				public function get_commodity()
-			{
-				$str="";
-				$this->loadModel('Test');
-				$category_code=$_POST['category_code'];
-				$commodity=$this->Test->query("select * from m_commodity where commodity_code IN(SELECT commodity_code FROM sample_inward
-				where category_code=$category_code GROUP BY sample_inward.commodity_code)");
-			
-				//pr($commodity);
-				for($i=0;$i<count($commodity);$i++)
-				{
-					$str.="<option value='".$commodity[$i][0]['commodity_code']."'>".$commodity[$i][0]['commodity_name']."</option>";
-					//echo($commodity[0][0]['commodity_name']);
-					}	
-				echo $str;
-				exit;
-			}	
-			public function unset_session()
-				{
-					//echo $_POST['sample'];
-					unset($_SESSION['sample']);
-					unset($_SESSION['stage_sample_code']);
-					unset($_SESSION['posted_ro_office']);
-					unset($_SESSION['inward_id']);
-					// $stage_sample_code=$_POST['stage_sample_code'];
-					// $_SESSION['sample']=$_POST['sample'];
-					// $_SESSION['stage_sample_code']=$stage_sample_code;
-					// $_SESSION['loc_id']=$_POST['loc_id'];
-					// $_SESSION['inward_id']=$_POST['inward_id'];			
-					exit;
-				}
-			public function get_sample_code()
-		{
-			$this->loadModel('Sample_Inward');
-			$commodity_code=$_POST['commodity_code'];
-			$category_code=$_POST['category_code'];
-			$test1=$this->Sample_Inward->find('list', array('fields' => array('org_sample_code',	'org_sample_code'),'conditions'=>array('category_code'=>$category_code,'commodity_code'=>$commodity_code)));
-			echo json_encode($test1);
-			exit;
-		}
-		*/
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-
-
-/****************************************************************************************************************************************************************************************************************************************************************/	
-	
 	public function checkInwDate(){
-		
+
 		$this->autoRender = false;
 		$this->loadModel('SampleInward');
 		$org_sample_code=$_POST['org_sample_code'];
 
 		$date = $this->SampleInward->find('all',array('fields'=>'received_date','conditions'=>array('org_sample_code IS'=>$org_sample_code),'order'=>'inward_id desc'))->first();
-		
+
 		if (!empty($date)) {
 
 			echo '~'.$date['received_date'].'~';
-		
+
 		} else {
 
 			echo '~NULL~';
 		}
-		
+
 		exit;
 
 	}
 
-/****************************************************************************************************************************************************************************************************************************************************************/	
-	
+/****************************************************************************************************************************************************************************************************************************************************************/
+
 	public function get_sample_code1(){
 		$str1="";
 		$this->loadModel('SampleInward');
-	 
+
 		// remove date seach conditions, pravin bhakare 30-10-2019
 		$stage_sample_code1 = $this->SampleInward->query("SELECT si.inward_id,
 														  TRIM(w.stage_smpl_cd) AS stage_sample_code,si.sample_type_code
-														  FROM sample_inward AS si 
-														  INNER JOIN  workflow AS w ON w.org_sample_code=si.org_sample_code 
-														  AND si.display='Y' 
-														  AND si.status_flag IN('F','H')  
-														  AND w.stage_smpl_flag IN('OF','HF') 
+														  FROM sample_inward AS si
+														  INNER JOIN  workflow AS w ON w.org_sample_code=si.org_sample_code
+														  AND si.display='Y'
+														  AND si.status_flag IN('F','H')
+														  AND w.stage_smpl_flag IN('OF','HF')
 														  AND w.src_usr_cd='".$_SESSION['user_code']."' ");
-	
+
 		if (count($stage_sample_code1)>0) {
-				
+
 			echo json_encode($stage_sample_code1);
 			exit;
-		
+
 			for ($i=0;$i<count($stage_sample_code1);$i++) {
 
 				$str1.="<option value='".$stage_sample_code1[$i][0]['inward_id']."'>".$stage_sample_code1[$i][0]['stage_sample_code']."</option>";
-			
-		
+
+
 			}
 
 			echo $str1;
 			exit;
 		} else {
-		
+
 			echo "NO_DATA";
-		
+
 			exit;
 		}
-		
-		
+
+
 	}
-	
-	
-/****************************************************************************************************************************************************************************************************************************************************************/	
-	
-	
+
+
+/****************************************************************************************************************************************************************************************************************************************************************/
+
+
 	//function to take post data and validate each field.
 	public function detailsPostValidations($postData){
-		
+
 		$validation_status = '';
-		
+
 		if (!is_numeric($postData["loc_id"])) {
 
 			$validation_status = 'Select proper Location';
 		}
-		
+
 		if (!is_numeric($postData["sample_type_code"])) {
 
-			$validation_status = 'Invalid Sample Type';	
+			$validation_status = 'Invalid Sample Type';
 		}
-		
+
 		if (!empty($postData["fin_year"])) {
 
 			$res = preg_match('/(\d{4})-(\d{4})/',$postData["fin_year"]);
-			
+
 			if ($res==0) {
 
 				$validation_status = 'Invalid Financial Year';
@@ -756,16 +641,16 @@ class InwardDetailsController extends AppController {
 
 		if (!empty($postData["tran_date"])) {
 
-			$res = preg_match('/(\d{4})-(\d{2})-(\d{2})/',$postData["tran_date"]);			
-			
+			$res = preg_match('/(\d{4})-(\d{2})-(\d{2})/',$postData["tran_date"]);
+
 			if ($res==0) {
 
 				$validation_status = 'Invalid Transaction date';
 			}
 		}
-		
-		$res = preg_match('/(\d{2})\/(\d{2})\/(\d{4})/',$postData["smpl_drwl_dt"]);				
-		
+
+		$res = preg_match('/(\d{2})\/(\d{2})\/(\d{4})/',$postData["smpl_drwl_dt"]);
+
 		if ($res==0) {
 
 			$validation_status = 'Invalid Letter date';
@@ -773,7 +658,7 @@ class InwardDetailsController extends AppController {
 
 		if (!in_array($postData["drawal_loc"],array('P','M','O'))) {
 
-			$validation_status = 'Invalid Sample Type';	
+			$validation_status = 'Invalid Sample Type';
 		}
 
 		if (empty($postData["shop_name"]) || strlen($postData["shop_name"])>100) {
@@ -785,76 +670,176 @@ class InwardDetailsController extends AppController {
 
 			$validation_status = 'Enter Shop Address';
 		}
-		
+
 		if (empty($postData["mnfctr_nm"]) || strlen($postData["mnfctr_nm"])>100) {
 
 			$validation_status = 'Enter Manufacturer Name';
 		}
-		
+
 		if (empty($postData["mnfctr_addr"]) || strlen($postData["mnfctr_addr"])>200) {
-			
+
 			$validation_status = 'Enter Manufacturer Address';
 		}
-		
+
 		if (empty($postData["pckr_nm"]) || strlen($postData["pckr_nm"])>100) {
 
 			$validation_status = 'Enter Packer Name';
 		}
-		
+
 		if (empty($postData["pckr_addr"]) || strlen($postData["pckr_addr"])>200) {
 
 			$validation_status = 'Enter Packer Address';
 		}
-		
+
 		if (empty($postData["grade"]) || strlen($postData["grade"])>40) {
 
 			$validation_status = 'Enter Grade';
 		}
-		
+
 		if (empty($postData["tbl"]) || strlen($postData["tbl"])>100) {
 
 			$validation_status = 'Enter TBL';
 		}
-		
+
 		if (empty($postData["pack_size"]) || strlen($postData["pack_size"])>15) {
 
 			$validation_status = 'Enter Pack Size';
 		}
-		
+
 		if (empty($postData["remark"]) || strlen($postData["remark"])>25) {
 
 			$validation_status = 'Enter Remark';
 		}
-		
+
 		if (empty($postData["lot_no"]) || strlen($postData["lot_no"])>30) {
 
 			$validation_status = 'Enter Lot No.';
 		}
-		
+
 		if (!is_numeric($postData["no_of_packets"])) {
 
-			$validation_status = 'Invalid No. of Packets';	
+			$validation_status = 'Invalid No. of Packets';
 		}
-		
+
 		if (!is_numeric($postData["no_of_packets"])) {
 
-			$validation_status = 'Invalid No. of Packets';	
+			$validation_status = 'Invalid No. of Packets';
 		}
-		
+
 		$replica_serial_no=array();
-		 
+
 		 for ($i=1;$i<=$postData['no_of_packets'];$i++) {
-	
+
 			if (empty($postData['replica_serial_no'.$i])) {
-				
+
 				$validation_status = 'Enter Proper Replica No.';
 			}
 
 		 }
-		
+
 		return $validation_status;
-		
+
 	}
+
+
+
+	// Payment
+    // Description : This is for the sample payment details
+    // Date : 03-06-2022
+    // Author : Akash Thakre
+
+    		
+	public function payment(){
+
+
+		$this->loadComponent('Paymentdetails');
+
+		$message_theme = '';
+		$message = '';
+		$redirect_to = '';
+
+		$postData = $this->request->getData();
+
+		$this->Paymentdetails->paymentDetailsFunction($postData);
+
+		//To Show/Hide Confirm BUTTON on Form
+		$confirmBtnStatus = $this->Customfunctions->showHideConfirmBtn();
+		$this->set('confirmBtnStatus',$confirmBtnStatus);
+
+		
+		if ($this->request->is('post')) {
+
+			//HTML Encoding
+			$postData = $this->request->getData();
+		
+			if (null!==($this->request->getData('save'))) {
+
+				$savePaymentDetails = $this->Paymentdetails->saveSamplePaymentDetails($postData);
+
+				if ($savePaymentDetails == true){
+
+					
+						$message_theme = 'success';
+						$message = 'Payment Section Saved Successfully';
+						$redirect_to = 'payment';
+
+				} else {
+
+					$message_theme = 'success';
+					$message = 'Payment Section Saved Successfully';
+					$redirect_to = 'payment';
+				}
+
+			} elseif (null!==($this->request->getData('confirm'))) {
+
+				$this->loadModel('DmiUsers');
+				$this->loadModel('SampleInward');
+				$conn = ConnectionManager::get('default');
+
+				$org_sample_code = $this->Session->read('org_sample_code');
+
+				$user_role = $this->SampleInward->find('all',array('fields'=>array('loc_id','users'),'conditions'=>array('org_sample_code'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
+
+				$usercode = $user_role['users'];
+
+				$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
+
+
+				//update status
+				$this->SampleInward->updateAll(array('status_flag'=>'S'),array('org_sample_code'=>$org_sample_code));
+
+				//get role and office where sample available after confirmed
+				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
+											FROM sample_inward AS si
+											INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
+											INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
+											INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
+											WHERE si.org_sample_code='$org_sample_code'");
+
+				$get_info = $query->fetchAll('assoc');
+
+				//Calling Common SMS/Email Sending Method
+				$this->loadModel('DmiSmsEmailTemplates');
+
+				$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
+				$message_theme = 'success';
+				$redirect_to = '../inward/confirmed_samples';
+
+			}
+
+		}
+
+
+		$this->set('message_theme',$message_theme);
+		$this->set('message',$message);
+		$this->set('redirect_to',$redirect_to);
+
 	
+	
+	}
+
+
+
+
 }
 ?>

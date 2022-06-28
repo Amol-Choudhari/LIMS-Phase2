@@ -39,7 +39,7 @@ class SampleInwardTable extends Table
 		),
 
 		/* 'sample_code'=>array(
-						'onlyLetterSp' => array('rule' => array('custom', '/^[0-9]+$/'),'message' => 'Enter a proper sample code')), 
+						'onlyLetterSp' => array('rule' => array('custom', '/^[0-9]+$/'),'message' => 'Enter a proper sample code')),
 		'inward_id'=>array(
 						'onlyLetterSp' => array('rule' => array('custom', '/^[0-9]+$/'),'message' => 'Enter a proper inward_id')),  */
 
@@ -122,53 +122,15 @@ class SampleInwardTable extends Table
 	);
 
 
-	public function inward_sample($fin_year, $lab_code, $cat_code, $com_code, $status, $sample_code)
-	{
+	
 
-		/***********************************************************************************************************************************************/
-		/*$this->query("INSERT INTO sample_inward(lab_code, fin_year, category_code, commodity_code, 												  //
-		//							sample_code, status_flag, display, user_code, login_timestamp)													 //
-		//							VALUES ($lab_code,'$fin_year', $cat_code ,$com_code ,'$sample_code' ,'$status','Y',4,current_timestamp)");*/	//
-		//																																		   //
-		//****************************************************************************************************************************************//			
-
-		return true;
-	}
-
-	//*********************************************************************************************************************************************************************************************************************************************** */ 
-	/*  public function edit_sample($sample_inward){
-			
-			$abc=$this->query("select m_par_condition.par_condition_desc,m_par_condition.par_condition_code, m_sample_condition.sam_condition_desc,
-						m_sample_condition.sam_condition_code, m_sample_type.sample_type_desc,m_sample_type.sample_type_code,
-						sample_inward.org_sample_code,sample_inward.users,sample_inward.ref_src_code,m_commodity_category.category_name
-						,m_commodity_category.category_code, m_commodity.commodity_name,m_commodity.commodity_code,sample_inward.fin_year,sample_inward.loc_id,
-						sample_inward.inward_id,sample_inward.stage_sample_code,sample_inward.rej_code,sample_inward.rej_reason,
-						sample_inward.letr_ref_no,sample_inward.letr_date,sample_inward.received_date,sample_inward.designation,m_container_type.container_desc,m_container_type.container_code,sample_inward.parcel_size, sample_inward.sample_total_qnt
-						,sample_inward.stage_sample_code, case WHEN sample_inward.expiry_month='1' THEN 'January'  WHEN sample_inward.expiry_month='2' THEN 'February' 
-						WHEN sample_inward.expiry_month='3' THEN 'March' WHEN sample_inward.expiry_month='4' THEN 'April' WHEN sample_inward.expiry_month='5' THEN 'May' 
-						WHEN sample_inward.expiry_month='6' THEN 'June' WHEN sample_inward.expiry_month='7' THEN 'July' WHEN sample_inward.expiry_month='8' THEN 'Augest' WHEN sample_inward.expiry_month='9' 
-						THEN 'September' WHEN sample_inward.expiry_month='10' THEN 'Octomber' 
-						WHEN sample_inward.expiry_month='11' THEN 'November'  WHEN sample_inward.expiry_month='12' THEN 'December' end  expiry_month,sample_inward.expiry_year,sample_inward.acc_rej_flg,
-						sample_inward.entry_flag, sample_inward.dispatch_date,sample_inward.user_code,sample_inward.display,sample_inward.login_timestamp,
-						sample_inward.name,sample_inward.address,dmi_ro_offices.ro_office from sample_inward 
-						INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code) 
-						INNER JOIN m_par_condition On (m_par_condition.par_condition_code=sample_inward.par_condition_code)
-						INNER JOIN m_sample_type On (m_sample_type.sample_type_code=sample_inward.sample_type_code) 
-						INNER JOIN dmi_ro_offices on (sample_inward.loc_id=dmi_ro_offices.id) 
-						INNER JOIN m_container_type on sample_inward.container_code=m_container_type.container_code 
-						INNER JOIN m_commodity_category On (m_commodity_category.category_code=sample_inward.category_code) 
-						INNER JOIN m_commodity On (m_commodity.commodity_code=sample_inward.commodity_code) and sample_inward.inward_id='$sample_inward'");
-
-									return $abc;
-			
-		} */
-
+	
 	/************************************************************************************************************************************************************************************************************************************************************* */
 
 	public function edit_sample($sample_inward)
 	{
 
-		// Updated the select query for getting the propery value of Expiry Month. Done By Pravin Bhakare, on 12-06-2019 
+		// Updated the select query for getting the propery value of Expiry Month. Done By Pravin Bhakare, on 12-06-2019
 
 		$abc = $this->query("SELECT m_par_condition.par_condition_desc, m_par_condition.par_condition_code, m_sample_condition.sam_condition_desc,
 								  m_sample_condition.sam_condition_code, m_sample_type.sample_type_desc, m_sample_type.sample_type_code,
@@ -178,20 +140,20 @@ class SampleInwardTable extends Table
 								  sample_inward.stage_sample_code, sample_inward.rej_code, sample_inward.rej_reason,
 								  sample_inward.letr_ref_no, sample_inward.letr_date, sample_inward.received_date,
 								  sample_inward.designation, m_container_type.container_desc, m_container_type.container_code,
-								  sample_inward.parcel_size, sample_inward.sample_total_qnt, sample_inward.stage_sample_code, 
+								  sample_inward.parcel_size, sample_inward.sample_total_qnt, sample_inward.stage_sample_code,
 								  sample_inward.expiry_month, sample_inward.expiry_year, sample_inward.acc_rej_flg,
 								  sample_inward.entry_flag, sample_inward.dispatch_date, sample_inward.user_code,
 								  sample_inward.display, sample_inward.login_timestamp, sample_inward.name,
-								  sample_inward.address, dmi_ro_offices.ro_office, m_unit_weight.unit_weight 
-							FROM sample_inward 
-							INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code) 
+								  sample_inward.address, dmi_ro_offices.ro_office, m_unit_weight.unit_weight
+							FROM sample_inward
+							INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code)
 							INNER JOIN m_par_condition ON (m_par_condition.par_condition_code=sample_inward.par_condition_code)
-							INNER JOIN m_sample_type ON (m_sample_type.sample_type_code=sample_inward.sample_type_code) 
-							INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id) 
-							INNER JOIN m_unit_weight ON (m_unit_weight.unit_id=sample_inward.parcel_size) 														 
-							INNER JOIN m_container_type ON sample_inward.container_code=m_container_type.container_code 
-							INNER JOIN m_commodity_category ON (m_commodity_category.category_code=sample_inward.category_code) 
-							INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code) 
+							INNER JOIN m_sample_type ON (m_sample_type.sample_type_code=sample_inward.sample_type_code)
+							INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id)
+							INNER JOIN m_unit_weight ON (m_unit_weight.unit_id=sample_inward.parcel_size)
+							INNER JOIN m_container_type ON sample_inward.container_code=m_container_type.container_code
+							INNER JOIN m_commodity_category ON (m_commodity_category.category_code=sample_inward.category_code)
+							INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code)
 							AND sample_inward.inward_id='$sample_inward'");
 
 		return $abc;
@@ -199,23 +161,23 @@ class SampleInwardTable extends Table
 
 	/*************************************************************************************************************************************************************************************************************************************************************
 		/* public function edit_sample_new($stage_sample_code){
-			
+
 					$abc=$this->query("sample_inward.dispatch_date,sample_inward.user_code,sample_inward.display,sample_inward.login_timestamp,
 			sample_inward.name,sample_inward.address,dmi_ro_offices.ro_office,
 			smpl_drwl_dt,drawal_loc,shop_name,shop_address,mnfctr_nm,mnfctr_addr,pckr_nm,pckr_addr,sample_inward_details.remark,replica_serial_no,no_of_packets,pack_size
 			,lot_no,tbl ,sample_inward_details.grade,collected_by
-			from sample_inward 
-			INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code) 
+			from sample_inward
+			INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code)
 			INNER JOIN m_par_condition On (m_par_condition.par_condition_code=sample_inward.par_condition_code)
 			INNER JOIN m_sample_type On (m_sample_type.sample_type_code=sample_inward.sample_type_code)
-			INNER JOIN dmi_ro_offices on (sample_inward.loc_id=dmi_ro_offices.id) 
+			INNER JOIN dmi_ro_offices on (sample_inward.loc_id=dmi_ro_offices.id)
 			INNER JOIN m_container_type on sample_inward.container_code=m_container_type.container_code
 			INNER JOIN m_commodity_category On (m_commodity_category.category_code=sample_inward.category_code)
 
 			INNER JOIN m_commodity On (m_commodity.commodity_code=sample_inward.commodity_code) and sample_inward.stage_sample_code='$stage_sample_code'");
 
 			return $abc;
-			
+
 		} */
 
 
@@ -234,32 +196,32 @@ class SampleInwardTable extends Table
 								  sample_inward.rej_reason, sample_inward.letr_ref_no, sample_inward.letr_date,
 								  sample_inward.received_date, sample_inward.designation, m_container_type.container_desc,
 								  m_container_type.container_code, sample_inward.parcel_size, sample_inward.sample_total_qnt, sample_inward.stage_sample_code,
-								  CASE  WHEN sample_inward.expiry_month='1'  THEN 'January' 
-										WHEN sample_inward.expiry_month='2'  THEN 'February' 
-										WHEN sample_inward.expiry_month='3'  THEN 'March' 
-										WHEN sample_inward.expiry_month='4'  THEN 'April' 
-										WHEN sample_inward.expiry_month='5'  THEN 'May' 
-										WHEN sample_inward.expiry_month='6'  THEN 'June' 
-										WHEN sample_inward.expiry_month='7'  THEN 'July' 
-										WHEN sample_inward.expiry_month='8'  THEN 'Augest' 
-										WHEN sample_inward.expiry_month='9'  THEN 'September' 
-										WHEN sample_inward.expiry_month='10' THEN 'Octomber' 
-										WHEN sample_inward.expiry_month='11' THEN 'November'  
-										WHEN sample_inward.expiry_month='12' THEN 'December' 
+								  CASE  WHEN sample_inward.expiry_month='1'  THEN 'January'
+										WHEN sample_inward.expiry_month='2'  THEN 'February'
+										WHEN sample_inward.expiry_month='3'  THEN 'March'
+										WHEN sample_inward.expiry_month='4'  THEN 'April'
+										WHEN sample_inward.expiry_month='5'  THEN 'May'
+										WHEN sample_inward.expiry_month='6'  THEN 'June'
+										WHEN sample_inward.expiry_month='7'  THEN 'July'
+										WHEN sample_inward.expiry_month='8'  THEN 'Augest'
+										WHEN sample_inward.expiry_month='9'  THEN 'September'
+										WHEN sample_inward.expiry_month='10' THEN 'Octomber'
+										WHEN sample_inward.expiry_month='11' THEN 'November'
+										WHEN sample_inward.expiry_month='12' THEN 'December'
 								  END expiry_month,
 									sample_inward.expiry_year, sample_inward.acc_rej_flg, sample_inward.entry_flag,
 									sample_inward.dispatch_date, sample_inward.user_code, sample_inward.display,
-									sample_inward.login_timestamp, sample_inward.name, sample_inward.address, 
+									sample_inward.login_timestamp, sample_inward.name, sample_inward.address,
 									dmi_ro_offices.ro_office, m_unit_weight.unit_weight
-							FROM sample_inward 
-							INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code) 
+							FROM sample_inward
+							INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code)
 							INNER JOIN m_par_condition ON (m_par_condition.par_condition_code=sample_inward.par_condition_code)
 							INNER JOIN m_sample_type ON (m_sample_type.sample_type_code=sample_inward.sample_type_code)
-							INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id) 
-							INNER JOIN m_unit_weight ON (m_unit_weight.unit_id=sample_inward.parcel_size)																			 
+							INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id)
+							INNER JOIN m_unit_weight ON (m_unit_weight.unit_id=sample_inward.parcel_size)
 							INNER JOIN m_container_type ON sample_inward.container_code=m_container_type.container_code
 							INNER JOIN m_commodity_category ON (m_commodity_category.category_code=sample_inward.category_code)
-							INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code) 
+							INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code)
 							AND sample_inward.org_sample_code='$stage_sample_code'");
 
 		return $abc;
@@ -281,22 +243,22 @@ class SampleInwardTable extends Table
 											   sample_inward.received_date, sample_inward.designation, m_container_type.container_desc,
 											   m_container_type.container_code, sample_inward.parcel_size, sample_inward.sample_total_qnt,
 											   sample_inward.stage_sample_code, sample_inward.expiry_month, sample_inward.expiry_year,
-											   sample_inward.acc_rej_flg, sample_inward.entry_flag, sample_inward.dispatch_date, 
+											   sample_inward.acc_rej_flg, sample_inward.entry_flag, sample_inward.dispatch_date,
 											   sample_inward.user_code, sample_inward.display, sample_inward.login_timestamp,
 											   sample_inward.name, sample_inward.address, dmi_ro_offices.ro_office,
 									           w.stage_smpl_cd, sd.smpl_drwl_dt, sd.drawal_loc, sd.shop_name, sd.shop_address, sd.mnfctr_nm,
-											   sd.mnfctr_addr, sd.pckr_nm, sd.pckr_addr, sd.remark, sd.replica_serial_no, 
+											   sd.mnfctr_addr, sd.pckr_nm, sd.pckr_addr, sd.remark, sd.replica_serial_no,
 											   sd.no_of_packets, sd.pack_size, sd.lot_no, sd.tbl, sd.grade, sd.collected_by
-								FROM sample_inward 
-								INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code) 
+								FROM sample_inward
+								INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code)
 								INNER JOIN m_par_condition ON (m_par_condition.par_condition_code=sample_inward.par_condition_code)
 								INNER JOIN m_sample_type ON (m_sample_type.sample_type_code=sample_inward.sample_type_code)
-								INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id) 
+								INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id)
 								INNER JOIN m_container_type ON sample_inward.container_code=m_container_type.container_code
 								INNER JOIN m_commodity_category ON (m_commodity_category.category_code=sample_inward.category_code)
 								INNER JOIN workflow AS w ON w.org_sample_code=sample_inward.org_sample_code
 								INNER JOIN sample_inward_details AS sd ON sd.org_sample_code=sample_inward.org_sample_code
-								INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code) 
+								INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code)
 								WHERE stage_smpl_cd='$stage_sample_code'");
 
 		return $abc;
@@ -318,23 +280,23 @@ class SampleInwardTable extends Table
 								   sample_inward.received_date, sample_inward.designation, m_container_type.container_desc,
 								   m_container_type.container_code, sample_inward.parcel_size,
 								   sample_inward.sample_total_qnt, sample_inward.stage_sample_code,
-									CASE WHEN sample_inward.expiry_month='1'  THEN 'January'  
-										 WHEN sample_inward.expiry_month='2'  THEN 'February' 
-										 WHEN sample_inward.expiry_month='3'  THEN 'March' 
-										 WHEN sample_inward.expiry_month='4'  THEN 'April' 
-										 WHEN sample_inward.expiry_month='5'  THEN 'May' 
-										 WHEN sample_inward.expiry_month='6'  THEN 'June' 
-										 WHEN sample_inward.expiry_month='7'  THEN 'July' 
-										 WHEN sample_inward.expiry_month='8'  THEN 'Augest' 
-										 WHEN sample_inward.expiry_month='9'  THEN 'September' 
-										 WHEN sample_inward.expiry_month='10' THEN 'Octomber' 
-										 WHEN sample_inward.expiry_month='11' THEN 'November'  
-										 WHEN sample_inward.expiry_month='12' THEN 'December' 
+									CASE WHEN sample_inward.expiry_month='1'  THEN 'January'
+										 WHEN sample_inward.expiry_month='2'  THEN 'February'
+										 WHEN sample_inward.expiry_month='3'  THEN 'March'
+										 WHEN sample_inward.expiry_month='4'  THEN 'April'
+										 WHEN sample_inward.expiry_month='5'  THEN 'May'
+										 WHEN sample_inward.expiry_month='6'  THEN 'June'
+										 WHEN sample_inward.expiry_month='7'  THEN 'July'
+										 WHEN sample_inward.expiry_month='8'  THEN 'Augest'
+										 WHEN sample_inward.expiry_month='9'  THEN 'September'
+										 WHEN sample_inward.expiry_month='10' THEN 'Octomber'
+										 WHEN sample_inward.expiry_month='11' THEN 'November'
+										 WHEN sample_inward.expiry_month='12' THEN 'December'
 									END   expiry_month,
-							      sample_inward.expiry_year, sample_inward.acc_rej_flg, sample_inward.entry_flag, 
-								  sample_inward.dispatch_date, sample_inward.user_code, sample_inward.display, 
-								  sample_inward.login_timestamp, sample_inward.name, sample_inward.address, 
-								  dmi_ro_offices.ro_office, 
+							      sample_inward.expiry_year, sample_inward.acc_rej_flg, sample_inward.entry_flag,
+								  sample_inward.dispatch_date, sample_inward.user_code, sample_inward.display,
+								  sample_inward.login_timestamp, sample_inward.name, sample_inward.address,
+								  dmi_ro_offices.ro_office,
 								  sample_inward_details.smpl_drwl_dt, sample_inward_details.drawal_loc,
 								  sample_inward_details.shop_name, sample_inward_details.shop_address,
 								  sample_inward_details.mnfctr_nm, sample_inward_details.mnfctr_addr,
@@ -344,15 +306,15 @@ class SampleInwardTable extends Table
 								  sample_inward_details.lot_no, sample_inward_details.tbl,
 								  sample_inward_details.grade, m_unit_weight.unit_weight,
 								  sample_inward_details.collected_by
-							FROM sample_inward 
-							INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code) 
+							FROM sample_inward
+							INNER JOIN m_sample_condition ON (m_sample_condition.sam_condition_code=sample_inward.sam_condition_code)
 							INNER JOIN m_par_condition ON (m_par_condition.par_condition_code=sample_inward.par_condition_code)
 							INNER JOIN m_sample_type ON (m_sample_type.sample_type_code=sample_inward.sample_type_code)
-							INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id) 
+							INNER JOIN dmi_ro_offices ON (sample_inward.loc_id=dmi_ro_offices.id)
 							INNER JOIN m_container_type ON sample_inward.container_code=m_container_type.container_code
 							INNER JOIN m_commodity_category ON (m_commodity_category.category_code=sample_inward.category_code)
 							INNER JOIN sample_inward_details ON (sample_inward_details.org_sample_code=sample_inward.org_sample_code)
-							INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code) 
+							INNER JOIN m_commodity ON (m_commodity.commodity_code=sample_inward.commodity_code)
 							AND sample_inward.stage_sample_code='$stage_sample_code'");
 
 		return $abc;
@@ -410,5 +372,21 @@ class SampleInwardTable extends Table
 		}
 		return $data;
 	}
+
+
+	// getSampleDetails
+	// Description : Return the Details of sample in beahlf of org_sample_code form session.
+	// Author : Akash Thakre
+	// Date : 22-06-2022
+
+    public function getSampleDetails(){
+		
+        $SampleInwardDetails = TableRegistry::getTableLocator()->get('SampleInwardDetails');
+
+		$details = $this->find('all')->where(['org_sample_code' => $_SESSION['org_sample_code']])->first();
+		
+		return $details;
+    }
+
 
 }

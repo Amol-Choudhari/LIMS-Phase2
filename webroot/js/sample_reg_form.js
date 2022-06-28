@@ -109,6 +109,17 @@ function fromusers(){
 
 }
 
+
+	// ADDED THIS BELOW CODE TO GRAY OUT THE SAMPLE TYPE SELECTION AFTER SAVE.
+	var sample_type = $("#sample_type").val();
+
+	if(sample_type != ''){
+		$('#sample_type_code').attr("style", "pointer-events: none;").css("background-color", "lightgray");
+   		
+	}
+
+
+
 //to get users list according to designation from designation dropdown
 function get_users_By_Loc_id(){
 
@@ -257,6 +268,7 @@ var datePicker = $('#smpl_drwl_dt').datepicker().on('changeDate', function(ev) {
 function get_serial_no(){
 
 	var no_of_packets	= $("#no_of_packets").val();
+	
 	if(no_of_packets>15)
 	{
 		alert("You can enter maximum 15.");

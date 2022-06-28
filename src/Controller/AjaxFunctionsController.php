@@ -122,19 +122,14 @@ class AjaxFunctionsController extends AppController{
             $org_sample_code = $get_org_sample_code['org_sample_code'];
 
                 if(!empty($get_org_sample_code)){
-                
-                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                /*$sampledetails = $this->SampleInward->find('all',array('joins'=>array(array('table' => 'm_commodity_category','alias' => 'mcc','type' => 'INNER','conditions' => array( 'mcc.category_code = SampleInward.category_code')),array('table' => 'm_commodity','alias' => 'mc','type' => 'INNER','conditions' => array( 'mc.commodity_code = SampleInward.commodity_code')),                                      /// 
-                //    array('table' => 'm_sample_type','alias' => 'mst','type' => 'INNER','conditions' => array( 'mst.sample_type_code = SampleInward.sample_type_code'))),'fields'=>array('mst.sample_type_desc','mc.commodity_name','mcc.category_name','mst.sample_type_code','mc.commodity_code','mcc.category_code'),'conditions'=>array('org_sample_code'=>$get_org_sample_code['org_sample_code'])))->first();*/         //
-                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                
+             
                 $query = $conn->execute("SELECT mst.sample_type_desc,
                                     mc.commodity_name,
                                     mcc.category_name,
                                     mst.sample_type_code,
                                     mc.commodity_code,
-                                    mcc.category_code 
-                            FROM sample_inward AS si 
+                                    mcc.category_code
+                            FROM sample_inward AS si
                             INNER JOIN m_commodity_category AS mcc ON mcc.category_code = si.category_code 
                             INNER JOIN m_commodity AS mc ON mc.commodity_code = si.commodity_code 
                             INNER JOIN m_sample_type AS mst ON mst.sample_type_code = si.sample_type_code 
@@ -150,84 +145,30 @@ class AjaxFunctionsController extends AppController{
 
 /*******************************************************************************************************************************************************************************************************************************/
 
-    public function checkUniqueTransIdForAppl(){
-            
+ public function checkUniqueTransIdForAppl(){
+
         //initialize model in component
         $this->loadModel('DmiGrantCertificatesPdfs');
         $this->loadModel('DmiFlowWiseTablesLists');
         $this->loadModel('DmiFirms');
-        print_r($this->loadModel('LimsSamplePaymentDetails')); exit;
+        $this->loadModel('LimsSamplePaymentDetails');
 
         $trans_id = $_POST['trans_id'];
-        
-        $new_customer_id = $this->Session->read('username');//currently applying applicant				
-        $allow_id = 'yes';
-        
-        //temp static array, will be replaced by query result in phase 2
-        //$payment_tables_array = array('Dmi_applicant_payment_detail','Dmi_renewal_applicant_payment_detail');
-        
-        //get all payment tables flow wise
-        $payment_tables_array = $this->DmiFlowWiseTablesLists->find('all',array('fields'=>'payment','conditions'=>array('payment IS NOT'=>null)))->toArray();
-        
-        foreach($payment_tables_array as $each_table){
-            
-            $each_table = $each_table['payment'];
-            $this->loadModel($each_table);
-            
-            //check new app if trans id already exist
-            $check_trans_id = $this->$each_table->find('all',array('conditions'=>array('transaction_id IS'=>$trans_id),'order'=>'id desc'))->first();
-            
-            
-            //for new 
-            if(!empty($check_trans_id)){
-                
-                $old_customer_id = $check_trans_id['customer_id'];//applicant which already used this trans id.
-                
-                //check if appl with that trans id is granted already
-                $check_grant = $this->DmiGrantCertificatesPdfs->find('all',
-                    array('conditions'=>
-                        array('OR'=>
-                            array('customer_id IS'=>$old_customer_id)
-                            ),'order'=>'id desc'))->first();
-                            
-                if(!empty($check_grant)){
-                    
-                    $allow_id = 'no';
-                    break;
-                
-                }else{
-                    
-                    //if not grant then check primary id, district and firm type of the applicant
-                    // The old applicant and current applicant should match the above 3 details.
-                    //old details
-                    $get_old_details = $this->DmiFirms->find('all',array('conditions'=>array('customer_id IS'=>$old_customer_id)))->first();
-                    $old_primary_id = $get_old_details['customer_primary_id'];
-                    $old_firm_type = $get_old_details['certification_type'];
-                    $old_district_id = $get_old_details['district'];
-                    
-                    //new details
-                    $get_new_details = $this->DmiFirms->find('all',array('conditions'=>array('customer_id IS'=>$new_customer_id)))->first();
-                    $new_primary_id = $get_new_details['customer_primary_id'];
-                    $new_firm_type = $get_new_details['certification_type'];
-                    $new_district_id = $get_new_details['district'];
-                    
-                    if(($old_primary_id==$new_primary_id) && ($old_firm_type==$new_firm_type) && ($old_district_id==$new_district_id)){
-                        
-                        $allow_id = 'yes';
-                    
-                    }else{
-                        $allow_id = 'no';
-                        break;
-                    }
-                    
-                }
-                
-            }
-        }
+      
+        //check new app if trans id already exist
+        $check_trans_id = $this->LimsSamplePaymentDetails->find('all',array('conditions'=>array('transaction_id IS'=>$trans_id),'order'=>'id desc'))->first();
 
-        echo '~'.$allow_id.'~';
+        //for new
+        if(!empty($check_trans_id)){
+			$allow_id = 'no';
+		} else {
+			$allow_id = 'yes';
+		}
+		
+		echo '~'.$allow_id.'~';
         exit;
     }
+
 
     /*******************************************************************************************************************************************************************************************************************************/
     /***
@@ -572,7 +513,29 @@ class AjaxFunctionsController extends AppController{
 		exit;
 
     }
+	
+	
+	
+	
+	
+/*******************************************************************************************************************************************************************************************************************************/
 
+    public function getUserOfficeById()
+    {
+        $this->autoRender = false;
+        $this->loadModel('DmiUsers');
+        $this->loadModel('DmiRoOffices');
 
+        $user_code = $_POST['user_code'];
+
+        $get_posted_office_id = $this->DmiUsers->getUserDetailsById($user_code);
+        $posted_office_details = $this->DmiRoOffices->getOfficeDetailsById($get_posted_office_id['posted_ro_office']);
+        $posted_office = $posted_office_details[0];
+
+        ?><input type="text" class="form-control" id="posted_office" name="posted_office" value="<?php echo $posted_office; ?>" readonly /><?php
+
+        exit;
+
+    }
 }
 ?>

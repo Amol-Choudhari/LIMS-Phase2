@@ -10,8 +10,8 @@ use Cake\ORM\TableRegistry;
 class MCommodityCategoryTable extends Table
 {
 
-	var $name = "MCommodityCategory";
-	public $useTable = 'm_commodity_category';
+	var string $name = "MCommodityCategory";
+	public string $useTable = 'm_commodity_category';
 
 	/*******************************************************************************************************************************************************************************************************************************/
 	/***
@@ -63,4 +63,23 @@ class MCommodityCategoryTable extends Table
 		}
 		return $data;
 	}
+
+
+    // getCategory
+    // Description : This function will return the category name by id.
+    // Author : Akash Thakre
+    // Date : 03-06-2022
+
+    public function getCategory($id) {
+		
+		if (!empty($id)) {
+			$getCategory = $this->find('all')->select(['category_name'])->where(['category_code' => $id])->first();
+			$detail = $getCategory['category_name'];
+		} else {
+			$detail = '';
+		}
+
+        return $detail;
+    }
+
 }

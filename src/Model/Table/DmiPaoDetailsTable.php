@@ -38,15 +38,7 @@ class DmiPaoDetailsTable extends Table{
 		$DmiPaoDetails = TableRegistry::getTableLocator()->get('DmiPaoDetails');
 		$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
 		$DmiUserRoles = TableRegistry::getTableLocator()->get('DmiUserRoles');
-
-		// check activated user condition to make pao user list
-	   /* $pao_user_id_list = $this->find('all',array('joins'=>array(
-			array('table' => 'dmi_users','alias' => 'users','type' => 'INNER','conditions' => array( 'Dmi_pao_detail.pao_user_id::integer = users.id','users.status !='=>'disactive')),
-			array('table' => 'dmi_user_roles','alias' => 'u_roles','type' => 'INNER','conditions' => array( 'users.email = u_roles.user_email_id', 'u_roles.pao'=>'yes'))),
-			'fields'=>array('id','pao_user_id'),'order'=>'id asc','conditions'=>array()))->toArray();
-		*/
 		$pao_user_id_list = $DmiUserRoles->getPaoUserList();
-
 
 		if (!empty($pao_user_id_list)) {
 

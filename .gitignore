@@ -56,3 +56,4 @@ nbproject/*
 .vscode
 # Sass preprocessor
 .sass-cache/
+logs/error.log

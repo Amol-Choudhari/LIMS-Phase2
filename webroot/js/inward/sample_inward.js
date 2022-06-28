@@ -17,15 +17,12 @@
 	}
 
 
-  /*$('#sample_type_code').change(function (e) {
-		e.preventDefault();
-		var selectedText = $(this).find("option:selected").text().trim();
-		if(selectedText == 'Commercial'){
-			$("#paymentmodal").modal()
-
-		}
-	});*/
-
+	// ADDED THIS BELOW CODE TO GRAY OUT THE SAMPLE TYPE SELECTION AFTER SAVE.
+	var sample_type = $("#sample_type").val();
+	if(sample_type != ''){
+		$('#sample_type_code').attr("style", "pointer-events: none;").css("background-color", "lightgray");
+   		
+	}
 
 
   	$(document).ready(function () {
@@ -99,7 +96,7 @@
 							var month = date.getMonth()+1;
 							var year = date.getFullYear();
 							raj_date=year + '-' + month + '-' + day;
-			
+
 							$("#abc").prop("disabled", false);
 							$("#reject_date").val(raj_date);
 							$("#abc").show();
@@ -186,12 +183,12 @@
 
 	//call to login validations
 	$('#save').click(function (e) {
-		
+
 		if (sample_inward_form_validations() == false) {
 			e.preventDefault();
 		} else {
-		$('#frm_sample_inward').submit();  
-		}     
+		$('#frm_sample_inward').submit();
+		}
 	});
 
 
@@ -327,9 +324,21 @@
 			var msg = "Please check some fields are missing or not proper.";
 			renderToast('error', msg);
 			return false;
-		
+
 		}else{
 			exit();
 		}
 
+
+
 	}
+
+
+        /// For Comercial Type Sample ///
+
+        $('#sample_type_code').change(function (e) {    e.preventDefault();
+            let selectedText = $(this).find("option:selected").text().trim();
+            if(selectedText == 'Commercial'){
+                $("#paymentmodal").modal()
+            }
+        });
