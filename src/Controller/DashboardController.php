@@ -239,19 +239,19 @@ class DashboardController extends AppController{
 			foreach ($get_total_registered as $eachSample) {
 				
 				//get total samples allocated for test in the lab
-				$get_total_allocated = $this->Workflow->find('all',array('fields'=>'org_sample_code','conditions'=>array('org_sample_code'=>$eachSample['org_sample_code'],'stage_smpl_flag'=>'TA'),'group'=>'org_sample_code'))->first();
+				$get_total_allocated = $this->Workflow->find('all',array('fields'=>'org_sample_code','conditions'=>array('org_sample_code IS'=>$eachSample['org_sample_code'],'stage_smpl_flag'=>'TA'),'group'=>'org_sample_code'))->first();
 				if( !empty($get_total_allocated)) {
 					$lab_status_count['total_allocated'] = $lab_status_count['total_allocated']+1;
 				}
 				
 				//get total samples with approved results in the lab
-				$get_approved_results = $this->Workflow->find('all',array('fields'=>'org_sample_code','conditions'=>array('org_sample_code'=>$eachSample['org_sample_code'],'stage_smpl_flag'=>'AR'),'group'=>'org_sample_code'))->first();
+				$get_approved_results = $this->Workflow->find('all',array('fields'=>'org_sample_code','conditions'=>array('org_sample_code IS'=>$eachSample['org_sample_code'],'stage_smpl_flag'=>'AR'),'group'=>'org_sample_code'))->first();
 				if (!empty($get_approved_results)) {
 					$lab_status_count['results_approved'] = $lab_status_count['results_approved']+1;
 				}
 				
 				//get total samples with approved results in the lab
-				$get_finalized_reports = $this->Workflow->find('all',array('fields'=>'org_sample_code','conditions'=>array('org_sample_code'=>$eachSample['org_sample_code'],'stage_smpl_flag'=>'FG'),'group'=>'org_sample_code'))->first();
+				$get_finalized_reports = $this->Workflow->find('all',array('fields'=>'org_sample_code','conditions'=>array('org_sample_code IS'=>$eachSample['org_sample_code'],'stage_smpl_flag'=>'FG'),'group'=>'org_sample_code'))->first();
 				if (!empty($get_finalized_reports)) {
 					$lab_status_count['report_finalized'] = $lab_status_count['report_finalized']+1;
 				}
