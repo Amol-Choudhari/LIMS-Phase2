@@ -277,15 +277,20 @@ class InwardController extends AppController{
 
 		//for sample details progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
-
 			$sample_details_form_status = 'saved';
-
 		} else {
-
 			$sample_details_form_status = '';
 		}
 
+		//for paymnet progress bar
+		if (!empty($this->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
+			$payment_details_form_status = 'saved';
+		} else {
+			$payment_details_form_status = '';
+		}
+		
 		$this->set('sample_details_form_status',$sample_details_form_status);
+		$this->set('payment_details_form_status',$payment_details_form_status);
 
 		//to show/hide Confirm btn on form
 		$confirmBtnStatus = $this->Customfunctions->showHideConfirmBtn();
@@ -1221,20 +1226,8 @@ class InwardController extends AppController{
 
 	}
 
+
 	
-
-	// Payment
-    // Description : This is for the sample payment details
-    // Date : 03-06-2022
-    // Author : Akash Thakre	 
-
-    public function payment(){
-		
-        //Load Models
-		$this->loadComponent('Paymentdetails');
-		$this->Paymentdetails->payment($this->request->getData());
-	}
-
 
 }
 ?>

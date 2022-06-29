@@ -167,15 +167,19 @@ class InwardDetailsController extends AppController {
 
 			//For Sample Details Progress-Bar
 			if (!empty($this->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))) {
-	
 				$sample_inward_form_status = 'saved';
-   
 			} else {
-	
 				$sample_inward_form_status = '';
 			}
-
+		
+			if (!empty($this->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
+				$payment_details_form_status = 'saved';
+			} else {
+				$payment_details_form_status = '';
+			}
+		
 			$this->set('sample_inward_form_status',$sample_inward_form_status);
+			$this->set('payment_details_form_status',$payment_details_form_status);
 
 			//To Show/Hide Confirm BUTTON on Form
 			$confirmBtnStatus = $this->Customfunctions->showHideConfirmBtn();
@@ -740,104 +744,6 @@ class InwardDetailsController extends AppController {
 		return $validation_status;
 
 	}
-
-
-
-	// Payment
-    // Description : This is for the sample payment details
-    // Date : 03-06-2022
-    // Author : Akash Thakre
-
-    		
-	public function payment(){
-
-
-		$this->loadComponent('Paymentdetails');
-
-		$message_theme = '';
-		$message = '';
-		$redirect_to = '';
-
-		$postData = $this->request->getData();
-
-		$this->Paymentdetails->paymentDetailsFunction($postData);
-
-		//To Show/Hide Confirm BUTTON on Form
-		$confirmBtnStatus = $this->Customfunctions->showHideConfirmBtn();
-		$this->set('confirmBtnStatus',$confirmBtnStatus);
-
-		
-		if ($this->request->is('post')) {
-
-			//HTML Encoding
-			$postData = $this->request->getData();
-		
-			if (null!==($this->request->getData('save'))) {
-
-				$savePaymentDetails = $this->Paymentdetails->saveSamplePaymentDetails($postData);
-
-				if ($savePaymentDetails == true){
-
-					
-						$message_theme = 'success';
-						$message = 'Payment Section Saved Successfully';
-						$redirect_to = 'payment';
-
-				} else {
-
-					$message_theme = 'success';
-					$message = 'Payment Section Saved Successfully';
-					$redirect_to = 'payment';
-				}
-
-			} elseif (null!==($this->request->getData('confirm'))) {
-
-				$this->loadModel('DmiUsers');
-				$this->loadModel('SampleInward');
-				$conn = ConnectionManager::get('default');
-
-				$org_sample_code = $this->Session->read('org_sample_code');
-
-				$user_role = $this->SampleInward->find('all',array('fields'=>array('loc_id','users'),'conditions'=>array('org_sample_code'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
-
-				$usercode = $user_role['users'];
-
-				$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
-
-
-				//update status
-				$this->SampleInward->updateAll(array('status_flag'=>'S'),array('org_sample_code'=>$org_sample_code));
-
-				//get role and office where sample available after confirmed
-				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
-											FROM sample_inward AS si
-											INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
-											INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
-											INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
-											WHERE si.org_sample_code='$org_sample_code'");
-
-				$get_info = $query->fetchAll('assoc');
-
-				//Calling Common SMS/Email Sending Method
-				$this->loadModel('DmiSmsEmailTemplates');
-
-				$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
-				$message_theme = 'success';
-				$redirect_to = '../inward/confirmed_samples';
-
-			}
-
-		}
-
-
-		$this->set('message_theme',$message_theme);
-		$this->set('message',$message);
-		$this->set('redirect_to',$redirect_to);
-
-	
-	
-	}
-
 
 
 

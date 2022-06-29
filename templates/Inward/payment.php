@@ -1,1 +1,0 @@
-<?php echo $this->element('payment_elements/payment_template'); ?>

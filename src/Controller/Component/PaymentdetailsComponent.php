@@ -38,30 +38,31 @@
 			}
 	
 			//For Sample Details Progress-Bar
-			if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))) {
+			if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code'))) 
+				&& !empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
 				$sample_inward_form_status = 'saved';
 				$sample_details_form_status='saved';
-				$SaveUpdatebtn = 'update';
+				
 			} else {
 				$sample_details_form_status='';
-				$SaveUpdatebtn = '';
 				$sample_inward_form_status = '';
+			}
+			
+			// For Payment Progress
+			if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
+				$payment_details_form_status = 'saved';
+				$SaveUpdatebtn = 'update';
+			} else {
+				$payment_details_form_status = '';
+				$SaveUpdatebtn = '';
 			}
 	
 		
-	
 			$this->Controller->set('sample_inward_form_status',$sample_inward_form_status);
 			$this->Controller->set('sample_details_form_status',$sample_details_form_status);
+			$this->Controller->set('payment_details_form_status',$payment_details_form_status);
+			$this->Controller->set('SaveUpdatebtn',$SaveUpdatebtn);
 	
-			$sample_Details_data = $SampleInwardDetails->find('all',array('conditions'=>array('org_sample_code IS'=>$this->Session->read('org_sample_code')),'order'=>'id desc'))->first();
-			
-			if (!empty($sample_Details_data)) {
-				//For Progress-Bar
-				$sample_details_form_status='saved';
-			}else{
-				$sample_details_form_status='';
-			}
-			
 			
 			$sample_details = $SampleInward->getSampleDetails();
 			
@@ -236,7 +237,45 @@
 		
 		
 		}
+		
+
+		public function confirmSampleDetails(){
 			
+			//Load Session Values
+			$username = $this->Session->read('username');
+			$sample_code = $this->Session->read('org_sample_code');	
+			$LimsSamplePaymentDetails = TableRegistry::getTableLocator()->get('LimsSamplePaymentDetails');
+
+			$recordId =	$LimsSamplePaymentDetails->find('all', array('fields'=>array('id','payment_confirmation'),'conditions'=>array('sample_code IS'=>$sample_code),'order'=>'id desc'))->first();
+
+			$payID = $recordId['id'];
+
+				//Create the data entity for "DmiAdvPaymentDetails" top save the data
+				$LimsSamplePaymentDetailsEntity = $LimsSamplePaymentDetails->newEntity(array(
+
+					'id'=>$payID,
+					'payment_confirmation'=>'pending',
+					'modified'=>date('Y-m-d H:i:s')
+				));
+
+				if ($LimsSamplePaymentDetails->save($LimsSamplePaymentDetailsEntity)) {
+
+					//SMS For PACKER When Advance Payment is Final Submitted
+					//$this->DmiSmsEmailTemplates->sendMessage(108,$customer_id,'DmiChemistFinalSubmits');
+
+					//SMS For DDO/PAO When Advance Payment is Final Submitted
+					//$this->DmiSmsEmailTemplates->sendMessage(109,$customer_id,'DmiChemistFinalSubmits');
+					
+					///Added this call to save the user action log on 04-03-2022 by Akash
+					//$this->Authentication->userActionPerformLog('Advance Payment(Save)', 'Success');
+
+					return true;
+				}
+		
+		}
+
+
+
 			
 		public function fetchSamplePaymentDetails($sample_code) {
 			
@@ -320,6 +359,8 @@
 			}
 			
 			$fetch_pao_referred_back = array();
+			$fetch_pao_referred_back = $LimsSamplePaymentDetails->find('all', array('conditions'=>array('sample_code IS'=>$sample_code,'payment_confirmation'=>'not_confirmed')))->toArray();
+			$this->Controller->set('fetch_pao_referred_back',$fetch_pao_referred_back);	
 			$this->Controller->set('pao_to_whom_payment',$pao_to_whom_payment);
 			
 		}

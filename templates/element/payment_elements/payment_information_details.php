@@ -105,15 +105,15 @@
 							<!-- change variable fetch_comment_reply to fetch_applicant_communication(by pravin 03/05/2017)-->
 							<?php $options = array('0'=>'Payment amount does not match','1'=>'Transaction ID Invalid','2'=>'PAO/DDO Name Invalid', '3'=>'Transaction Date Invalid', '4'=>'Payment Receipt Invalid');
 
-							foreach($fetch_pao_referred_back as $comment_reply){ ?>
+								foreach($fetch_pao_referred_back as $comment_reply){ ?>
 
 								<tr>
-								<td><?php echo $comment_reply['modified']; ?></td>
-								<td><?php echo $options[$comment_reply['reason_option_comment']]; ?></td>
-								<td><?php echo $comment_reply['reason_comment']; ?></td>
+									<td><?php echo $comment_reply['modified']; ?></td>
+									<td><?php echo $options[$comment_reply['reason_option_comment']]; ?></td>
+									<td><?php echo $comment_reply['reason_comment']; ?></td>
 								</tr>
 
-							<?php }?>
+							<?php } ?>
 						</table>
 					</div>
 				</div>
@@ -126,11 +126,18 @@
 				</div>
 			<?php } ?>
 
-			<?php echo $this->Form->submit('Save', array('name'=>'save', 'id'=>'submit_payment_detail', 'label'=>false,'class'=>'btn btn-success float-right')); ?>
 			
-			<div class="col-md-2 float-left"><a href="../InwardDetails/sample_inward_details" class="btn btn-primary">Back Section</a></div>
+			<?php //if record exist
+				if ($SaveUpdatebtn=='update') {
+					echo $this->Form->submit('Update', array('name'=>'save', 'id'=>'submit_payment_detail', 'label'=>false,'class'=>'btn btn-success float-left'));
+				} else {
+					echo $this->Form->submit('Save', array('name'=>'save', 'id'=>'submit_payment_detail', 'label'=>false,'class'=>'btn btn-success float-left'));
+				}
+			?>
+			
+			<div class="col-md-2 float-right"><a href="../InwardDetails/sample_inward_details" class="btn btn-primary">Back Section</a></div>
 		</div>
 
 		<input type="hidden" id="payment_confirmation_status" value="<?php echo $payment_confirmation_status; ?>" >
 
-		<?php echo $this->Html->script('element/payment_information_details'); ?>
+		<?php echo $this->Html->script('payment/payment_information_details'); ?>

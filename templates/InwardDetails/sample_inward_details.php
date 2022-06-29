@@ -178,7 +178,7 @@
 
 										<?php // for payment  
 											if ($_SESSION['is_payment_applicable']=='yes') { ?>
-											<div class="col-md-1 float-left"><a href="../InwardDetails/payment" class="btn btn-primary">Next Section</a></div>
+											<div class="col-md-1 float-left"><a href="../payment/payment_details" class="btn btn-primary">Next Section</a></div>
 										<?php } ?>
 
 										<div class="col-md-1 float-right"><a href="../Dashboard/home" class="btn btn-danger">Cancel</a></div>

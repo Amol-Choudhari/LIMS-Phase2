@@ -108,7 +108,7 @@
 	if($('#bharatkosh_payment_done-yes').is(":checked")){
 		$("#submit_payment_detail").show();
 	}
-
+	
 	if(payment_confirmation_status == 'replied'){
 		$("#not_confirmed_reason").show();
 		$("#submit_payment_detail").hide();

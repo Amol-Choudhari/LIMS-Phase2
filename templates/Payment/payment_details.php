@@ -52,7 +52,6 @@
 		</section>
 	</div>
 
-	<input type="hidden" id="all_section_status_id" value="<?php //echo $all_section_status; ?>">
-	<input type="hidden" id="final_submit_status_id" value="<?php //echo $final_submit_status; ?>">
 	<input type="hidden" id="payment_confirmation_status_id" value="<?php echo $payment_confirmation_status; ?>">
 
+	<?php echo $this->Html->script('payment/payment_details'); ?>

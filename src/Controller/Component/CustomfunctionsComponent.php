@@ -695,6 +695,7 @@
 
 	//CHECK SAMPLE STATSUS FROM PROGRESS-BAR
 	public function checkSampleIsSaved($check_for,$org_sample_code) {
+		
 
 		if ($check_for=='sample_inward') {
 
@@ -703,17 +704,23 @@
 		} elseif ($check_for=='sample_details') {
 
 			$checkModel = TableRegistry::getTableLocator()->get('SampleInwardDetails');
+
+		} elseif ($check_for=='payment_details') {
+			$checkModel = TableRegistry::getTableLocator()->get('LimsSamplePaymentDetails');
 		}
 
 		//get sample code by inward id
 		$check_sample_code=array();
-		
+	
 		if ($org_sample_code != null) {
 
-			//check sample code
-			$check_sample_code = $checkModel->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('org_sample_code IS'=>$org_sample_code)))->first();
+			if ($check_for == 'payment_details') {
+				$check_sample_code = $checkModel->find('all',array('fields'=>'sample_code', 'conditions'=>array('sample_code IS'=>$org_sample_code)))->first();
+			} else {
+				$check_sample_code = $checkModel->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('org_sample_code IS'=>$org_sample_code)))->first();
+			}
 		}
-
+		
 		return $check_sample_code;
 	}
 
