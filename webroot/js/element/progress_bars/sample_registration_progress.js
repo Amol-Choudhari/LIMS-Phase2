@@ -29,6 +29,7 @@ $(document).ready(function(){
     $('#sample_details_prog_span').removeClass('glyphicon-ok-sign').addClass('glyphicon-remove-sign');
   }
 
+
   //for payment
   if(payment_details_form_status=="saved"){
 

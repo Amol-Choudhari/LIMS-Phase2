@@ -119,25 +119,27 @@
 				</div>
 			</div>
 
+		<!--if confirm then hide btns-->
+		<?php if (!trim($status_flag =='PV')) { ?>
 		<div class="form-buttons">
 			<?php if ($confirmBtnStatus =='show') { ?>
 				<div class="col-md-1 float-left">
 					<?php echo $this->Form->submit('Confirm', array('name'=>'confirm', 'id'=>'confirm', 'label'=>false,'class'=>'btn btn-success')); ?>
 				</div>
 			<?php } ?>
-
+		<?php } ?>
 			
+		<?php if (!trim($status_flag =='PV') || (trim($status_flag =='PV') && ($payment_confirmation_status == 'not_confirmed'))) { ?>			
 			<?php //if record exist
-				if ($SaveUpdatebtn=='update') {
-					echo $this->Form->submit('Update', array('name'=>'save', 'id'=>'submit_payment_detail', 'label'=>false,'class'=>'btn btn-success float-left'));
-				} else {
+				
 					echo $this->Form->submit('Save', array('name'=>'save', 'id'=>'submit_payment_detail', 'label'=>false,'class'=>'btn btn-success float-left'));
-				}
 			?>
-			
-			<div class="col-md-2 float-right"><a href="../InwardDetails/sample_inward_details" class="btn btn-primary">Back Section</a></div>
+		<?php } ?>	
+		
 		</div>
-
+		
+		
+		<div class="col-md-2 float-right"><a href="../InwardDetails/sample_inward_details" class="btn btn-primary">Back Section</a></div>
 		<input type="hidden" id="payment_confirmation_status" value="<?php echo $payment_confirmation_status; ?>" >
 
 		<?php echo $this->Html->script('payment/payment_information_details'); ?>

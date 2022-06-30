@@ -43,7 +43,7 @@ class PaymentController extends AppController{
     // Date : 03-06-2022
     // Author : Akash Thakre
 
-    		
+
 	public function paymentDetails(){
 
         $conn = ConnectionManager::get('default');
@@ -61,18 +61,18 @@ class PaymentController extends AppController{
 		$confirmBtnStatus = $this->Customfunctions->showHideConfirmBtn();
 		$this->set('confirmBtnStatus',$confirmBtnStatus);
 
-		
+
 		if ($this->request->is('post')) {
 
 			//HTML Encoding
 			$postData = $this->request->getData();
-		
+
 			if (null!==($this->request->getData('save'))) {
 
 				$savePaymentDetails = $this->Paymentdetails->saveSamplePaymentDetails($postData);
 
 				if ($savePaymentDetails == true){
-					
+
                     $message_theme = 'success';
                     $message = 'Payment Section Saved Successfully';
                     $redirect_to = 'payment_details';
@@ -87,42 +87,34 @@ class PaymentController extends AppController{
 			} elseif (null!==($this->request->getData('confirm'))) {
 
 				$confirm = $this->Paymentdetails->confirmSampleDetails();
-                $org_sample_code = $_SESSION['org_sample_code'];
+           		$org_sample_code = $_SESSION['org_sample_code'];
 
-                if ($confirm == true){
+				if ($confirm == true){
 
-                    //get role and office where sample available after confirmed
+					//get role and office where sample available after confirmed
 					$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
-                                            FROM sample_inward AS si
-                                            INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
-                                            INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
-                                            INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
-                                            WHERE si.org_sample_code='$org_sample_code'");
-                    $get_info = $query->fetchAll('assoc');
-            
-                    $message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
-                    $message_theme = 'success';
-                    $redirect_to = '../inward/confirmed_samples';
-                } else {
-                    $message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
-                    $message_theme = 'success';
-                    $redirect_to = '../inward/confirmed_samples';
-                }
-				
+							FROM sample_inward AS si
+							INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
+							INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
+							INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
+							WHERE si.org_sample_code='$org_sample_code'");
 
+					$get_info = $query->fetchAll('assoc');
+
+					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
+					$message_theme = 'success';
+					$redirect_to = '../inward/confirmed_samples';
+		
+				}
 			}
 
+
+			$this->set('message_theme',$message_theme);
+			$this->set('message',$message);
+			$this->set('redirect_to',$redirect_to);
+
 		}
-
-
-		$this->set('message_theme',$message_theme);
-		$this->set('message',$message);
-		$this->set('redirect_to',$redirect_to);
-
-	
-	
 	}
-
 
 }
 ?>

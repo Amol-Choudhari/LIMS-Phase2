@@ -16,6 +16,7 @@ class InwardDetailsController extends AppController {
 			$this->viewBuilder()->setLayout('admin_dashboard');
 			$this->viewBuilder()->setHelpers(['Form','Html']);
 			$this->loadComponent('Customfunctions');
+			$this->loadModel('LimsUserActionLogs');
 		}
 
 /****************************************************************************************************************************************************************************************************************************************************************/
@@ -476,9 +477,13 @@ class InwardDetailsController extends AppController {
 
 					$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
 
+					//update status for payment sample
+					if ($_SESSION['sample'] == 3) {
+						$this->SampleInward->updateAll(array('status_flag'=>'PV'),array('org_sample_code'=>$org_sample_code));
+					} else {
+						$this->SampleInward->updateAll(array('status_flag'=>'S'),array('org_sample_code'=>$org_sample_code));
+					}
 
-					//update status
-					$this->SampleInward->updateAll(array('status_flag'=>'S'),array('org_sample_code'=>$org_sample_code));
 
 					//get role and office where sample available after confirmed
 					$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
@@ -509,11 +514,24 @@ class InwardDetailsController extends AppController {
 							}
 
 	  
+					// For Maintaining Action Log by Akash (26-04-2022)
+					
+					$this->LimsUserActionLogs->saveActionLog('New Sample Confirmed','Success');
 
+					// for commercial sample
+					if ($_SESSION['sample'] == 3) {
 
+						$get_info = $this->LimsSamplePaymentDetails->getPaymentDetails();
+						$userID = 	$this->DmiPaoDetails->getPaoDetails($get_info['pao_id']);
+						$userDetails = $this->DmiUsers->getUserDetailsById($userID['pao_user_id']);
+						$ro_office = $this->DmiRoOffices->getOfficeDetailsById($userDetails['posted_ro_office']);
+						
+						$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available for Payment Confirmation to PAO/DDO  '.$ro_office[0].'';
 
-
-					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
+					} else {
+						$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
+					}
+					
 					$message_theme = 'success';
 					$redirect_to = '../inward/confirmed_samples';
 

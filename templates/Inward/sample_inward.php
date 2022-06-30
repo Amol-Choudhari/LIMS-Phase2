@@ -265,8 +265,10 @@
 
 							<div class="card-footer">
 								<div class="col-md-12">
-									<!--if confirm then hide btns-->
-									<?php if (!(trim($sample_inward_data['status_flag'])=='S')) { ?>
+									<!--if confirm then hide btns
+									Added the PV flag condtion if sample is commercial - 30-06-2022  						
+								    -->
+									<?php if (!(trim($sample_inward_data['status_flag'])=='S' || trim($sample_inward_data['status_flag'])=='PV')) { ?>
 
 										<div class="col-md-1 float-left">
 											<?php if (!(trim($sample_inward_data['status_flag'])=='')){

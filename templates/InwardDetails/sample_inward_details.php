@@ -159,21 +159,23 @@
 								</div>
 								<div class="card-footer">
 									<div class="col-md-12">
-										<?php //if confirm then hide btns
-											if (!(trim($sample_Details_data['status_flag'])=='S')) { ?>
-												<div class="col-md-1 float-left">
-													<?php //if record exist
-														if ($SaveUpdatebtn=='update') {
-															echo $this->Form->submit('Update', array('name'=>'update', 'id'=>'update', 'label'=>false,'class'=>'btn btn-success'));
-														} else {
-															echo $this->Form->submit('Save', array('name'=>'save', 'id'=>'save', 'label'=>false,'class'=>'btn btn-success'));
-														}
-													?>
-												</div>
-												<?php if ($confirmBtnStatus=='show') { ?>
-												<div class="col-md-1 float-left">
-													<?php echo $this->Form->submit('Confirm', array('name'=>'confirm', 'id'=>'confirm', 'label'=>false,'class'=>'btn btn-success')); ?>
-												</div>
+										<!--if confirm then hide btns
+										Added the PV flag condtion if sample is commercial - 30-06-2022  						
+										-->
+										<?php if (!(trim($sample_Details_data['status_flag'])=='S' || trim($sample_Details_data['status_flag'])=='PV')) { ?>
+											<div class="col-md-1 float-left">
+												<?php //if record exist
+													if ($SaveUpdatebtn=='update') {
+														echo $this->Form->submit('Update', array('name'=>'update', 'id'=>'update', 'label'=>false,'class'=>'btn btn-success'));
+													} else {
+														echo $this->Form->submit('Save', array('name'=>'save', 'id'=>'save', 'label'=>false,'class'=>'btn btn-success'));
+													}
+												?>
+											</div>
+											<?php if ($confirmBtnStatus=='show') { ?>
+											<div class="col-md-1 float-left">
+												<?php echo $this->Form->submit('Confirm', array('name'=>'confirm', 'id'=>'confirm', 'label'=>false,'class'=>'btn btn-success')); ?>
+											</div>
 										<?php } } ?>
 
 										<?php // for payment  

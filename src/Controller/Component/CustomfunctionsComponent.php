@@ -749,17 +749,7 @@
 			$check_details = array();
 
 			//RO SO Officer & Commercial
-			if (($user_flag=='RO' || $user_flag=='SO') && $sampleType=='3') {
-			
-				$check_details =  $LimsSamplePaymentDetails->find()->select(['sample_code'])->where(['sample_code' => $org_sample_code])->first();
-				if (!empty($check_inward) && !empty($check_details && $check_details)) {
-
-					$action = 'show';
-				}
-				
-
-			//RO/SO 
-			} elseif (($user_flag=='RO' || $user_flag=='SO') ) {
+			if ($user_flag=='RO' || $user_flag=='SO') {
  
 				$check_details = $SampleInwardDetails->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('org_sample_code IS'=>$org_sample_code),'order'=>'id desc'))->first();
 						
@@ -767,24 +757,22 @@
 
 					$action = 'show';
 				}
-				//For Commercial
-			} elseif($sampleType=='3'){
 				
-				$check_details_commercial = $sampleInward->find()->select(['sample_type_code'])->where(['stage_sample_code IS' => $org_sample_code])->first();
-				
-				if (!empty($check_inward) && !empty($check_details_commercial)) {
-				
-					$action='hide';
-
-				}
-
-			//RAL/CAL	
 			} else {
 					
 				if (!empty($check_inward)) {
 		
 					$action = 'show';
 				}
+			}
+
+			//For Commercial show hide button - 30-06-2022
+			if ($sampleType == 3) {
+				$check_details = $LimsSamplePaymentDetails->getPaymentDetails($org_sample_code);
+				if (empty($check_details)) {
+
+					$action = 'hide';
+				} 
 			}
 		
 		} else {

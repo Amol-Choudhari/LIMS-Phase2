@@ -53,5 +53,5 @@
 	</div>
 
 	<input type="hidden" id="payment_confirmation_status_id" value="<?php echo $payment_confirmation_status; ?>">
-
+	
 	<?php echo $this->Html->script('payment/payment_details'); ?>

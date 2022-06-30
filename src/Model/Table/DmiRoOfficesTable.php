@@ -235,7 +235,7 @@ class DmiRoOfficesTable extends Table{
 
 	
 	
-		// getIoForCurrentOffice
+	// getIoForCurrentOffice
 	// Author : Akash Thakre
 	// Description : This function will get the array of (a) Name of user, (b) Email, for Inspection officer by Username for current office of that username.
 	// Date : 30-05-2022
