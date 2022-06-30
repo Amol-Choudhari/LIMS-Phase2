@@ -26,3 +26,10 @@
         $("#not_confirmed_reason").show();
 
     }
+
+    if(payment_confirmation_status == 'payment_not_submit'){
+
+        $("#form_outer_main :input").prop("disabled", false);
+        $("#form_outer_main :input[type='radio']").prop("disabled", false);
+        $("#form_outer_main :input[type='select']").prop("disabled", false);
+    }
