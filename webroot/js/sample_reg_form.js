@@ -302,3 +302,13 @@ if(sample_status != ''){
 		$("textarea").attr('disabled',true);
 	}
 }
+
+
+  /// For Comercial Type Sample ///
+
+  $('#sample_type_code').change(function (e) {    e.preventDefault();
+	let selectedText = $(this).find("option:selected").text().trim();
+	if(selectedText == 'Commercial'){
+		$("#paymentmodal").modal()
+	}
+});

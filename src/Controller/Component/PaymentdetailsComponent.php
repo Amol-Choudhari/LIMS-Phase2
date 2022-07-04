@@ -22,7 +22,7 @@
 
 		}
 
-		public function paymentDetailsFunction($postData=null){
+		public function paymentDetailsFunction(){
 
 			//Load Models
 			$SampleInwardDetails = TableRegistry::getTableLocator()->get('SampleInwardDetails');
@@ -32,21 +32,34 @@
 			$DmiPaoDetails = TableRegistry::getTableLocator()->get('DmiPaoDetails');
 			$LimsDdoDetails = TableRegistry::getTableLocator()->get('LimsDdoDetails');
 			$LimsSamplePaymentDetails = TableRegistry::getTableLocator()->get('LimsSamplePaymentDetails');
+			$LimsCommercialCharges = TableRegistry::getTableLocator()->get('LimsCommercialCharges');
 
 			if($_SESSION['sample'] == '3'){
 				$_SESSION['is_payment_applicable'] = 'yes';
 			}
-
-			//For Sample Details Progress-Bar
-			if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))
-				&& !empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
-				$sample_inward_form_status = 'saved';
-				$sample_details_form_status='saved';
-
+			
+			if($_SESSION['user_flag'] == 'CAL' || $_SESSION['user_flag'] =='RAL') {
+				
+				if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))){
+						$sample_inward_form_status = 'saved';
+						$sample_details_form_status = null;
+				} else {
+					$sample_inward_form_status = '';
+				
+				}
 			} else {
-				$sample_details_form_status='';
-				$sample_inward_form_status = '';
+				//For Sample Details Progress-Bar
+				if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))
+					&& !empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
+					$sample_inward_form_status = 'saved';
+					$sample_details_form_status='saved';
+
+				} else {
+					$sample_details_form_status='';
+					$sample_inward_form_status = '';
+				}
 			}
+			
 
 			// For Payment Progress
 			if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
@@ -65,12 +78,31 @@
 
 
 			$sample_details = $SampleInward->getSampleDetails();
-			$this->Controller->set('status_flag',$sample_details['status_flag']);
-			$this->fetchSamplePaymentDetails($sample_details['org_sample_code'],$sample_details['loc_id']);
+			
+			if (empty($sample_details)) {
 
-			$category = $MCommodityCategory->getCategory($sample_details['category_code']);
-			$commodity = $MCommodity->getCommodity($sample_details['commodity_code']);
-			$commercial_charges = 5000;
+				$status_flag  = '';
+				$org_sample_code = '';
+				$category_code = '';
+				$commodity_code = '';
+				$category = '';
+				$commodity = '';
+				$commercial_charges = '';
+			} else {
+				
+				$status_flag  = $sample_details['status_flag'];
+				$org_sample_code = $sample_details['org_sample_code'];
+				$category_code = $sample_details['category_code'];
+				$commodity_code = $sample_details['commodity_code'];
+			}
+
+			$this->Controller->set('status_flag',$status_flag);
+			$this->fetchSamplePaymentDetails($org_sample_code);
+
+			$category = $MCommodityCategory->getCategory($category_code);
+			$commodity = $MCommodity->getCommodity($commodity_code);
+			$commercial_charges = $LimsCommercialCharges->getChargesForPayment($commodity_code);
+	
 			$this->Controller->set(compact('category','commodity','commercial_charges'));
 
 
@@ -153,9 +185,10 @@
 			}
 
 			$payment_trasaction_date = $this->Customfunctions->changeDateFormat($postData['payment_trasaction_date']);
-
+			$tran_date = $Workflow->find('all')->select(['tran_date'])->where(['org_sample_code IS' => $sample_code])->first();
+			
 			$sample_details = $SampleInward->getSampleDetails();
-
+			
 
 			if($payment_conirmation_status == 'not_confirmed'){
 
@@ -221,7 +254,7 @@
 						'dst_usr_cd'		=>	$destinationUser,
 						'user_code'			=>	$_SESSION['user_code'],
 						'stage_smpl_cd'		=>	$sample_code,
-						'tran_date'			=>	date('Y-m-d H:i:s'),
+						'tran_date'			=>	$tran_date['tran_date'],
 						'stage'				=>	'3',
 						'stage_smpl_flag'	=>	'PS' // Added this flag for "Payment Saved"
 					);

@@ -17,7 +17,7 @@
 		<div class="clearfix"></div>
 		
 	<!--	<form action="https://esignservice.cdac.in/esign2.1/2.1/form/signdoc" method="POST">-->
-		<?php echo $this->Form->create(null,array('action'=>'https://10.153.72.52/LIMS_test/esign/requestEsign','method'=>'POST'));?>
+		<?php echo $this->Form->create(null,array('action'=>'https://10.153.72.52/LIMS/esign/requestEsign','method'=>'POST'));?>
 			<input type="hidden" id = "eSignRequest" name="eSignRequest" value=''/>
 			<input type="hidden" id = "aspTxnID" name="aspTxnID" value=""/>
 			<input type="hidden" id = "Content-Type" name="Content-Type" value="application/xml"/>

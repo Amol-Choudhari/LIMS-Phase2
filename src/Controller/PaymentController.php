@@ -18,6 +18,11 @@ class PaymentController extends AppController{
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
 		$this->loadModel('LimsUserActionLogs');
+		$this->loadModel('LimsSamplePaymentDetails');
+		$this->loadModel('SampleInward');
+		$this->loadModel('Workflow');
+		$this->loadModel('DmiUsers');
+		$this->loadModel('DmiRoOffices');
 	}
 
 
@@ -62,58 +67,69 @@ class PaymentController extends AppController{
 		$this->set('confirmBtnStatus',$confirmBtnStatus);
 
 
-		if ($this->request->is('post')) {
+		$sample_inward_data = $this->SampleInward->find('all',array('conditions'=>array('org_sample_code IS'=>$_SESSION['org_sample_code']),'order'=>'inward_id desc'))->first();
 
-			//HTML Encoding
-			$postData = $this->request->getData();
+		if ($sample_inward_data == null) {
 
-			if (null!==($this->request->getData('save'))) {
+			$message = 'Please fill the Sample Inward and Sample Details Section first.';
+			$message_theme = 'failed';
+			$redirect_to = '../inward/sample_inward';
 
-				$savePaymentDetails = $this->Paymentdetails->saveSamplePaymentDetails($postData);
+		} else {
 
-				if ($savePaymentDetails == true){
+			if ($this->request->is('post')) {
 
-                    $message_theme = 'success';
-                    $message = 'Payment Section Saved Successfully';
-                    $redirect_to = 'payment_details';
-
-				} else {
-
-					$message_theme = 'success';
-					$message = 'Payment Section Saved Successfully';
-					$redirect_to = 'payment_details';
-				}
-
-			} elseif (null!==($this->request->getData('confirm'))) {
-
-				$confirm = $this->Paymentdetails->confirmSampleDetails();
-           		$org_sample_code = $_SESSION['org_sample_code'];
-
-				if ($confirm == true){
-
-					//get role and office where sample available after confirmed
-					$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
-							FROM sample_inward AS si
-							INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
-							INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
-							INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
-							WHERE si.org_sample_code='$org_sample_code'");
-
-					$get_info = $query->fetchAll('assoc');
-
-					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
-					$message_theme = 'success';
-					$redirect_to = '../inward/confirmed_samples';
-		
+				//HTML Encoding
+				$postData = $this->request->getData();
+	
+				if (null!==($this->request->getData('save'))) {
+	
+					$savePaymentDetails = $this->Paymentdetails->saveSamplePaymentDetails($postData);
+	
+					if ($savePaymentDetails == true){
+	
+						$message_theme = 'success';
+						$message = 'Payment Section Saved Successfully';
+						$redirect_to = 'payment_details';
+	
+					} else {
+	
+						$message_theme = 'success';
+						$message = 'Payment Section Saved Successfully';
+						$redirect_to = 'payment_details';
+					}
+	
+				} elseif (null!==($this->request->getData('confirm'))) {
+	
+					$confirm = $this->Paymentdetails->confirmSampleDetails();
+					$org_sample_code = $_SESSION['org_sample_code'];
+	
+					if ($confirm == true){
+						
+						//get role and office where sample available after confirmed
+						$get_info = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code']])->order('id desc')->first();
+	
+						
+						$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
+						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
+						
+						$message = 'Note :
+						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO '.base64_decode($user['email']).'  ('.$office[0].')</b>
+						for payment verification, 
+						</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
+						</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
+						$message_theme = 'success';
+						$redirect_to = '../inward/confirmed_samples';
+			
+					}
 				}
 			}
-
-
-			$this->set('message_theme',$message_theme);
-			$this->set('message',$message);
-			$this->set('redirect_to',$redirect_to);
-
 		}
+
+		$this->set('message_theme',$message_theme);
+		$this->set('message',$message);
+		$this->set('redirect_to',$redirect_to);
+
 	}
 
 }

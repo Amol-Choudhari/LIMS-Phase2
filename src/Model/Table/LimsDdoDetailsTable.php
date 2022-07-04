@@ -55,7 +55,13 @@ class LimsDdoDetailsTable extends Table{
         $username = $_SESSION['username'];
         $userFlag = $_SESSION['user_flag'];
         $posted_office_id = $_SESSION['posted_ro_office'];
-
+			
+		if($_SESSION['user_flag']=='RAL' || $_SESSION['user_flag']=='CAL'){
+			$fetchDeatils = $this->find('all')->select(['ro_office_id'])->where(['lab_id' => $posted_office_id])->first();
+			$posted_office_id = $fetchDeatils['ro_office_id'];
+			
+		}
+		
         $pao_id = $DmiDistricts->getPaoId($posted_office_id);
         $ddoDetails = $DmiPaoDetails->getPaoDetails($pao_id);
 

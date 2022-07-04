@@ -3486,7 +3486,35 @@ public function createFormula(){
         //laod model
         $this->loadModel('LimsCommercialCharges');
         $getAllCharges = $this->LimsCommercialCharges->getAllCharges();
-        $this->set('all_commercial_charges',$getAllCharges);
+		$category = array();
+		$commodity = array();
+
+		if (!empty($getAllCharges)) {
+
+			$i=0;
+
+			foreach ($getAllCharges as $each) {
+
+				//get category name
+				$get_category = $this->MCommodityCategory->find('all',array('fields'=>'category_name','conditions'=>array('category_code IS'=>$each['category_code'],'display'=>'Y')))->first();
+				//get commodity
+				$get_commodity = $this->MCommodity->find('all',array('fields'=>'commodity_name','conditions'=>array('commodity_code IS'=>$each['commodity_code'],'display'=>'Y')))->first();
+
+				if (!empty($get_category) && !empty($get_commodity)) {
+
+					$category[$i] = $get_category['category_name'];
+					$commodity[$i] = $get_commodity['commodity_name'];
+				}
+
+				$i=$i+1;
+
+				$this->set('category',$category);
+				$this->set('commodity',$commodity);
+				$this->set('charge',$each['charges']);
+			}
+		}
+
+        $this->set('getAllCharges',$getAllCharges);
 
     }
 
@@ -3501,13 +3529,20 @@ public function createFormula(){
 
 		//Load Models
         $this->loadModel('LimsCommercialCharges');
+		$this->loadModel('MCommodityCategory');
+		$this->loadModel('MCommodity');
 
 		$message = '';
 		$message_theme = '';
 		$redirect_to = '';	 
 
 		$postData = $this->request->getData();
+	
+		//category lists
+		$commodity_category = $this->MCommodityCategory->find('list',array('valueField'=>'category_name','conditions'=>array('display'=>'Y'),'order'=>'category_name'))->toArray();
+		$this->set('commodity_category',$commodity_category);
 		
+
 		if ($this->request->is('post')) {
 
 			$saveCharges = $this->LimsCommercialCharges->saveCharges($postData);
@@ -3540,16 +3575,26 @@ public function createFormula(){
 
 		//Load Models
         $this->loadModel('LimsCommercialCharges');
+		$this->loadModel('MCommodityCategory');
+		$this->loadModel('MCommodity');
 		
-
 		$record_id = $_SESSION['charge_id'];
 		if (!empty($record_id)) {
+
+
 			$editChargesDetails = $this->LimsCommercialCharges->getChargeById($record_id);	
+			$enteredcategorycode = $this->MCommodityCategory->getCategory($editChargesDetails['category_code']);
+			$eneteredcommoditycode = $this->MCommodity->getCommodity($editChargesDetails['commodity_code']);
+
 		} else {
 			$editChargesDetails = '';
+			$enteredcategorycode = '';
+			$eneteredcommoditycode = '';
 		}
 
 		$this->set('editChargesDetails',$editChargesDetails);
+		$this->set('enteredcategorycode',$enteredcategorycode);
+		$this->set('eneteredcommoditycode',$eneteredcommoditycode);
 
 		$message = '';
 		$message_theme = '';
@@ -3557,6 +3602,7 @@ public function createFormula(){
 
 		$postData = $this->request->getData();
 		
+
 		if ($this->request->is('post')) {
 
 			$saveCharges = $this->LimsCommercialCharges->saveCharges($postData,$record_id);

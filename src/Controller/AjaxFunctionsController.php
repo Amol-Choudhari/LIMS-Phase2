@@ -40,7 +40,7 @@ class AjaxFunctionsController extends AppController{
         $this->autoRender = false;
         $this->loadModel('MCommodity');
         $category_id = $_POST['commodity'];
-        $commodities = $this->MCommodity->find('all', array('fields'=>array('commodity_code','commodity_name'), 'conditions'=>array('category_code IS'=>$category_id)))->toArray();
+        $commodities = $this->MCommodity->find('all', array('fields'=>array('commodity_code','commodity_name'), 'conditions'=>array('category_code IS'=>$category_id,'display'=>'Y')))->toArray();
         ?>
         <option value=""><?php echo "Select Commodity";?></option>
         <?php foreach($commodities as $commodity){ ?>
@@ -537,5 +537,40 @@ class AjaxFunctionsController extends AppController{
         exit;
 
     }
+
+
+
+    public function checkIfCommodityAdded(){
+
+        $this->autoRender = false;
+        $this->loadModel('LimsCommercialCharges');
+        $commodity = $_POST['commodity'];
+
+        $detail = $this->LimsCommercialCharges->find('all')->where(['commodity_code IS' => $commodity, 'delete_status IS NULL'])->first();
+		if ($detail != null) {
+            echo 'yes';
+		} else {
+			echo 'no';
+		}
+
+        exit;
+    }
+
+
+
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
 ?>

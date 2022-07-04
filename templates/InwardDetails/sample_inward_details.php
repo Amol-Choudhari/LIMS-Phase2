@@ -180,11 +180,12 @@
 
 										<?php // for payment  
 											if ($_SESSION['is_payment_applicable']=='yes') { ?>
-											<div class="col-md-1 float-left"><a href="../payment/payment_details" class="btn btn-primary">Next Section</a></div>
+											<div class="col-md-2 float-left"><a href="../payment/payment_details" class="btn btn-primary">Next Section</a></div>
 										<?php } ?>
 
+										
 										<div class="col-md-1 float-right"><a href="../Dashboard/home" class="btn btn-danger">Cancel</a></div>
-										<div class="col-md-1 float-right"><a href="../Inward/sample_inward" class="btn btn-primary">Back Section</a></div>
+										<div class="col-md-2 float-right"><a href="../Inward/sample_inward" class="btn btn-primary">Back Section</a></div>	
 									</div>
 								</div>
 							</div>
@@ -194,6 +195,27 @@
 			</div>
 		</section>
 	</div>
+
+	<div class="modal fade" id="paymentmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+						Please Note: As you have selected "<b>Commercial</b>" Sample Type , the payment details to be filled in Payment Section.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success" id="payment_modal_confirm_button" data-dismiss="modal">Confirm</button>
+					<button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 
 <input type="hidden" id="sample_status" value="<?php echo trim($sample_Details_data['status_flag']); ?>">
 <?php if(empty($sample_type)){ $sample_type = ''; }else{ $sample_type = $_SESSION['sample']; }?>

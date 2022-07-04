@@ -82,7 +82,7 @@ class InwardDetailsController extends AppController {
 
 	
 		//payment progress
-		if (null !== ($_SESSION['sample'])) {
+		if (isset($_SESSION['sample'])) {
 			
 			if ($_SESSION['sample'] == 3) {
 				$_SESSION['is_payment_applicable'] = 'yes';
@@ -107,13 +107,13 @@ class InwardDetailsController extends AppController {
 		$sample_Details_data=array();
 		$SaveUpdatebtn = 'save';
 		$sample_Details_data = $this->SampleInwardDetails->find('all',array('conditions'=>array('org_sample_code IS'=>$this->Session->read('org_sample_code')),'order'=>'id desc'))->first();
-		
+	
 			if (!empty($sample_Details_data)) {
 
 				//For Progress-Bar
 				$sample_details_form_status='saved';
 				$SaveUpdatebtn = 'update';
-
+				$_SESSION['sample'] = $sample_Details_data['sample_type_code'];
 			} else {
 
 				//Default Value Set To '' Blank
@@ -297,7 +297,7 @@ class InwardDetailsController extends AppController {
 
 						$SampleInwardDetailsEntity = $this->SampleInwardDetails->newEntity($dataArray);
 
-						if ($this->SampleInwardDetails->save($SampleInwardDetailsEntity)) {
+						if ($this->SampleInwardDetails->save($SampleInwardDetailsEntity)) {	
 
 							$tran_date	= $postData["tran_date"];
 

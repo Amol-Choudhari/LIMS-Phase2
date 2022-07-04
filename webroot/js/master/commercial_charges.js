@@ -43,3 +43,69 @@
         }
 
     }
+
+
+    $('#category_code').change(function (e) {
+
+        if(get_commodity()==false){
+            e.preventDefault();
+        }
+    
+    });
+
+
+
+    //to get commodity list according to the category selected
+    //and load in the dropdown
+    function get_commodity(){
+
+        $("#commodity_code").find('option').remove();
+        var commodity = $("#category_code").val();
+        $.ajax({
+            type: "POST",
+            async:true,
+            url:"../AjaxFunctions/show-commodity-dropdown",
+            data: {commodity:commodity},
+            beforeSend: function (xhr) { // Add this line
+                    xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+            },
+            success: function (data) {
+                    $("#commodity_code").append(data);
+            }
+        });
+
+    }
+
+
+
+    $('#commodity_code').change(function (e) {
+
+        if(checkCommodityUsed()==false){
+            e.preventDefault();
+        }
+    
+    });
+
+
+    function checkCommodityUsed(){
+
+        var commodity = $("#commodity_code").val();
+
+        $.ajax({
+            type: "POST",
+            async:true,
+            url:"../AjaxFunctions/check_if_commodity_added",
+            data: {commodity:commodity},
+            beforeSend: function (xhr) { // Add this line
+                xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+            },
+            success: function (data) {
+                if (data == 'yes') {
+                    $("#commodity_code").val("");
+                    $.alert("Selected Commodity charges is added already. Please Check the List!");
+                    return false;
+                }
+              
+            }
+        });
+    }

@@ -86,11 +86,11 @@
                                                 <a  class="btn btn-block btn-outline-secondary" href="<?php echo $this->getRequest()->getAttribute('webroot');?>Master/commodityGrade">Grading Standards</a>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <!--<div class="col-md-3">
                                             <div class="form-group">
-                                                <a  class="btn btn-block btn-outline-secondary" href="<?php echo $this->getRequest()->getAttribute('webroot');?>Master/ddo_for_labs">PAO/DDO</a>
+                                                <a  class="btn btn-block btn-outline-secondary" href="<?php //echo $this->getRequest()->getAttribute('webroot');?>Master/ddo_for_labs">PAO/DDO</a>
                                             </div>
-                                        </div>
+                                        </div>-->
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <a  class="btn btn-block btn-outline-secondary" href="<?php echo $this->getRequest()->getAttribute('webroot');?>Master/commercial_charges">Commercial Charges</a>

@@ -50,6 +50,8 @@ class InwardController extends AppController{
 		$this->Session->delete('org_sample_code');
 		$this->Session->delete('stage_sample_code');
 		$this->Session->delete('acc_rej_flg');
+		$this->Session->delete('sample');
+		$this->Session->delete('is_payment_applicable');
 
 		$this->redirect('/inward/sample_inward');
 	}
@@ -94,8 +96,7 @@ class InwardController extends AppController{
 		$role_code = $this->Session->read('role_code');
 		$user_cd = $this->Session->read('user_code');
 
-
-
+		
 		//check user role
 		if ($_SESSION['user_flag']=='RO' || $_SESSION['user_flag']=='SO') { 
 
@@ -212,7 +213,14 @@ class InwardController extends AppController{
 		$sample_inward_form_status='';
         $payment_progress = '';
         $isPaymentApplicable = '';
+
+		//payment progress
+		if (isset($_SESSION['sample'])) {
 		
+			if ($_SESSION['sample'] == 3) {
+				$_SESSION['is_payment_applicable'] = 'yes';
+			}
+		}
     
 		//moved the query inside due to condition on null and fetching random record.
 		//and taking value in variable and used in !empty condition, if the condition was on direct null session variable
@@ -228,7 +236,7 @@ class InwardController extends AppController{
 			if (!empty($sample_inward_data)) {
 				//for progress bar
 				$sample_inward_form_status='saved';
-
+				
 				if($sample_inward_data['sample_type_code'] == 3){
 					$_SESSION['is_payment_applicable'] = 'yes';
 				}

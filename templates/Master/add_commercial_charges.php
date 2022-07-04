@@ -1,4 +1,4 @@
-<?php ?>
+<?php ?> 
 
     <div class="content-header">
         <div class="container-fluid">
@@ -21,14 +21,19 @@
                                 <div class="card-header"><h3 class="card-title-new">Add Commercial Charges</h3></div>
                                 <div class="form-horizontal">
                                     <div class="card-body">
-                                        <div class="row">
+                                        <div class="row">   
                                             <div class="col-md-6">
-                                                <label>Type <span class="required-star">*</span></label>
-                                                <?php echo $this->Form->control('charges_type', array('type'=>'text', 'id'=>'charges_type', 'label'=>false,'class'=>'form-control')); ?>
-                                                <div class="error invalid-feedback" id="error_charges_type"></div>
+                                                <label>Category <span class="required-star">*</span></label>
+                                                <?php echo $this->Form->control('category_code', array('type'=>'select','options'=>$commodity_category,'id'=>'category_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+                                                <span id="error_category_code" class="error invalid-feedback"></span>
                                             </div>
                                             <div class="col-md-6">
-                                                <label>Charge <span class="required-star">*</span></label>
+                                                <label>Commodity <span class="required-star">*</span></label>
+                                                <?php echo $this->Form->control('commodity_code', array('type'=>'select', 'id'=>'commodity_code','label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+                                                <span id="error_commodity_code" class="error invalid-feedback"></span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Charges <span class="required-star">*</span></label>
                                                 <?php echo $this->Form->control('charges', array('type'=>'text', 'id'=>'charges', 'label'=>false,'class'=>'form-control')); ?>
                                                 <div class="error invalid-feedback" id="error_charges"></div>
                                             </div>

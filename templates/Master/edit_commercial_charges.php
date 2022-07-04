@@ -1,4 +1,4 @@
-<?php ?>
+<?php ?> 
 
     <div class="content-header">
         <div class="container-fluid">
@@ -23,9 +23,14 @@
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <label>Type <span class="required-star">*</span></label>
-                                                <?php echo $this->Form->control('charges_type', array('type'=>'text', 'id'=>'charges_type', 'value'=>$editChargesDetails['charges_type'],'label'=>false,'class'=>'form-control')); ?>
-                                                <div class="error invalid-feedback" id="error_charges_type"></div>
+                                                <label>Category <span class="required-star">*</span></label>
+                                                <?php echo $this->Form->control('category_code', array('type'=>'text','value'=>$enteredcategorycode, 'id'=>'category_code', 'label'=>false,'class'=>'form-control','disabled')); ?>
+                                                <span id="error_category_code" class="error invalid-feedback"></span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Commodity <span class="required-star">*</span></label>
+                                                <?php echo $this->Form->control('commodity_code', array('type'=>'text', 'id'=>'commodity_code','value'=>$eneteredcommoditycode, 'label'=>false,'class'=>'form-control','disabled')); ?>
+                                                <span id="error_commodity_code" class="error invalid-feedback"></span>
                                             </div>
                                             <div class="col-md-6">
                                                 <label>Charge <span class="required-star">*</span></label>

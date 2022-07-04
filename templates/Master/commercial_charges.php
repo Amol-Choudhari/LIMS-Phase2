@@ -1,4 +1,4 @@
-<?php ?>
+<?php ?> 
     <div class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -32,26 +32,31 @@
                                                 <thead class="tablehead">
                                                     <tr>
                                                         <th>SR.No</th>
-                                                        <th>Type</th>
+                                                        <th>Category</th>
+                                                        <th>Commodity</th>
                                                         <th>Charges</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <?php
-                                                        if(!empty($all_commercial_charges)){
-                                                            $sr_no = 1;
-                                                            foreach($all_commercial_charges as $each){ ?>
+                                                        if(!empty($getAllCharges)){
+                                                            $i=0;
+                                                            $sr_no =1;
+                                                            foreach($getAllCharges as $each){ 
+
+                                                             if (!empty($commodity[$i]) && !empty($category[$i])) { ?>
                                                                 <tr>
                                                                     <td><?php echo $sr_no; ?></td>
-                                                                    <td><?php echo $each['charges_type']; ?></td>
-                                                                    <td><?php echo $each['charges']; ?></td>
+                                                                    <td><?php echo $category[$i]; ?></td>
+                                                                    <td><?php echo $commodity[$i]; ?></td>
+                                                                    <td><?php echo $each['charges'] ?></td>
                                                                     <td>
                                                                         <?php echo $this->Html->link('', array('controller' => 'master', 'action'=>'fetch_edit_id_for_charge', $each['id']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit')); ?> |
                                                                         <?php echo $this->Html->link('', array('controller' => 'master', 'action'=>'delete_id_for_charge', $each['id']),array('class'=>'glyphicon glyphicon-trash','title'=>'Delete', 'id'=>'delete_record')); ?>
                                                                     </td>
                                                                 </tr>
-                                                        <?php $sr_no++; } } ?>
+                                                        <?php $sr_no++; } $i=$i+1;	 } } ?>
                                                 </tbody>
                                             </table>
                                         </div>

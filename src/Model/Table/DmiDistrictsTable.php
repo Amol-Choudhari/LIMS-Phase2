@@ -34,12 +34,12 @@ class DmiDistrictsTable extends Table{
 		
 		$userFlag = $_SESSION['user_flag'];
 
-		if ($userFlag == 'RO') {
+		if ($userFlag == 'RO' || $userFlag == 'RAL' || $userFlag == 'CAL') {
 			$details = $this->find('all')->select(['pao_id'])->where(['ro_id' => $posted_office_id])->first();
 		} elseif ($userFlag == 'SO') {
 			$details = $this->find('all')->select(['pao_id'])->where(['so_id' => $posted_office_id])->first();
 		}
-
+		
 		return $details['pao_id'];
 
 		
