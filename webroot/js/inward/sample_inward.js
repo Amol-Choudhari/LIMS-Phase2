@@ -342,3 +342,59 @@
                 $("#paymentmodal").modal()
             }
         });
+
+
+
+		$('#commodity_code').change(function (e) {
+
+			var sample_type_code = $('#sample_type_code').val();
+			if (sample_type_code != "") {
+				if (sample_type_code == '3') {
+					if(checkCommodityUsed()==false){
+						e.preventDefault();
+					}	
+				}
+			}
+		});
+
+
+		$('#sample_type_code').change(function (e) {
+			
+			var sample_type_code = $('#sample_type_code').val();
+			
+			if (sample_type_code != "") {
+				if (sample_type_code == '3') {
+					if(checkCommodityUsed()==false){
+						e.preventDefault();
+					}	
+				}
+			}
+		});
+	
+	
+		function checkCommodityUsed(){
+	
+			var commodity = $("#commodity_code").val();
+			
+			if (commodity !='') {
+				
+				$.ajax({
+					type: "POST",
+					async:true,
+					url:"../AjaxFunctions/check_if_commodity_added",
+					data: {commodity:commodity},
+					beforeSend: function (xhr) { // Add this line
+						xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+					},
+					success: function (data) {
+						if (data == 'no') {
+							$("#commodity_code").val("");
+							$.alert("Selected Commodity charges is not added. First Add the charges.");
+							return false;
+						}
+					  
+					}
+				});
+			}
+			
+		}

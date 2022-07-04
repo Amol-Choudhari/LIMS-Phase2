@@ -284,8 +284,8 @@
 			$recordId =	$LimsSamplePaymentDetails->find('all', array('fields'=>array('id','payment_confirmation'),'conditions'=>array('sample_code IS'=>$sample_code),'order'=>'id desc'))->first();
 
 			$payID = $recordId['id'];
-		
-			$SampleInward->updateAll(array('status_flag'=>'PV'),array('org_sample_code'=>$sample_code));
+			
+			$SampleInward->updateAll(array('status_flag'=>'PV','acc_rej_flg'=>'PS'),array('org_sample_code'=>$sample_code));
 
 			//Create the data entity for "DmiAdvPaymentDetails" top save the data
 			$LimsSamplePaymentDetailsEntity = $LimsSamplePaymentDetails->newEntity(array(

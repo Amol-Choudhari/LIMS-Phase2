@@ -6,7 +6,7 @@
 				<div class="col-sm-6">
 					<ol class="breadcrumb float-sm-right">
 						<li class="breadcrumb-item"><?php echo $this->Html->link('Dashboard', array('controller' => 'dashboard', 'action'=>'home')); ?></li>
-						<li class="breadcrumb-item active">Saved Sample</li>
+						<li class="breadcrumb-item active">Commercial Sample</li>
 					</ol>
 				</div>
 			</div>
@@ -18,7 +18,7 @@
 					<div class="col-md-12">
 						<?php echo $this->Form->create(); ?>
 							<div class="card card-lims">
-								<div class="card-header"><h3 class="card-title-new">List of All Unconfirmed Samples</h3></div>
+								<div class="card-header"><h3 class="card-title-new">List of Sample Payment Status</h3></div>
 								<div class="form-horizontal">
 									<div class="card-body">
 										<div class="panel panel-primary filterable">
@@ -29,11 +29,10 @@
 														<tr>
 															<th>SR.No</th>
 															<th>Sample Code</th>
-															<th>Received Date</th>
-															<th>Drawing Date</th>
 															<th>Inward</th>
 															<th>Details</th>
 															<th>Payment</th>
+                                                            <th>Status</th>
 															<th>Action</th>
 														</tr>
 													</thead>
@@ -73,8 +72,6 @@
 															<th>Received Date</th>
 															<th>Sample Type</th>
 															<th>Received From</th>
-															<th>Commodity</th>
-															<th>Inward</th>
 															<th>Payment</th>
 															<th>Status</th>
 															<th>Action</th>

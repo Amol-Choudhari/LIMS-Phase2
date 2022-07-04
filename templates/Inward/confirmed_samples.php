@@ -44,7 +44,16 @@
 													<td><?php echo $each['sample_type_desc']; ?></td>
 													<td><?php echo $each['ro_office']; ?></td>
 													<td><?php echo $each['commodity_name']; ?></td>
-													<td><?php if($each['acc_rej_flg']=="A"){ echo "Accepted";}elseif($each['acc_rej_flg']=="P"){ echo "Pending";}else{echo "Rejected";}?></td>
+													<td><?php if(trim($each['acc_rej_flg'])=='A'){ 
+																echo "Accepted";
+															}elseif(trim($each['acc_rej_flg'])=='P'){ 
+																echo "Pending";
+															}elseif(trim($each['acc_rej_flg'])=='PS'){
+																echo "Payment is Saved & Pending with DDO";
+															}else{
+																echo "Rejected";
+															} ?>
+													</td>
 													<td>
 														<?php echo $this->Html->link('', array('controller' => 'inward', 'action'=>'fetch_inward_id', $each['inward_id']),array('class'=>'glyphicon glyphicon-eye-open','title'=>'Sample Inward Details')); ?> |
 														<a href="../inward/get_sample_slip/<?php echo $each['org_sample_code']; ?>" title="Sample Slip" target="_blank" class="glyphicon glyphicon-list-alt"></a>

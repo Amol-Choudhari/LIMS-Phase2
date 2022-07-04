@@ -132,5 +132,16 @@ class PaymentController extends AppController{
 
 	}
 
+
+
+	public function paymentStatus(){
+
+		$user_flag = $_SESSION['user_flag'];
+		$this->set('user_flag',$user_flag);
+
+		$plist = $this->LimsSamplePaymentDetails->find('list',array('keyField'=>'id','valueField'=>array('sample_code'),'conditions'=>array('payment_confirmation'=>'not_confirmed')))->toArray();
+		
+	}
+
 }
 ?>

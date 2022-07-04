@@ -812,6 +812,20 @@ class InwardController extends AppController{
 					
 				}
 
+
+				//check the sample is not confirmed
+				$this->loadModel('SampleInward');
+				$getInward = $this->SampleInward->find('all',array('fields'=>array('org_sample_code','received_date','inward_id','status_flag'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'inward_id desc'))->first();
+				
+				if (!empty($getInward) && trim($getInward['status_flag'])=='D') {
+					
+					$sampleArray[$i]['received_date'] = $getInward['received_date'];
+					$sampleArray[$i]['inward_id'] = $getInward['inward_id'];
+					$sampleArray[$i]['org_sample_code'] = $each_sample['org_sample_code'];
+					
+				}
+
+
 				//get sample details, if saved
 				$this->loadModel('SampleInwardDetails');
 				$getDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code','smpl_drwl_dt','id'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'id desc'))->first();
@@ -886,6 +900,11 @@ class InwardController extends AppController{
 		$conn = ConnectionManager::get('default');
 		$user_cd=$this->Session->read('user_code');
 
+		//in this query the "PS" : Payment Saved is added to distinguish bwtween the normal and commercial sample
+		//in the field "acc_rej_flg" , also for commercial sample after the confirming sample the PS flag will be added.
+		// to the sample_inward table in the field "acc_rej_flg"
+		// BY Akash on 04-07-2022
+		
 		$query = $conn->execute("SELECT si.inward_id, si.stage_sample_code, si.received_date,
 										si.letr_date, si.org_sample_code, si.expiry_month,
 										si.expiry_year, st.sample_type_desc, ct.container_desc,
@@ -900,7 +919,7 @@ class InwardController extends AppController{
 								 INNER JOIN m_commodity_category AS mcc ON si.category_code=mcc.category_code
 								 INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
 								 INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code AND si.display='Y'
-								 AND si.status_flag not IN('D')  AND acc_rej_flg IN ('P','R','A') AND si.user_code='$user_cd'
+								 AND si.status_flag not IN('D')  AND acc_rej_flg IN ('P','R','A','PS') AND si.user_code='$user_cd'
 								 GROUP BY si.inward_id, si.stage_sample_code, si.received_date,
 								 		  si.letr_date, si.org_sample_code, si.expiry_month, si.expiry_year,
 										  st.sample_type_desc, ct.container_desc, pc.par_condition_desc,
@@ -909,7 +928,7 @@ class InwardController extends AppController{
 										  si.rej_reason, si.rej_code, si.users
 								ORDER BY si.received_date DESC");
 
-		$res = $query ->fetchAll('assoc');
+		$res = $query ->fetchAll('assoc'); //pr($res); exit;
 		$this->set('res',$res);
 	}
 
