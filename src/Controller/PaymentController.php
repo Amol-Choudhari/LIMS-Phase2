@@ -85,11 +85,19 @@ class PaymentController extends AppController{
 				if (null!==($this->request->getData('save'))) {
 	
 					$savePaymentDetails = $this->Paymentdetails->saveSamplePaymentDetails($postData);
-	
+					
+					$sample = $this->LimsSamplePaymentDetails->find('all',array('conditions'=>array('sample_code' => $_SESSION['org_sample_code']),'order'=>'id desc'))->first();
+					print_r($sample); exit;
+
 					if ($savePaymentDetails == true){
 	
 						$message_theme = 'success';
-						$message = 'Payment Section Saved Successfully';
+						if ($sample['payment_confirmation']=='replied ') {
+							$message = 'Your Reply Saved Successfully & Forwared to DDO for further process.';
+						} else {
+							$message = 'Payment Section Saved Successfully';
+						}
+						
 						$redirect_to = 'payment_details';
 	
 					} else {
@@ -139,8 +147,21 @@ class PaymentController extends AppController{
 		$user_flag = $_SESSION['user_flag'];
 		$this->set('user_flag',$user_flag);
 
-		$plist = $this->LimsSamplePaymentDetails->find('list',array('keyField'=>'id','valueField'=>array('sample_code'),'conditions'=>array('payment_confirmation'=>'not_confirmed')))->toArray();
-		
+		$conn = ConnectionManager::get('default');
+		$user_cd=$this->Session->read('user_code');
+
+		$query = $conn->execute("SELECT lspd.sample_code, lspd.payment_confirmation,si.inward_id,lspd.id
+								 FROM lims_sample_payment_details AS lspd
+								 INNER JOIN sample_inward AS si ON si.org_sample_code=lspd.sample_code
+								 INNER JOIN workflow AS wf ON lspd.sample_code = wf.org_sample_code AND wf.stage_smpl_flag='SI'
+								 AND wf.src_usr_cd ='$user_cd'
+								 GROUP BY lspd.sample_code, lspd.payment_confirmation, si.inward_id,lspd.id
+								 ORDER BY lspd.id desc");
+
+		$res = $query->fetchAll('assoc');
+	
+		$this->set('res',$res);
+
 	}
 
 }

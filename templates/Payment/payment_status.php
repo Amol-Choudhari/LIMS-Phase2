@@ -22,80 +22,42 @@
 								<div class="form-horizontal">
 									<div class="card-body">
 										<div class="panel panel-primary filterable">
-											<?php if ($user_flag=='RO' || $user_flag=='SO') { ?>
-
-												<table id="pages_list_table" class="table table-stripped table-bordered table-hover">
-													<thead class="tablehead">
+											<table id="pages_list_table" class="table table-stripped table-bordered table-hover">
+												<thead class="tablehead">
+													<tr>
+														<th>SR.No</th>
+														<th>Sample Code</th>
+														<th>Payment Status</th>
+														<th>Action</th>
+													</tr>
+												</thead>
+												<tbody>
+													<?php if(!empty($res)){
+														$sr_no = 1;
+														foreach($res as $each){ ?>
 														<tr>
-															<th>SR.No</th>
-															<th>Sample Code</th>
-															<th>Inward</th>
-															<th>Details</th>
-															<th>Payment</th>
-                                                            <th>Status</th>
-															<th>Action</th>
+															<td><?php echo $sr_no; ?></td>
+															<td><?php echo $each['sample_code']; ?></td>
+															<td><?php 
+																if (trim($each['payment_confirmation']) == 'not_confirmed') {
+																	echo 'Referred Back from the DDO'; 
+																} elseif (trim($each['payment_confirmation']) == 'replied') { 
+																	echo 'Replied Payment'; 
+																} ?>
+															</td>
+															<td>
+																<?php
+																	if (trim($each['payment_confirmation']) == 'not_confirmed') {
+																		echo $this->Html->link('', array('controller' => 'inward', 'action'=>'fetch_inward_id', $each['inward_id']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit'));
+																	} else {
+																		echo $this->Html->link('', array('controller' => 'InwardDetails', 'action'=>'fetch_inward_id', $each['id']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit'));
+																	}
+																?>
+															</td>
 														</tr>
-													</thead>
-													<tbody>
-														<?php if(!empty($sampleArray)){
-															$sr_no = 1;
-															foreach($sampleArray as $each){ ?>
-																<tr>
-																	<td><?php echo $sr_no; ?></td>
-																	<td><?php echo $each['org_sample_code']; ?></td>
-																	<td><?php if (isset($each['received_date'])) { echo $each['received_date']; } else { echo '----'; } ?></td>
-																	<td><?php if (isset($each['smpl_drwl_dt'])) { echo $each['smpl_drwl_dt']; } else { echo '----'; } ?></td>
-																	<td><?php if (isset($each['received_date'])) { echo 'Saved'; } else { echo 'Not Saved'; } ?></td>
-																	<td><?php if (isset($each['smpl_drwl_dt'])) { echo 'Saved'; } else { echo 'Not Saved'; } ?></td>
-																	<td><?php if (isset($each['smpl_drwl_dt'])) { echo 'Saved'; } else { echo 'Not Saved'; } ?></td>
-																	<td>
-																		<?php
-																			if (!empty($each['received_date'])) {
-																				echo $this->Html->link('', array('controller' => 'inward', 'action'=>'fetch_inward_id', $each['inward_id']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit'));
-																			} else {
-																				echo $this->Html->link('', array('controller' => 'InwardDetails', 'action'=>'fetch_inward_id', $each['id']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit'));
-																			}
-																		?>
-																	</td>
-																</tr>
-														<?php $sr_no++; } } ?>
-													</tbody>
-												</table>
-
-											<?php } else { ?>
-
-												<table id="pages_list_table" class="table table-striped table-bordered table-hover">
-													<thead class="tablehead">
-														<tr>
-															<th>SR.No</th>
-															<th>Sample Code</th>
-															<th>Received Date</th>
-															<th>Sample Type</th>
-															<th>Received From</th>
-															<th>Payment</th>
-															<th>Status</th>
-															<th>Action</th>
-														</tr>
-													</thead>
-													<tbody>
-													<?php
-														if (!empty($sampleArray)) {
-															$sr_no = 1;
-															foreach ($sampleArray as $each) { ?>
-																<tr>
-																	<td><?php echo $sr_no; ?></td>
-																	<td><?php echo $each['org_sample_code'] ?></td>
-																	<td><?php echo $each['received_date']  ?></td>
-																	<td><?php echo $each['sample_type_desc'] ?></td>
-																	<td><?php echo $each['ro_office'] ?></td>
-																	<td><?php echo $each['commodity_name'] ?></td>
-																	<td><?php if ($each['acc_rej_flg']=="A") { echo "Accepted";} elseif ($each['acc_rej_flg']=="P") { echo "Pending";} else {echo "Rejected";} ?></td>
-																	<td><?php echo $this->Html->link('', array('controller' => 'inward', 'action'=>'fetch_inward_id', $each['inward_id']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit')); ?></td>
-																</tr>
-															<?php $sr_no++; } } ?>
-													</tbody>
-												</table>
-											<?php } ?>
+													<?php $sr_no++; } } ?>
+												</tbody>
+											</table>
 										</div>
 									</div>
 								</div>

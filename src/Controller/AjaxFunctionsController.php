@@ -148,9 +148,6 @@ class AjaxFunctionsController extends AppController{
  public function checkUniqueTransIdForAppl(){
 
         //initialize model in component
-        $this->loadModel('DmiGrantCertificatesPdfs');
-        $this->loadModel('DmiFlowWiseTablesLists');
-        $this->loadModel('DmiFirms');
         $this->loadModel('LimsSamplePaymentDetails');
 
         $trans_id = $_POST['trans_id'];
@@ -425,10 +422,10 @@ class AjaxFunctionsController extends AppController{
 				$SampleType = $getSampleType['sample_type_desc'];
 				
 				//get last action of the sample
-				$stageFlagArray = array('SI'=>'Sample Inward',
-										'SD'=>'Sample Details',
+				$stageFlagArray = array('SI'=>'Saved Sample Inward',
+										'SD'=>'Saved Sample Details',
 										'OF'=>'Forwarded to Inward Officer',
-										'Accepted by Inward Officer',
+										'AS'=>'Accepted by Inward Officer',
 										'IF'=>'Forwarded to Inward Officer',
 										'HF'=>'Head office to Inward Officer',
 										'HS'=>'Accepted by HO',
@@ -444,7 +441,9 @@ class AjaxFunctionsController extends AppController{
 										'FC'=>'Forward back to CAL',
 										'FGIO'=>'Final Graded by Inward Officer',
 										'VC'=>'Sample Verified',
-										'VS'=>'Sample Verified');
+										'VS'=>'Sample Verified',
+                                        'PS'=>'Payment Saved and Pending with DDO',
+                                        'PC'=>'Payment Confirmed & Available to Forward');
 									
 				$getlastFlag = $this->Workflow->find('all',array('fields'=>'stage_smpl_flag','conditions'=>array('org_sample_code'=>$org_smpl_cd),'order'=>'id desc'))->first();
 				$lastAction = $stageFlagArray[trim($getlastFlag['stage_smpl_flag'])];

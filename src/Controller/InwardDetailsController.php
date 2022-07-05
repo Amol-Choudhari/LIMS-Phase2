@@ -17,6 +17,7 @@ class InwardDetailsController extends AppController {
 			$this->viewBuilder()->setHelpers(['Form','Html']);
 			$this->loadComponent('Customfunctions');
 			$this->loadModel('LimsUserActionLogs');
+			$this->loadModel('LimsSamplePaymentDetails')
 		}
 
 /****************************************************************************************************************************************************************************************************************************************************************/
@@ -173,8 +174,12 @@ class InwardDetailsController extends AppController {
 				$sample_inward_form_status = '';
 			}
 		
+			//for paymnet progress bar
 			if (!empty($this->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
-				$payment_details_form_status = 'saved';
+				
+				$payment_details = $LimsSamplePaymentDetails->find('all')->select('payment_confirmation')->where(['sample_code IS'=>$this->Session->read('org_sample_code')])->order(['id desc'])->first();
+				$payment_details_form_status = trim($payment_details['payment_confirmation']);
+
 			} else {
 				$payment_details_form_status = '';
 			}

@@ -294,6 +294,13 @@
 										<?php	} ?>
 
 									<?php } ?>
+									<?php if ($_SESSION['user_flag']=='RAL' || $_SESSION['user_flag']=='CAL') { ?>
+
+									<?php if (trim($_SESSION['is_payment_applicable'] =='yes')) { ?>
+										<div class="col-md-2 float-left"><a href="../payment/payment_details" class="btn btn-primary">Next Section</a></div>
+									<?php	} ?>
+
+									<?php } ?>
 								</div>
 							</div>
 						</div>

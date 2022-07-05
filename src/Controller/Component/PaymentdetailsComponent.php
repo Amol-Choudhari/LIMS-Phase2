@@ -45,7 +45,6 @@
 						$sample_details_form_status = null;
 				} else {
 					$sample_inward_form_status = '';
-				
 				}
 			} else {
 				//For Sample Details Progress-Bar
@@ -63,8 +62,11 @@
 
 			// For Payment Progress
 			if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
-				$payment_details_form_status = 'saved';
+
+				$payment_details = $LimsSamplePaymentDetails->find('all')->select('payment_confirmation')->where(['sample_code IS'=>$this->Session->read('org_sample_code')])->order(['id desc'])->first();
+				$payment_details_form_status = trim($payment_details['payment_confirmation']);
 				$SaveUpdatebtn = 'update';
+				
 			} else {
 				$payment_details_form_status = '';
 				$SaveUpdatebtn = '';
@@ -192,8 +194,6 @@
 
 			if($payment_conirmation_status == 'not_confirmed'){
 
-
-
 				//find PAO email id (Done By pravin 4/11/2017)
 				$pao = $LimsSamplePaymentDetails->find('all', array('fields'=>'pao_id', 'conditions'=>array('sample_code IS'=>$sample_code)))->first();
 				$pao_user_id = $DmiPaoDetails->find('all',array('fields'=>'pao_user_id', 'conditions'=>array('id IS'=>$pao['pao_id'])))->first();
@@ -202,6 +202,7 @@
 				$lims_sample_payment_detailsEntity = $LimsSamplePaymentDetails->newEntity(array(
 
 					'sample_code'=>$sample_code,
+					'sample_type'=>	$payment_confirmation_query['sample_type'],
 					'amount_paid'=>$payment_amount,
 					'transaction_id'=>$payment_transaction_id,
 					'transaction_date'=>$payment_trasaction_date,
@@ -222,6 +223,7 @@
 					$current_level = 'pao';
 					//added on 23-07-2018 by Amol
 					//$DmiSmaEmailTemplates->sendMessage(2056,$sample_code);
+					
 					return true;
 				}
 
@@ -285,9 +287,9 @@
 
 			$payID = $recordId['id'];
 			
+			//added the "acc_rej_flg" => PS flag to show in the confirmed sample list on 04-07-2022
 			$SampleInward->updateAll(array('status_flag'=>'PV','acc_rej_flg'=>'PS'),array('org_sample_code'=>$sample_code));
 
-			//Create the data entity for "DmiAdvPaymentDetails" top save the data
 			$LimsSamplePaymentDetailsEntity = $LimsSamplePaymentDetails->newEntity(array(
 
 				'id'=>$payID,

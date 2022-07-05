@@ -83,7 +83,8 @@
 
 						$.alert({
 							title: "Transaction ID error!",
-						    content: 'The Transaction/Receipt Id "'+ trans_id  +'" is already used. Please verify and enter again.',
+						    content: 'The Transaction/Receipt Id  <b>'+ trans_id  +'</b>  is already used. Please verify and enter again.',
+							columnClass: 'medium',
 						    type: 'red',
 						    typeAnimated: true,
 						    buttons: {

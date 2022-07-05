@@ -29,19 +29,24 @@ $(document).ready(function(){
     $('#sample_details_prog_span').removeClass('glyphicon-ok-sign').addClass('glyphicon-remove-sign');
   }
 
-
+  
   //for payment
   if(payment_details_form_status=="saved"){
 
     $('#payment_details_prog_div').removeClass('bg-red').addClass('bg-success');
     $('#payment_details_prog_span').removeClass('glyphicon-remove-sign').addClass('glyphicon-ok-sign');
 
-  }else if(payment_details_form_status=="pending"){
+  }else if(payment_details_form_status=="not_confirmed"){
 
     $('#payment_details_prog_div').removeClass('bg-success').addClass('bg-warning');
     $('#payment_details_prog_span').removeClass('glyphicon-remove-sign').addClass('glyphicon-ok-sign');
 
   }else if(payment_details_form_status=="confirmed"){
+
+    $('#payment_details_prog_div').removeClass('bg-success').addClass('bg-success');
+    $('#payment_details_prog_span').removeClass('glyphicon-remove-sign').addClass('glyphicon-ok-sign');
+
+  }else if(payment_details_form_status=="replied"){
 
     $('#payment_details_prog_div').removeClass('bg-success').addClass('bg-success');
     $('#payment_details_prog_span').removeClass('glyphicon-remove-sign').addClass('glyphicon-ok-sign');
