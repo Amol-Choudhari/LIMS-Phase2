@@ -3,12 +3,15 @@ $(document).ready(function(){
   $('#avai_to_allocate_list').DataTable();
   $('#avai_to_forward_list').DataTable();
   $('#returned_by_chem_list').DataTable();
-
+ 
 });
 
 $("#RC_list").hide();
 $("#F_list").hide();
 $("#A_list").show();
+
+
+
 
 $('.type').change(function(){
 
@@ -33,3 +36,5 @@ $('.type').change(function(){
 
 
 });
+
+

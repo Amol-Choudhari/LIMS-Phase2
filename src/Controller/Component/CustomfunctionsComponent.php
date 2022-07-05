@@ -3,13 +3,14 @@
 	use Cake\Controller\Controller;
 	use Cake\Controller\Component;
 	use Cake\Controller\ComponentRegistry;
+	use Cake\Datasource\ConnectionManager;
 	use Cake\ORM\Table;
 	use Cake\ORM\TableRegistry;
 	use Cake\Datasource\EntityInterface;
 
 	class CustomfunctionsComponent extends Component {
 
-		public $components= array('Session','PaymentDetails');
+		public $components= array('Session','PaymentDetails','Ilc');
 		public $controller = null;
 		public $session = null;
 	
@@ -654,6 +655,24 @@
 	
 
 /***************************************************************************************************************************************************************************************************/		
+
+
+	//CREATE SAMPLE TYPE done 16/06/2022 by shreeya
+	public function createSampleType($forw_sample_cd) {
+
+		$conn = ConnectionManager::get('default');
+		$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
+		$query="SELECT org_sample_code FROM workflow WHERE stage_smpl_cd = '$forw_sample_cd' AND display='Y' ";
+
+		$sample_cd1 = $conn->execute($query);
+		$sample_cd1 = $sample_cd1->fetchAll('assoc');
+		$sample_cd = $sample_cd1[0]['org_sample_code'];
+		$getSampleType = $SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $sample_cd)))->first();
+		$sampleTypeCode = $getSampleType['sample_type_code'];
+		$this->Controller->set('sampleTypeCode',$sampleTypeCode );
+		
+		return $sampleTypeCode;
+	}
 
 	//GENERATES CHEMIST CODE
 	public function createChemistCode() {

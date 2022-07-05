@@ -117,6 +117,7 @@
 						$("#ral").prop("disabled", false);
 						var loc=$("#dst_loc_id option:selected").text();
 
+						$("#dst_usr_cd").append("<option value='0'>---Select---</option>");//line added  for ilc flow on 07-06-2022 by Shreeya
 						$.each(resArray, function (key, value) {
 							$("#dst_usr_cd").append("<option value="+value['id']+">"+value['f_name']+' '+value['l_name']+"</option>")	;
 						});
@@ -126,9 +127,6 @@
 		});
 	
 	}
-
-
-
 
 	//for sample accept window
 	//to fetch and load homo. and observ. methods for selected sample according to the commodity
