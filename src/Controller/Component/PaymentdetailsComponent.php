@@ -46,16 +46,20 @@
 				} else {
 					$sample_inward_form_status = '';
 				}
+			
 			} else {
+				
 				//For Sample Details Progress-Bar
-				if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))
-					&& !empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
+				if (!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_inward',$this->Session->read('org_sample_code')))) {
 					$sample_inward_form_status = 'saved';
+				} else {
+					$sample_inward_form_status = '';
+				}
+				
+				if(!empty($this->Controller->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
 					$sample_details_form_status='saved';
-
 				} else {
 					$sample_details_form_status='';
-					$sample_inward_form_status = '';
 				}
 			}
 			
@@ -198,9 +202,13 @@
 				$pao = $LimsSamplePaymentDetails->find('all', array('fields'=>'pao_id', 'conditions'=>array('sample_code IS'=>$sample_code)))->first();
 				$pao_user_id = $DmiPaoDetails->find('all',array('fields'=>'pao_user_id', 'conditions'=>array('id IS'=>$pao['pao_id'])))->first();
 				$pao_user_email_id = $DmiUsers->find('all',array('fields'=>'email', 'conditions'=>array('id IS'=>$pao_user_id['pao_user_id'])))->first();
+				
+				$recordId =	$LimsSamplePaymentDetails->find('all', array('fields'=>array('id','payment_confirmation'),'conditions'=>array('sample_code IS'=>$sample_code),'order'=>'id desc'))->first();
+				$payID = $recordId['id'];
 
 				$lims_sample_payment_detailsEntity = $LimsSamplePaymentDetails->newEntity(array(
 
+					'id' => $payID,
 					'sample_code'=>$sample_code,
 					'sample_type'=>	$payment_confirmation_query['sample_type'],
 					'amount_paid'=>$payment_amount,
@@ -212,16 +220,16 @@
 					'reason_comment'=>$payment_confirmation_query['reason_comment'],
 					'payment_confirmation'=>'replied',
 					'pao_id'=>$pao_id,
-					'created'=>date('Y-m-d H:i:s'),
 					'modified'=>date('Y-m-d H:i:s')
 				));
 
 				if ($LimsSamplePaymentDetails->save($lims_sample_payment_detailsEntity)) {
 
-					//Entry in all applications current position table (Done By pravin 4/11/2017)
-					$user_email_id = $pao_user_email_id['email'];
-					$current_level = 'pao';
-					//added on 23-07-2018 by Amol
+					//For Inward/RO-SO-OIC
+					//$DmiSmaEmailTemplates->sendMessage(2056,$sample_code);
+					//For DDO
+					//$DmiSmaEmailTemplates->sendMessage(2056,$sample_code);
+					//For RO
 					//$DmiSmaEmailTemplates->sendMessage(2056,$sample_code);
 					
 					return true;
@@ -256,7 +264,7 @@
 						'dst_usr_cd'		=>	$destinationUser,
 						'user_code'			=>	$_SESSION['user_code'],
 						'stage_smpl_cd'		=>	$sample_code,
-						'tran_date'			=>	$tran_date['tran_date'],
+						'tran_date'			=>	date('Y-m-d'),
 						'stage'				=>	'3',
 						'stage_smpl_flag'	=>	'PS' // Added this flag for "Payment Saved"
 					);
@@ -283,7 +291,7 @@
 			$LimsSamplePaymentDetails = TableRegistry::getTableLocator()->get('LimsSamplePaymentDetails');
 			$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
 
-			$recordId =	$LimsSamplePaymentDetails->find('all', array('fields'=>array('id','payment_confirmation'),'conditions'=>array('sample_code IS'=>$sample_code),'order'=>'id desc'))->first();
+			$recordId =	$LimsSamplePaymentDetails->find('all', array(/*'fields'=>array('id','payment_confirmation'),*/'conditions'=>array('sample_code IS'=>$sample_code),'order'=>'id desc'))->first();
 
 			$payID = $recordId['id'];
 			
@@ -292,21 +300,32 @@
 
 			$LimsSamplePaymentDetailsEntity = $LimsSamplePaymentDetails->newEntity(array(
 
-				'id'=>$payID,
-				'payment_confirmation'=>'pending',
-				'modified'=>date('Y-m-d H:i:s')
+				//'id'=>$payID,
+				'sample_code'				=>	$sample_code,
+				'sample_type'				=>	$recordId['sample_type'],
+				'amount_paid'				=>	$recordId['amount_paid'],
+				'transaction_id'			=>	$recordId['transaction_id'],
+				'transaction_date'			=>	$this->Customfunctions->changeDateFormat($recordId['transaction_date']),
+				'payment_receipt_docs'		=>	$recordId['payment_receipt_docs'],
+				'bharatkosh_payment_done'	=>	$recordId['bharatkosh_payment_done'],
+				'payment_confirmation'		=>	'pending',
+				'pao_id'					=>	$recordId['pao_id'],
+				'created'					=>	date('Y-m-d H:i:s'),
+				'modified'					=>	date('Y-m-d H:i:s')
 			));
 
 			if ($LimsSamplePaymentDetails->save($LimsSamplePaymentDetailsEntity)) {
 
-				//SMS For PACKER When Advance Payment is Final Submitted
-				//$this->DmiSmsEmailTemplates->sendMessage(108,$customer_id,'DmiChemistFinalSubmits');
+				$DmiSmsEmailTemplates = TableRegistry::getTableLocator()->get('DmiSmsEmailTemplates');
 
-				//SMS For DDO/PAO When Advance Payment is Final Submitted
-				//$this->DmiSmsEmailTemplates->sendMessage(109,$customer_id,'DmiChemistFinalSubmits');
+				//For Source
+				//$DmiSmsEmailTemplates->sendMessage(108,$customer_id,);
 
-				///Added this call to save the user action log on 04-03-2022 by Akash
-				//$this->Authentication->userActionPerformLog('Advance Payment(Save)', 'Success');
+				//For Destination
+				//$DmiSmsEmailTemplates->sendMessage(109,$customer_id);
+
+				//For RO
+				//$DmiSmsEmailTemplates->sendMessage(109,$customer_id);
 
 				return true;
 			}

@@ -336,10 +336,27 @@
 
         /// For Comercial Type Sample ///
 
-        $('#sample_type_code').change(function (e) {    e.preventDefault();
-            let selectedText = $(this).find("option:selected").text().trim();
-            if(selectedText == 'Commercial'){
-                $("#paymentmodal").modal()
+        $('#sample_type_code').change(function (e) {    
+			//e.preventDefault();
+			var sample_type_code = $('#sample_type_code').val();
+
+            if(sample_type_code == '3'){
+				$.confirm({
+					title: 'Commercial Sample',
+					content: 'Please Note: As you have selected <b>Commercial</b> Sample Type the payment details to be filled in <i>Payment Section</i>. <br>After saving the <i>Inward Section</i> the Payment Section will be avaible to fill.',
+					icon: 'glyphicon glyphicon-info-sign',
+					type: 'info',
+					columnClass: 'm',
+					buttons: {
+						OK: {
+							btnClass: 'btn-info',
+							action: function(){}
+						},
+						cancel: function () {
+							$("#sample_type_code option:eq(0)").prop("selected", true);
+						}
+					}
+				});
             }
         });
 
@@ -375,7 +392,8 @@
 		function checkCommodityUsed(){
 	
 			var commodity = $("#commodity_code").val();
-			
+			var commodityName = $("#commodity_code option:selected").text();
+	
 			if (commodity !='') {
 				
 				$.ajax({
@@ -388,9 +406,22 @@
 					},
 					success: function (data) {
 						if (data == 'no') {
-							$("#commodity_code").val("");
-							$.alert("Selected Commodity charges is not added. First Add the charges.");
-							return false;
+
+							$.confirm({
+								title:'Commercial Charges',
+								content: 'There is no <i>charges</i> available for the <b>'+ commodityName +'</b> commodity. <br/> Please use the <i>Commercial Charges</i> Master to add the charges for commodity. </br> <b>OR</b> Contact the Administrator.',
+								icon: 'glyphicon glyphicon-info-sign',
+								type: 'info',
+								columnClass: 'm',
+								buttons: {
+									OK: {
+										btnClass: 'btn-info',
+										action: function(){
+											
+										}
+									}
+								}
+							});				
 						}
 					  
 					}

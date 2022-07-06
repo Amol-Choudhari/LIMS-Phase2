@@ -87,7 +87,7 @@ class PaymentController extends AppController{
 					$savePaymentDetails = $this->Paymentdetails->saveSamplePaymentDetails($postData);
 					
 					$sample = $this->LimsSamplePaymentDetails->find('all',array('conditions'=>array('sample_code' => $_SESSION['org_sample_code']),'order'=>'id desc'))->first();
-					print_r($sample); exit;
+					
 
 					if ($savePaymentDetails == true){
 	
@@ -122,7 +122,8 @@ class PaymentController extends AppController{
 						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
 						
 						$message = 'Note :
-						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO '.base64_decode($user['email']).'  ('.$office[0].')</b>
+						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
+						</br> '.base64_decode($user['email']).'  ('.$office[0].')</b>
 						for payment verification, 
 						</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
 						</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
@@ -155,8 +156,11 @@ class PaymentController extends AppController{
 								 INNER JOIN sample_inward AS si ON si.org_sample_code=lspd.sample_code
 								 INNER JOIN workflow AS wf ON lspd.sample_code = wf.org_sample_code AND wf.stage_smpl_flag='SI'
 								 AND wf.src_usr_cd ='$user_cd'
+								 WHERE lspd.payment_confirmation='not_confirmed' AND lspd.id = (select id from lims_sample_payment_details where sample_code=lspd.sample_code order by id desc limit 1)
 								 GROUP BY lspd.sample_code, lspd.payment_confirmation, si.inward_id,lspd.id
 								 ORDER BY lspd.id desc");
+								 //in the above query we are using subquery to get last record id for each sample, to compare it with 'not_confirmed' record
+								 //to confirm it is the last record with 'not_confirmed' status
 
 		$res = $query->fetchAll('assoc');
 	

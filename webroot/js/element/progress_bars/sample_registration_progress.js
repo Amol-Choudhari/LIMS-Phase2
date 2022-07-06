@@ -51,6 +51,11 @@ $(document).ready(function(){
     $('#payment_details_prog_div').removeClass('bg-success').addClass('bg-success');
     $('#payment_details_prog_span').removeClass('glyphicon-remove-sign').addClass('glyphicon-ok-sign');
 
+  }else if(payment_details_form_status=="pending"){
+
+    $('#payment_details_prog_div').removeClass('bg-success').addClass('bg-success');
+    $('#payment_details_prog_span').removeClass('glyphicon-remove-sign').addClass('glyphicon-ok-sign');
+
   }
 
 });

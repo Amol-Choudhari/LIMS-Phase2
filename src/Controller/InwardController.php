@@ -17,11 +17,13 @@ class InwardController extends AppController{
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
+		$this->loadComponent('Paymentdetails');
 		$this->loadModel('LimsUserActionLogs');
 		$this->loadModel('LimsSamplePaymentDetails');
 		$this->loadModel('DmiPaoDetails');
 		$this->loadModel('DmiRoOffices');
 		$this->loadModel('DmiUsers');
+		$this->loadModel('DmiSmsEmailTemplates');
 	}
 
 /****************************************************************************************************************************************************************************************************************************************************************/
@@ -689,59 +691,43 @@ class InwardController extends AppController{
 
 				$get_info = $query->fetchAll('assoc');
 
-
-				//call to the common SMS/Email sending method
-				$this->loadModel('DmiSmsEmailTemplates');
-				//SAMPLE INWARD CONFIRMED
-				//FROM
-				//$this->DmiSmsEmailTemplates->sendMessage(75,$get_info[0]['dst_usr_cd']);
-				//To
-				//$this->DmiSmsEmailTemplates->sendMessage(76,$get_info[1]['dst_usr_cd']);
-
-
-				/* COMMENTED TEMORPILY
-				if ($user_role['role'] == 'Inward Officer') {
-
-					//message when Inward Officer confirmed the sample
-					$this->DmiSmsEmailTemplates->sendMessage(2000,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
-					//message  to the ral/cal oic
-					$this->DmiSmsEmailTemplates->sendMessage(2001,$org_sample_code,$userCode=$get_info[1]['dst_usr_cd']);
-
-				} elseif ($user_role['role'] == 'RAL/CAL OIC') {
-
-					//sms template id RAL/CAL OIC confirmed the sample
-					$this->DmiSmsEmailTemplates->sendMessage(2005,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
-
-				} elseif ($user_role['role'] == 'Jr Chemist' || $user_role['role'] == 'Sr Chemist'){
-					//Message When Chemist Confirmed the Sample
-					$this->DmiSmsEmailTemplates->sendMessage(2015,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
-					//To Message
-					$this->DmiSmsEmailTemplates->sendMessage(2017,$org_sample_code,$userCode=$get_info[1]['dst_usr_cd']);
-
-				} elseif ($user_role['role'] == 'Lab Incharge') {
-					//Message When Lab Incharge
-					$this->DmiSmsEmailTemplates->sendMessage(2018,$org_sample_code,$userCode=$get_info[1]['dst_usr_cd']);
-					//To Message
-					$this->DmiSmsEmailTemplates->sendMessage(2019,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
-
-				}
-				*/
-
-
+				
 				// For Maintaining Action Log by Akash (26-04-2022)
 				$this->LimsUserActionLogs->saveActionLog('New Sample Confirmed','Success');
 
 				// for commercial sample
 				if ($_SESSION['sample'] == 3) {
 
-					$get_info = $this->LimsSamplePaymentDetails->getPaymentDetails();
-					$userID = 	$this->DmiPaoDetails->getPaoDetails($get_info['pao_id']);
-					$userDetails = $this->DmiUsers->getUserDetailsById($userID['pao_user_id']);
-					$ro_office = $this->DmiRoOffices->getOfficeDetailsById($userDetails['posted_ro_office']);
-					
-					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available for Payment Confirmation to PAO/DDO  '.$ro_office[0].'';
+					$confirm = $this->Paymentdetails->confirmSampleDetails();
+					$org_sample_code = $_SESSION['org_sample_code'];
+	
+					if ($confirm == true){
+						
+						//get role and office where sample available after confirmed
+						$get_info = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code'],'stage_smpl_flag'=>'PS'])->order('id desc')->first();
+	
+						$this->loadModel('DmiUsers');
+						$this->loadModel('DmiRoOffices');
+
+						$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
+						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
+						
+						$message = 'Note :
+						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
+						</br> '.base64_decode($user['email']).'  ('.$office[0].')</b>
+						for payment verification, 
+						</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
+						</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
+					}
 
 				} else {
+
+					//SAMPLE INWARD CONFIRMED
+					//FROM
+					//$this->DmiSmsEmailTemplates->sendMessage(75,$get_info[0]['dst_usr_cd']);
+					//To
+					//$this->DmiSmsEmailTemplates->sendMessage(76,$get_info[1]['dst_usr_cd']);
+
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				
