@@ -286,6 +286,7 @@ class InwardController extends AppController{
 			$commodity_list = array();
 		}
 
+
 		$this->set('commodity_list',$commodity_list);
 		$this->set('sample_inward_data',$sample_inward_data);
 		$this->set('sample_inward_form_status',$sample_inward_form_status);
@@ -908,7 +909,7 @@ class InwardController extends AppController{
 								 INNER JOIN m_commodity_category AS mcc ON si.category_code=mcc.category_code
 								 INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
 								 INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code AND si.display='Y'
-								 AND si.status_flag not IN('D')  AND acc_rej_flg IN ('P','R','A','PS') AND si.user_code='$user_cd'
+								 AND si.status_flag not IN('D')  AND acc_rej_flg IN ('P','R','A','PS','PR') AND si.user_code='$user_cd'
 								 GROUP BY si.inward_id, si.stage_sample_code, si.received_date,
 								 		  si.letr_date, si.org_sample_code, si.expiry_month, si.expiry_year,
 										  st.sample_type_desc, ct.container_desc, pc.par_condition_desc,

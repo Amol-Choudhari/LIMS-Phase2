@@ -50,6 +50,8 @@
 																echo "Pending";
 															}elseif(trim($each['acc_rej_flg'])=='PS'){
 																echo "Payment is Saved & Pending with DDO";
+															}elseif(trim($each['acc_rej_flg'])=='PR'){
+																echo "Payment is Referred Back";
 															}else{
 																echo "Rejected";
 															} ?>

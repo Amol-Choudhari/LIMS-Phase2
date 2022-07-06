@@ -430,12 +430,8 @@ class DashboardController extends AppController{
 		}elseif($stageSampleFlag == 'VS'){
 			$activity = 'Sample Verified';
 		
-		}elseif($stageSampleFlag == 'PS'){ // For commercial 
+		}elseif($stageSampleFlag == 'PS' || $stageSampleFlag == 'PV' || $stageSampleFlag == 'PR' || $stageSampleFlag == 'PC'){ // For commercial 
 			$activity = 'Sample is Sent to DDO for Verifcation';
-		}elseif($stageSampleFlag == 'PV'){ // for commerial
-			$activity = 'Sample is Verified By DDO & Available for Forward';
-		}elseif($stageSampleFlag == 'PR'){ // for commerial
-			$activity = 'Sample is Referred Back By DDO';
 		}
 		
 		return $activity;

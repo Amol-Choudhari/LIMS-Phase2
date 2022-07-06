@@ -207,8 +207,7 @@
 				$payID = $recordId['id'];
 
 				$lims_sample_payment_detailsEntity = $LimsSamplePaymentDetails->newEntity(array(
-
-					'id' => $payID,
+					
 					'sample_code'=>$sample_code,
 					'sample_type'=>	$payment_confirmation_query['sample_type'],
 					'amount_paid'=>$payment_amount,

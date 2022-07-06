@@ -226,17 +226,17 @@
 													<div class="row">
 														<div class="col-sm-4">
 															<div class="form-group">
-																<label class="radio-inline "><input class=" validate[required] radio" type="radio" id="acc_rej_flg" name="acc_rej_flg" value="A" required <?php if($sample_inward_data['acc_rej_flg']=='A'){ echo 'checked';} ?> > Accepted</label>
+																<label class="radio-inline "><input class=" validate[required] radio" type="radio" id="acc_rej_flg" name="acc_rej_flg" value="A" required <?php if(trim($sample_inward_data['acc_rej_flg'])=='A' || trim($sample_inward_data['acc_rej_flg'])=='PS'){ echo 'checked';} ?> > Accepted</label>
 															</div>
 														</div>
 														<div class="col-sm-4">
 															<div class="form-group">
-																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg1"  name="acc_rej_flg" value="R" required <?php if($sample_inward_data['acc_rej_flg']=='R'){ echo 'checked';} ?> > Rejected</label>
+																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg1"  name="acc_rej_flg" value="R" required <?php if(trim($sample_inward_data['acc_rej_flg'])=='R'){ echo 'checked';} ?> > Rejected</label>
 															</div>
 														</div>
 														<div class="col-sm-4">
 															<div class="form-group">
-																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg2"  name="acc_rej_flg" value="P" required <?php if($sample_inward_data['acc_rej_flg']=='P'){ echo 'checked';} ?> > Pending</label>
+																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg2"  name="acc_rej_flg" value="P" required <?php if(trim($sample_inward_data['acc_rej_flg'])=='P'){ echo 'checked';} ?> > Pending</label>
 															</div>
 														</div>
 														<input type="hidden" id="inward_id"  name="inward_id">

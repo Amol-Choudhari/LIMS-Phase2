@@ -92,7 +92,7 @@ class PaymentController extends AppController{
 					if ($savePaymentDetails == true){
 	
 						$message_theme = 'success';
-						if ($sample['payment_confirmation']=='replied ') {
+						if ($sample['payment_confirmation']=='replied') {
 							$message = 'Your Reply Saved Successfully & Forwared to DDO for further process.';
 						} else {
 							$message = 'Payment Section Saved Successfully';
