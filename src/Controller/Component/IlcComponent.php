@@ -322,22 +322,23 @@
 					
 					if ($office_code=='HO') {
 				
-						$str="UPDATE sample_inward SET status_flag='H',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['ilc_org_sample_cd']."' ";
+						$str="UPDATE sample_inward SET status_flag='H',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['org_sample_code']."' ";
 						
 					} elseif ($office_code=='CAL') {
 						
-						$str="UPDATE sample_inward SET status_flag='F',chlng_smpl_disptch_cal_dt='$tran_date',dispatch_date='$dispatch_date'   WHERE stage_sample_code='".$each['ilc_org_sample_cd']."' ";
+						$str="UPDATE sample_inward SET status_flag='F',chlng_smpl_disptch_cal_dt='$tran_date',dispatch_date='$dispatch_date'   WHERE stage_sample_code='".$each['org_sample_code']."' ";
 
 					} else {
 						
-						$str="UPDATE sample_inward SET status_flag='F',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['ilc_org_sample_cd']."' ";
+						$str="UPDATE sample_inward SET status_flag='F',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['org_sample_code']."' ";
 						
 					}
 
 				}	
 				$conn->execute($str);
 			}
-
+			
+ 			
 			//all process updating records sample inward table with  main sample code
 
 			if ($office_code=='HO') {
@@ -373,6 +374,132 @@
 		return true;		
 			
 		}
+
+
+		//check wheather sample type ilc final grading 11-07-2022
+		public function ilcFinalGradeAvaiIf($sampleTypeCode) {
+
+			$user_id = $_SESSION['user_code'];
+			$conn = ConnectionManager::get('default');
+			// load model
+			$Workflow = TableRegistry::getTableLocator()->get('Workflow');
+
+			$query1 = $conn->execute("SELECT ft.sample_code,ft.sample_code
+									 FROM Final_Test_Result AS ft
+									 INNER JOIN workflow AS w ON ft.org_sample_code=w.org_sample_code
+									 INNER JOIN m_sample_allocate sa ON ft.org_sample_code=sa.org_sample_code
+									 INNER JOIN sample_inward AS si ON ft.org_sample_code=si.org_sample_code
+									 WHERE  si.sample_type_code = 9 AND ft.display='Y' AND w.dst_usr_cd='$user_id' AND w.stage_smpl_flag IN ('AR','FO','FC','FG','FS','VS','FGIO') AND  si.status_flag IN('VS','FG','FC','FO','FS')
+									 GROUP BY ft.sample_code ");
+
+			$final_result_details1 = $query1->fetchAll('assoc');
+
+			//Conditions to check wheather stage sample code is final graded or not.
+			$final_result1 = array();
+			if(!empty($final_result_details1)){
+
+				foreach($final_result_details1 as $stage_sample_code){
+
+					$final_grading1 = $Workflow->find('all',array('conditions'=>array('stage_smpl_flag'=>'FG','stage_smpl_cd'=>$stage_sample_code['sample_code'],'src_usr_cd'=>$user_id)))->first();
+
+					if(empty($final_grading1)){
+						$final_result1[]= $stage_sample_code;
+					}
+				}
+			}
+			return $final_result1;
+
+		}
+
+
+
+		// check wheather stage sample code is final graded or not
+		public  Function ilcFinalGradeAvaiElse()
+		{
+			$user_id = $_SESSION['user_code'];
+			$conn = ConnectionManager::get('default');
+			// load model
+			$Workflow = TableRegistry::getTableLocator()->get('Workflow');
+
+			$query1 = $conn->execute("SELECT ft.sample_code,ft.sample_code
+									 FROM Final_Test_Result AS ft
+									 INNER JOIN workflow AS w ON ft.org_sample_code=w.org_sample_code
+									 INNER JOIN m_sample_allocate sa ON ft.org_sample_code=sa.org_sample_code
+									 INNER JOIN sample_inward AS si ON ft.org_sample_code=si.org_sample_code
+									 WHERE ft.display='Y'
+									 AND w.dst_usr_cd='$user_id'
+									 AND w.stage_smpl_flag IN('AR','FO','FC','FR')
+									 AND  si.status_flag IN('VS','FO','FC','FR')
+									 GROUP BY ft.sample_code");
+
+			$final_result_details1 = $query1->fetchAll('assoc');
+
+			/* Conditions to check wheather stage sample code is final graded or not.*/
+			$final_result1 = array();
+			if (!empty($final_result_details1)) {
+
+				foreach ($final_result_details1 as $stage_sample_code) {
+
+					$final_grading_details1 = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd'=>$stage_sample_code['sample_code']),'order'=>array('id desc')))->first();
+
+					if (!empty($final_grading_details1)) {
+
+						$final_grading1 = $Workflow->find('all',array('conditions'=>array('dst_usr_cd'=>$user_id,'id'=>$final_grading_details['id'],'stage_smpl_flag !='=>'FG')))->first();
+
+						if (!empty($final_grading1)) {
+							$final_result1[]= $stage_sample_code;
+						}
+					}
+				}
+
+			}
+
+			return $final_result1;
+
+		}
+
+		public  Function finalgradingresult($final_result1)
+		{
+			$conn = ConnectionManager::get('default');
+			
+			//to be used in below core query format, that's why
+			$arr = "IN(";
+			foreach ($final_result1 as $each) {
+				$arr .= "'";
+				$arr .= $each['sample_code'];
+				$arr .= "',";
+			}
+			$arr .= "'00')";//00 is intensionally given to put last value in string.
+
+			//update the query to avoid duplicate entry in result, done by pravin bhakare 29-10-2021
+			// NOTE : ADDED THE "VS" FLAG IN THIS QUERY TO GET THE VERFIED SAMPLE LIST AVALIBLE FOR GRADING AT THE OIC - 26-05-2022
+			$query = $conn->execute("SELECT workflows.stage_smpl_cd,
+							si.received_date,
+							st.sample_type_desc,
+							mcc.category_name,
+							mc.commodity_name,
+							ml.ro_office,
+							workflows.modified AS submitted_on
+						FROM sample_inward AS si
+						INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+						INNER JOIN m_commodity_category AS mcc ON si.category_code=mcc.category_code
+						INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
+						INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+						INNER JOIN (select org_sample_code,stage_smpl_cd,modified from workflow where stage_smpl_flag IN('FGIO','FS','FC','VS') GROUP by org_sample_code,stage_smpl_cd,modified) as workflows
+								on si.org_sample_code = workflows.org_sample_code
+						WHERE workflows.stage_smpl_cd ".$arr." ORDER BY workflows.modified desc "  );
+
+			$result1 = $query->fetchAll('assoc');
+			return $result1;
+			
+		}	
+		
+
+
+
+		
+		
+		
 
 
     }

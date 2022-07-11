@@ -34,14 +34,14 @@
 			return true;
 		}
 				
-/******************************************************************************************************************************************************************/ 
+		/******************************************************************************************************************************************************************/ 
 		//added for save selected record  03/06/2022 by shreeya  
 		public function getSavedSelectedRALs($sampleTypeCode) {
 
 			$forw_sample_cd = $this->Session->read('forw_sample_cd');
 			// load model
 			$conn = ConnectionManager::get('default');
-			$Workflow = TableRegistry::getTableLocator()->get('Workflow');
+			//$Workflow = TableRegistry::getTableLocator()->get('Workflow');
 			$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
 			$IlcSelectedRals = TableRegistry::getTableLocator()->get('IlcSelectedRals');
 		
@@ -58,7 +58,7 @@
 			$this->Controller->set('getSavedList',$getSavedList);
 		}
 
-/******************************************************************************************************************************************************************/ 
+		/******************************************************************************************************************************************************************/ 
 
 		//added for save new mapping code on new table db done  17/06/2022 by shreeya  
 		public function SelectSavedMapping($sampleTypeCode) {
@@ -69,42 +69,47 @@
 			$IlcOrgSmplcdMaps = TableRegistry::getTableLocator()->get('IlcOrgSmplcdMaps');
 			$date = date('Y-m-d H:i:s');
 
-			//added a line for updated status according to status (0,1) done 28/06/2022 by shreeya
-			$IlcOrgSmplcdMaps->updateAll(array('status' => 0,'modified'=>"$date"),array('sample_type' => $sampleTypeCode,'org_sample_code IS' => $forw_sample_cd));
+			//checking entry with status 1 to avoid resaving of entries
+			$checkmapentry=	$IlcOrgSmplcdMaps->find('all')->select()->where(['status IS' => '1','org_sample_code'=>$forw_sample_cd,'sample_type'=>$sampleTypeCode])->first();
+			
+			if(empty($checkmapentry)){
 
-			// added for save record in mapping table done 17/06/2022 by shreeya
-			$getSavedList = $IlcSelectedRals->find('all')->select()->where(['status IS' => '1','stage_sample_code'=>$forw_sample_cd,'sample_type'=>$sampleTypeCode])->toArray();
+				// added for save record in mapping table done 17/06/2022 by shreeya
+				$getSavedList = $IlcSelectedRals->find('all')->select()->where(['status IS' => '1','stage_sample_code'=>$forw_sample_cd,'sample_type'=>$sampleTypeCode])->toArray();
+				$i=1;
+				$savelist=array();
+				foreach($getSavedList as $eachLab)
+				{
+					//added for new generating mapping code using Customfunctions component 17/06/2022
+					$new_mapping_code[$i] = $this->Customfunctions->createStageSampleCode();
+					$savelist[] = array(
 
+						'org_sample_code'=>$forw_sample_cd,
+						'sample_type'=>$eachLab['sample_type'],
+						'ilc_org_sample_cd'=>$new_mapping_code[$i],
+						'ral_name_val'=>$eachLab['ral_name_val'],
+						'inwd_off_val'=>$eachLab['inwd_off_val'],
+						'status'=>1,
+						'created'=>$date,
+						"modified"=>$date
+					
+					);
+				$i++;	
+				}
+
+				foreach($savelist as $eachLab)
 		
-			$savelist=array();
-			foreach($getSavedList as $eachLab)
-			{
-				//added for new generating mapping code using Customfunctions component 17/06/2022
-				$new_mapping_code[$i] = $this->Customfunctions->createStageSampleCode();
-				$savelist[] = array(
-
-					'org_sample_code'=>$eachLab['stage_sample_code'],
-					'sample_type'=>$eachLab['sample_type'],
-					'ilc_org_sample_cd'=>$new_mapping_code[$i],
-					'ral_name_val'=>$eachLab['ral_name_val'],
-					'inwd_off_val'=>$eachLab['inwd_off_val'],
-					'status'=>1,
-					'created'=>$date,
-					"modified"=>$date
-				
-				);
-				
+				{
+					$ilcEntity = $IlcOrgSmplcdMaps->newEntity($eachLab);
+					$IlcOrgSmplcdMaps->save($ilcEntity);
+				}
 			}
+			
 
-			foreach($savelist as $eachLab)
-		
-			{
-				$ilcEntity = $IlcOrgSmplcdMaps->newEntity($eachLab);
-				$IlcOrgSmplcdMaps->save($ilcEntity);
-			}	
+				
 		}
 
-/******************************************************************************************************************************************************************/ 
+		/******************************************************************************************************************************************************************/ 
 
 		// save selected 5 RAL on sample inward table done 27/06/2022 by shreeya
 		public function SavedToSampleInward($sampleTypeCode) {
@@ -131,13 +136,13 @@
 			$fin_year		 = $sample_inward_data['fin_year'];
 			$letr_date       = date('Y-m-d');
 			
-			$savelist=array();
 			$i=1;
+			$savelist=array();
 			foreach($getSavedList as $eachLab)
 			{
 				$checkInward = $SampleInward->find('all',array('conditions'=>array('org_sample_code'=>$eachLab['ilc_org_sample_cd'])))->first();
 				if(empty($checkInward)){
-
+					
 					$savelist[] = array(
 
 						'inward_id'				=>	$inward_id+$i,
@@ -169,6 +174,7 @@
 						'user_code'			    =>	$sample_inward_data['user_code'],
 						'entry_flag'			=>	$sample_inward_data['entry_flag'],
 						'status_flag'		    =>	$sample_inward_data['status_flag'],
+						'entry_type'		    =>	'sub_sample',
 						'created'			    =>	date('Y-m-d H:i:s')
 						
 					);
@@ -248,12 +254,13 @@
 				
 		}
 
-/******************************************************************************************************************************************************************/ 
+		/******************************************************************************************************************************************************************/ 
 		
 		// forward to workflow table with OF flag min 5 RAL done 29-06-2022 by shreeya
 		public function ilcsampleForward($sampleTypeCode) {
 
 			$forw_sample_cd = $this->Session->read('forw_sample_cd');
+			$conn = ConnectionManager::get('default');
 			
 			// load model
 			$Workflow = TableRegistry::getTableLocator()->get('Workflow');
@@ -261,92 +268,115 @@
 			$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
 			$IlcOrgSmplcdMaps = TableRegistry::getTableLocator()->get('IlcOrgSmplcdMaps');
 
-			if($this->getController()->getRequest()->getData('dst_usr_cd') != '' && $this->getController()->getRequest()->getData('ral_cal') != '' && $this->getController()->getRequest()->getData('dst_loc_id') != '' ) {
+			$ogrsample1	= $SampleInward->find('all', array('conditions'=> array('stage_sample_code IS' => $forw_sample_cd)))->first();
+			$ogrsample	= $ogrsample1['org_sample_code'];
 			
-				$ogrsample1	= $SampleInward->find('all', array('conditions'=> array('stage_sample_code IS' => $forw_sample_cd)))->first();
-				$ogrsample	= $ogrsample1['org_sample_code'];
-				
-				$user_code	=$this->getController()->getRequest()->getData('dst_usr_cd');
+			$office_code	= $this->getController()->getRequest()->getData('ral_cal');
 			
-				$office_code	= $this->getController()->getRequest()->getData('ral_cal');
+			$tran_date		= date('Y-m-d');
+			$dispatch_date	= date("Y/m/d");
+
 			
-				$tran_date		= date('Y-m-d');
-				$dispatch_date	= date("Y/m/d");
+			if ($office_code == 'HO') {
+			
+				$flag = "HF";
 
-				
-				if ($office_code == 'HO') {
-				
-					$flag = "HF";
+			} else {
 
-				} else {
-
-					$flag = "OF";
-				}
-				
-				$getSavedList = $IlcOrgSmplcdMaps->find('all')->select()->where(['status IS' => '1','org_sample_code'=>$forw_sample_cd])->toArray();
-
-				$savedlist=array();
-				foreach ($getSavedList as $each) {
-					
-					//Checks if the Sample is Already Forwarded.
-					$forwardedList = $Workflow->find('all',array('conditions'=>array('org_sample_code'=>$each['ilc_org_sample_cd'],'stage_smpl_flag IS'=>'OF')))->first();
-					if(empty($forwardedList)){
-						$new_sample_code	= $this->Customfunctions->createStageSampleCode();
-
-						$savedlist[] = array(
-								
-							'org_sample_code'       =>$each['ilc_org_sample_cd'],
-							'stage_smpl_cd'     	=>$new_sample_code,
-							'dst_loc_id'            =>$each['ral_name_val'],
-							'dst_usr_cd'            =>$each['inwd_off_val'],
-							'src_loc_id'            =>$_SESSION['posted_ro_office'],
-							'src_usr_cd'            =>$_SESSION['user_code'],
-							'tran_date'            =>$tran_date,
-							'user_code'             =>$_SESSION["user_code"],
-							'stage'                =>'4',
-							'stage_smpl_flag'      =>$flag
-
-						);
-					}
-					
-				}
-
-				$workflowEntity = $Workflow->newEntities($savedlist);
-				
-				foreach($workflowEntity as $each)
-				{
-					
-					// $Workflow->save($workflowEntity);	
-				
-					if ($Workflow->save($each)) {
-						
-						if ($office_code=='HO') {
-						
-							$str="UPDATE sample_inward SET status_flag='H',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['ilc_org_sample_cd']."'";
-							
-						} elseif ($office_code=='CAL') {
-							
-							$str="UPDATE sample_inward SET status_flag='F',chlng_smpl_disptch_cal_dt='$tran_date',dispatch_date='$dispatch_date'   WHERE stage_sample_code='".$each['ilc_org_sample_cd']."'";
-
-						} else {
-							
-							$str="UPDATE sample_inward SET status_flag='F',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['ilc_org_sample_cd']."'";
-							
-						}
-
-					}	
-				}
-				
-
-				
+				$flag = "OF";
 			}
 			
-			
+			$getSavedList = $IlcOrgSmplcdMaps->find('all')->select()->where(['status IS' => '1','org_sample_code'=>$forw_sample_cd])->toArray();
+
+			$savedlist=array();
+			foreach ($getSavedList as $each) {
 				
+				//Checks if the Sample is Already Forwarded.
+				$forwardedList = $Workflow->find('all',array('conditions'=>array('org_sample_code'=>$each['ilc_org_sample_cd'],'stage_smpl_flag IS'=>'OF')))->first();
+				if(empty($forwardedList)){
+					$new_sample_code	= $this->Customfunctions->createStageSampleCode();
+
+					$savedlist[] = array(
+							
+						'org_sample_code'       =>$each['ilc_org_sample_cd'],
+						'stage_smpl_cd'     	=>$new_sample_code,
+						'dst_loc_id'            =>$each['ral_name_val'],
+						'dst_usr_cd'            =>$each['inwd_off_val'],
+						'src_loc_id'            =>$_SESSION['posted_ro_office'],
+						'src_usr_cd'            =>$_SESSION['user_code'],
+						'tran_date'            =>$tran_date,
+						'user_code'             =>$_SESSION["user_code"],
+						'stage'                =>'4',
+						'stage_smpl_flag'      =>$flag
+
+					);
+				}
+				
+			}
+			//saved record
+			$workflowEntity = $Workflow->newEntities($savedlist);
+			
+			foreach($workflowEntity as $each)
+			{	
+				if ($Workflow->save($each)) {
+					
+					if ($office_code=='HO') {
+				
+						$str="UPDATE sample_inward SET status_flag='H',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['org_sample_code']."' ";
+						
+					} elseif ($office_code=='CAL') {
+						
+						$str="UPDATE sample_inward SET status_flag='F',chlng_smpl_disptch_cal_dt='$tran_date',dispatch_date='$dispatch_date'   WHERE stage_sample_code='".$each['org_sample_code']."' ";
+
+					} else {
+						
+						$str="UPDATE sample_inward SET status_flag='F',dispatch_date='$dispatch_date' WHERE stage_sample_code='".$each['org_sample_code']."' ";
+						
+					}
+
+				}	
+				$conn->execute($str);
+			}
+			
+ 			
+			//all process updating records sample inward table with  main sample code
+
+			if ($office_code=='HO') {
+					
+				$str="UPDATE sample_inward SET status_flag='H',dispatch_date='$dispatch_date' WHERE stage_sample_code='$forw_sample_cd' ";
+				
+			} elseif ($office_code=='CAL') {
+				
+				$str="UPDATE sample_inward SET status_flag='F',chlng_smpl_disptch_cal_dt='$tran_date',dispatch_date='$dispatch_date'   WHERE stage_sample_code='$forw_sample_cd' ";
+
+			} else {
+				
+				$str="UPDATE sample_inward SET status_flag='F',dispatch_date='$dispatch_date' WHERE stage_sample_code='$forw_sample_cd' ";
+				
+			}
+			$conn->execute($str);
+
+			//all process updating records workflow table with OF flag
+			$workflowentity = $Workflow->newEntity(array(
+				'org_sample_code'       =>$forw_sample_cd,
+				'stage_smpl_cd'     	=>$forw_sample_cd,
+				'dst_loc_id'            =>$_SESSION['posted_ro_office'],//same as source loc id for ILC to manage forwarded list
+				'dst_usr_cd'            =>$_SESSION['user_code'], //same as source loc id for ILC to manage forwarded list
+				'src_loc_id'            =>$_SESSION['posted_ro_office'],
+				'src_usr_cd'            =>$_SESSION['user_code'],
+				'tran_date'            =>$tran_date,
+				'user_code'             =>$_SESSION["user_code"],
+				'stage'                =>'4',
+				'stage_smpl_flag'      =>$flag
+			));
+			$Workflow->save($workflowentity);
+			
+		return true;		
 			
 		}
 
-			
+
+		
 
 
     }

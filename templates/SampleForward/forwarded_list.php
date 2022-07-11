@@ -96,7 +96,7 @@
 														<td><?php echo $each['commodity_name']; ?></td>
 														<td><?php echo $each['sample_type_desc']; ?></td>
 														<td><?php echo $each['tran_date']; ?></td>
-														<td><?php echo $this->Html->link('', array('controller' => 'Sample-forward', 'action'=>'redirect_to_gnrt_ltr', $each['stage_smpl_cd']),array('class'=>'glyphicon glyphicon-share','title'=>'Generate Letter for Single Sample')); ?> |
+														<td><?php echo $this->Html->link('', array('controller' => 'Sample-forward', 'action'=>'redirect_to_gnrt_ltr_ilc', $each['stage_smpl_cd']),array('class'=>'glyphicon glyphicon-share','title'=>'Generate Letter for Single Sample')); ?> |
 															<?php echo $this->Html->link('', array('controller' => 'Sample-forward', 'action'=>'gnrt_multiple_smpl_frwd_ltr'),array('class'=>'glyphicon glyphicon-list-alt','title'=>'Generate Letter for Multiple Samples')); ?> 
 															<?php // echo $this->Html->link('', array('controller' => 'Sampleforward', 'action'=>'editForwardedSample',$each['stage_smpl_cd']),array('class'=>'fas fa-edit','title'=>'Edit Forwarded Sample')); ?>
 														</td>

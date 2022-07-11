@@ -904,58 +904,17 @@ class SampleForwardController extends AppController {
 		}
 
 	}
-/************************************************************************************************************************************************************************************************************************/
 
-	//GENEREATE FORWARDED SAMPLE LETTER WITH PDF For ILC FLOW done 06-07-2022 by shreeya
-	public function ilcGnrtSmplFrwdLtr(){
-
-		$ltr_sample_cd = trim($this->Session->read('ltr_sample_cd'));
-		$conn = ConnectionManager::get('default');
-		if (!empty($ltr_sample_cd)) {
-  
-			  $this->viewBuilder()->setLayout('admin_dashboard');
-			  $this->loadModel('SampleInward');
-			  $this->loadModel('MSampleType');
-  
-			  //Set Variables to Show Pop-up Messages From View File
-			  $message = '';
-			  $redirect_to = '';
-			  $message_theme = '';
-  
-			  $this->set('samples_list',array($ltr_sample_cd=>$ltr_sample_cd));
-  
-			  $sam_type=$this->MSampleType->find('all',array('conditions' => array('display' => 'Y')))->toArray();
-			  $this->set('Sample_Type',$sam_type);
-
-			  	$query2 = $conn->execute("SELECT w.stage_smpl_cd,du.email,du.f_name,du.l_name
-					FROM ilc_org_smplcd_maps AS sm
-					INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
-					INNER JOIN dmi_users AS du ON sm.inwd_off_val=du.id
-					WHERE  w.stage_smpl_flag='OF' AND sm.org_sample_code='$ltr_sample_cd' AND sm.status = 1 ");
-						
-					$subsmplres = $query2->fetchAll('assoc');	
-					$subsamplelist= array();
-					foreach ($subsmplres as $each1) {
-						$subsamplelist[$each1['stage_smpl_cd']] = $each1['stage_smpl_cd'];
-					}
-				
-				$this->set('subsamplelist',$subsamplelist);
-			}
-
-		
-	  }
 
 /************************************************************************************************************************************************************************************************************************/
 
 	//FORWARD LETTER PDF VIEW
 	public function frdLetterPdf($stage_sample_code) {
 
-		
-
+	
 		$this->viewBuilder()->setLayout('pdf_layout');
 
-		// $sample_code = $stage_sample_code;
-		
+		$sample_code = $stage_sample_code;
 		$this->loadModel('SampleInward');
 		$conn = ConnectionManager::get('default');
 
@@ -966,11 +925,11 @@ class SampleForwardController extends AppController {
 								 INNER JOIN m_unit_weight AS a ON a.unit_id = si.parcel_size
 								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
 								 INNER JOIN m_commodity AS m ON m.commodity_code = si.commodity_code
-								 WHERE w.stage IN('3','4') AND si.display='Y' AND  si.status_flag IN('F','H') AND  w.stage_smpl_cd=TRIM('$stage_sample_code') ");
-		
+								 WHERE w.stage IN('3','4') AND si.display='Y' AND si.status_flag IN('F','H') AND w.stage_smpl_cd='$sample_code'");
+
 		$str_data = $query->fetchAll('assoc');
 		$this->set('str_data',$str_data);
-		
+
 		$user_code=$str_data[0]['dst_usr_cd'];
 		$location_code=$str_data[0]['dst_loc_id'];
 
@@ -1257,14 +1216,6 @@ class SampleForwardController extends AppController {
 
 	}
 
-/************************************************************************************************************************************************************************************************************************/
-	//TO RE-DIRECT ON GENERATE SAMPLE FORWARD LETTER ILC FLOW
-	public function redirectToGnrtLtrIlc($ltr_sample_cd){
-
-		$this->Session->write('ltr_sample_cd',$ltr_sample_cd);
-		$this->redirect(array('controller'=>'SampleForward','action'=>'ilc_gnrt_smpl_frwd_ltr'));
-
-	}
 /************************************************************************************************************************************************************************************************************************/
 
 	//GET FORWARDED SAMPLE LIST
