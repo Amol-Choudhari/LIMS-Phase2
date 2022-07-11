@@ -346,7 +346,7 @@ use Cake\View;
 		$message_theme = '';
 		$redirect_to = '';
 
-		$forward_sample_cd = $this->Session->read('forward_sample_cd');
+		$forward_sample_cd = trim($this->Session->read('forward_sample_cd')); #added the trim() on 28-06-2022 by AMOL.
 
 		if (!empty($forward_sample_cd)) {
 
@@ -2236,7 +2236,7 @@ use Cake\View;
 		$message_theme = '';
 		$redirect_to = '';
 
-		$allocate_sample_cd = $this->Session->read('allocate_sample_cd');
+		$allocate_sample_cd = trim($this->Session->read('allocate_sample_cd')); #added the trim() on 28-06-2022 by AMOL.
 
 		if (!empty($allocate_sample_cd)) {
 
@@ -2506,7 +2506,7 @@ use Cake\View;
 		$message_theme = '';
 		$redirect_to = '';
 
-		$forward_sample_cd = $this->Session->read('forward_sample_cd');
+		$forward_sample_cd = trim($this->Session->read('forward_sample_cd')); #added the trim() on 28-06-2022 by AMOL.
 
 		if (!empty($forward_sample_cd)) {
 

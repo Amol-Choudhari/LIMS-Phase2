@@ -6,9 +6,14 @@ use App\Model\Model;
 use Cake\ORM\TableRegistry;
 
 class SampleInwardDetailsTable extends Table{
-	
-	var $name = "SampleInwardDetails";
+
+	var string $name = "SampleInwardDetails";
+
+	public function getSampleDetails($sample_code){
+
+		return $this->find('all')->where(['org_sample_code' => $sample_code])->first();
+	}
+
+
 
 }
-
-?>

@@ -5,10 +5,6 @@ namespace app\Model\Table;
 	use Cake\ORM\TableRegistry;
 	use Cake\ORM\Entity;
 
-
-/*App::uses('Dmi_ro_office','Model');
-App::uses('Dmi_appl_with_ro_mapping_log','Model');*/
-
 class DmiApplWithRoMappingsTable extends Table{
 
 	var $name = "DmiApplWithRoMappings";

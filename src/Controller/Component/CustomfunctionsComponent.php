@@ -523,7 +523,7 @@
 
 	//SERVER-SIDE VALIDATIONS FOR RADIO BUTTON
 	public function radioButtonInputCheck($post_input_request) {
-
+	
 		if ($post_input_request == 'yes' || $post_input_request == 'no' || $post_input_request == 'page' ||
 				$post_input_request == 'external' || $post_input_request == 'top' || $post_input_request == 'side' ||
 				$post_input_request == 'bottom' || $post_input_request == 'DMI' || $post_input_request == 'LMIS' ||
@@ -695,6 +695,7 @@
 
 	//CHECK SAMPLE STATSUS FROM PROGRESS-BAR
 	public function checkSampleIsSaved($check_for,$org_sample_code) {
+		
 
 		if ($check_for=='sample_inward') {
 
@@ -703,17 +704,23 @@
 		} elseif ($check_for=='sample_details') {
 
 			$checkModel = TableRegistry::getTableLocator()->get('SampleInwardDetails');
+
+		} elseif ($check_for=='payment_details') {
+			$checkModel = TableRegistry::getTableLocator()->get('LimsSamplePaymentDetails');
 		}
 
 		//get sample code by inward id
 		$check_sample_code=array();
-		
+	
 		if ($org_sample_code != null) {
 
-			//check sample code
-			$check_sample_code = $checkModel->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('org_sample_code IS'=>$org_sample_code)))->first();
+			if ($check_for == 'payment_details') {
+				$check_sample_code = $checkModel->find('all',array('fields'=>'sample_code', 'conditions'=>array('sample_code IS'=>$org_sample_code)))->first();
+			} else {
+				$check_sample_code = $checkModel->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('org_sample_code IS'=>$org_sample_code)))->first();
+			}
 		}
-
+		
 		return $check_sample_code;
 	}
 
@@ -742,17 +749,7 @@
 			$check_details = array();
 
 			//RO SO Officer & Commercial
-			if (($user_flag=='RO' || $user_flag=='SO') && $sampleType=='3') {
-			
-				$check_details =  $LimsSamplePaymentDetails->find()->select(['sample_code'])->where(['sample_code' => $org_sample_code])->first();
-				if (!empty($check_inward) && !empty($check_details)) {
-
-					$action = 'show';
-				}
-				
-
-			//RO/SO 
-			} elseif (($user_flag=='RO' || $user_flag=='SO') ) {
+			if ($user_flag=='RO' || $user_flag=='SO') {
  
 				$check_details = $SampleInwardDetails->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('org_sample_code IS'=>$org_sample_code),'order'=>'id desc'))->first();
 						
@@ -760,24 +757,22 @@
 
 					$action = 'show';
 				}
-				//For Commercial
-			} elseif($sampleType=='3'){
 				
-				$check_details_commercial = $sampleInward->find()->select(['sample_type_code'])->where(['stage_sample_code IS' => $org_sample_code])->first();
-				
-				if (!empty($check_inward) && !empty($check_details_commercial)) {
-				
-					$action='hide';
-
-				}
-
-			//RAL/CAL	
 			} else {
 					
 				if (!empty($check_inward)) {
 		
 					$action = 'show';
 				}
+			}
+
+			//For Commercial show hide button - 30-06-2022
+			if ($sampleType == 3) {
+				$check_details = $LimsSamplePaymentDetails->getPaymentDetails($org_sample_code);
+				if (empty($check_details)) {
+
+					$action = 'hide';
+				} 
 			}
 		
 		} else {
@@ -1022,106 +1017,6 @@
 		
 	}
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	public function fetchSamplePaymentDetails($sample_code,$district_id) {
-		
-		//Load Models
-		$DmiPaoDetails = TableRegistry::getTableLocator()->get('DmiPaoDetails');
-		$DmiDistrict = TableRegistry::getTableLocator()->get('DmiDistricts');
-		$LimsSamplePaymentDetails = TableRegistry::getTableLocator()->get('LimsSamplePaymentDetails');
-
-		$process_query = 'insert';
-		
-		$bharatkosh_payment_done = '';
-		$payment_amount = '';
-		$payment_transaction_id = '';
-		$selected_pao_alias_name = '';
-		$payment_trasaction_date[0] = '';
-		$payment_receipt_docs = '';
-		$reason_list_comment = '';
-		$reason_comment = '';
-		
-		$this->Controller->set('bharatkosh_payment_done',$bharatkosh_payment_done);
-		$this->Controller->set('payment_amount',$payment_amount);
-		$this->Controller->set('payment_transaction_id',$payment_transaction_id);
-		$this->Controller->set('selected_pao_alias_name',$selected_pao_alias_name);
-		$this->Controller->set('payment_trasaction_date',$payment_trasaction_date);
-		$this->Controller->set('payment_receipt_docs',$payment_receipt_docs);
-		$this->Controller->set('reason_list_comment',$reason_list_comment);
-		$this->Controller->set('reason_comment',$reason_comment);
-	
-		
-		//$pao_alias_name = $DmiPaoDetails->find('list',array('valueField'=>'pao_alias_name'))->toArray();
-		$pao_id = $this->getPaoDetails($district_id);
-		$pao_alias_name = $DmiPaoDetails->find()->select(['pao_alias_name'])->where(['id IS' => $pao_id])->first();
-		$pao_alias_name = $pao_alias_name['pao_alias_name'];
-		$this->Controller->set('pao_alias_name',$pao_alias_name);
-		
-		if(!empty($pao_alias_name)){
-			$pao_to_whom_payment = $pao_alias_name; 
-		}else{
-			$pao_to_whom_payment = null;
-		}
-		
-		
-		$listSamplePaymentId = $LimsSamplePaymentDetails->find('list', array('fields'=>'id','conditions'=>array('sample_code IS'=>$sample_code)))->toArray();
-	
-		if(!empty($listSamplePaymentId)){
-			
-			$process_query = 'update';
-			
-			$payment_confirmation_query = $LimsSamplePaymentDetails->find('all', array('conditions'=>array('id'=>max($listSamplePaymentId))))->first();
-			$payment_confirmation = $payment_confirmation_query;
-			$this->Controller->set('payment_confirmation_query',$payment_confirmation_query);
-			
-			$payment_confirmation_status = $payment_confirmation['payment_confirmation'];
-			$bharatkosh_payment_done = $payment_confirmation['bharatkosh_payment_done'];
-			$payment_amount = $payment_confirmation['amount_paid'];
-			$payment_transaction_id = $payment_confirmation['transaction_id'];
-			$payment_trasaction_date = explode(' ',$payment_confirmation['transaction_date']);
-			$payment_receipt_docs = $payment_confirmation['payment_receipt_docs'];
-			$reason_list_comment = $payment_confirmation['reason_option_comment'];
-			$reason_comment = $payment_confirmation['reason_comment'];
-			$pao_to_whom_payment = $pao_alias_name;
-			
-			$selected_pao = $DmiPaoDetails->find('all',array('fields'=>'pao_alias_name','conditions'=>array('id IS'=>$payment_confirmation['pao_id'])))->first();
-			$selected_pao_alias_name = $selected_pao['pao_alias_name'];
-			$this->Controller->set('bharatkosh_payment_done',$bharatkosh_payment_done);
-			$this->Controller->set('payment_amount',$payment_amount);
-			$this->Controller->set('payment_transaction_id',$payment_transaction_id);
-			$this->Controller->set('selected_pao_alias_name',$selected_pao_alias_name);
-			$this->Controller->set('payment_trasaction_date',$payment_trasaction_date);
-			$this->Controller->set('payment_receipt_docs',$payment_receipt_docs);
-			$this->Controller->set('reason_list_comment',$reason_list_comment);
-			$this->Controller->set('reason_comment',$reason_comment);
-			$this->Controller->set('payment_confirmation_status',$payment_confirmation_status);
-			
-		}else{
-			
-			$payment_confirmation_status = 'payment_not_submit';
-			$this->Controller->set('payment_confirmation_status',$payment_confirmation_status);
-		}
-		
-		$fetch_pao_referred_back = array();
-		$fetch_pao_referred_back = $LimsSamplePaymentDetails->find('all', array('conditions'=>array('sample_code IS'=>$sample_code,'payment_confirmation'=>'not_confirmed')))->toArray();
-		$this->Controller->set('fetch_pao_referred_back',$fetch_pao_referred_back);	
-		$this->Controller->set('pao_to_whom_payment',$pao_to_whom_payment);
-		
-	}
-
-	
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	/*public function getTemplateId($userRole){
-
-
-	}
-
-	*/
 
 
 

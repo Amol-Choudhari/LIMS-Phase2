@@ -17,15 +17,12 @@
 	}
 
 
-  /*$('#sample_type_code').change(function (e) {
-		e.preventDefault();
-		var selectedText = $(this).find("option:selected").text().trim();
-		if(selectedText == 'Commercial'){
-			$("#paymentmodal").modal()
-
-		}
-	});*/
-
+	// ADDED THIS BELOW CODE TO GRAY OUT THE SAMPLE TYPE SELECTION AFTER SAVE.
+	var sample_type = $("#sample_type").val();
+	if(sample_type != ''){
+		$('#sample_type_code').attr("style", "pointer-events: none;").css("background-color", "lightgray");
+   		
+	}
 
 
   	$(document).ready(function () {
@@ -99,7 +96,7 @@
 							var month = date.getMonth()+1;
 							var year = date.getFullYear();
 							raj_date=year + '-' + month + '-' + day;
-			
+
 							$("#abc").prop("disabled", false);
 							$("#reject_date").val(raj_date);
 							$("#abc").show();
@@ -186,12 +183,12 @@
 
 	//call to login validations
 	$('#save').click(function (e) {
-		
+
 		if (sample_inward_form_validations() == false) {
 			e.preventDefault();
 		} else {
-		$('#frm_sample_inward').submit();  
-		}     
+		$('#frm_sample_inward').submit();
+		}
 	});
 
 
@@ -327,9 +324,108 @@
 			var msg = "Please check some fields are missing or not proper.";
 			renderToast('error', msg);
 			return false;
-		
+
 		}else{
 			exit();
 		}
 
+
+
 	}
+
+
+        /// For Comercial Type Sample ///
+
+        $('#sample_type_code').change(function (e) {    
+			//e.preventDefault();
+			var sample_type_code = $('#sample_type_code').val();
+
+            if(sample_type_code == '3'){
+				$.confirm({
+					title: 'Commercial Sample',
+					content: 'Please Note: As you have selected <b>Commercial</b> Sample Type the payment details to be filled in <i>Payment Section</i>. <br>After saving the <i>Inward Section</i> the Payment Section will be avaible to fill.',
+					icon: 'glyphicon glyphicon-info-sign',
+					type: 'info',
+					columnClass: 'm',
+					buttons: {
+						OK: {
+							btnClass: 'btn-info',
+							action: function(){}
+						},
+						cancel: function () {
+							$("#sample_type_code option:eq(0)").prop("selected", true);
+						}
+					}
+				});
+            }
+        });
+
+
+
+		$('#commodity_code').change(function (e) {
+
+			var sample_type_code = $('#sample_type_code').val();
+			if (sample_type_code != "") {
+				if (sample_type_code == '3') {
+					if(checkCommodityUsed()==false){
+						e.preventDefault();
+					}	
+				}
+			}
+		});
+
+
+		$('#sample_type_code').change(function (e) {
+			
+			var sample_type_code = $('#sample_type_code').val();
+			
+			if (sample_type_code != "") {
+				if (sample_type_code == '3') {
+					if(checkCommodityUsed()==false){
+						e.preventDefault();
+					}	
+				}
+			}
+		});
+	
+	
+		function checkCommodityUsed(){
+	
+			var commodity = $("#commodity_code").val();
+			var commodityName = $("#commodity_code option:selected").text();
+	
+			if (commodity !='') {
+				
+				$.ajax({
+					type: "POST",
+					async:true,
+					url:"../AjaxFunctions/check_if_commodity_added",
+					data: {commodity:commodity},
+					beforeSend: function (xhr) { // Add this line
+						xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+					},
+					success: function (data) {
+						if (data == 'no') {
+
+							$.confirm({
+								title:'Commercial Charges',
+								content: 'There is no <i>charges</i> available for the <b>'+ commodityName +'</b> commodity. <br/> Please use the <i>Commercial Charges</i> Master to add the charges for commodity. </br> <b>OR</b> Contact the Administrator.',
+								icon: 'glyphicon glyphicon-info-sign',
+								type: 'info',
+								columnClass: 'm',
+								buttons: {
+									OK: {
+										btnClass: 'btn-info',
+										action: function(){
+											
+										}
+									}
+								}
+							});				
+						}
+					  
+					}
+				});
+			}
+			
+		}

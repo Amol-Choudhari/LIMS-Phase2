@@ -70,6 +70,12 @@
 											<p class="nav-icon-p">Confirmed List</p>
 										</a>
 									</li>
+									<li class="nav-item">
+										<a href="<?php echo $this->request->getAttribute('webroot');?>payment/payment_status" class="bg-cyan nav-link">
+											<i class="nav-icon glyphicon glyphicon-ok-circle"></i>
+											<p class="nav-icon-p">DDO Verification Status</p>
+										</a>
+									</li>
 								</li>
 							</ul>
 						</li>

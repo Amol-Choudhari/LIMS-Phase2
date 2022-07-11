@@ -1,5 +1,6 @@
 <?php echo $this->Html->css('sampleinward'); ?>
-	
+<?php if (!empty($_SESSION['sample'])){ $sample_type_code = $_SESSION['sample']; } else { $sample_type_code=''; } ?>
+
 	<div class="content-header">
 		<div class="container-fluid">
 			<div class="row mb-2">
@@ -128,7 +129,7 @@
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Type Of Sample <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('sample_type_code', array('type'=>'select','options'=>$Sample_Type,'value'=>$sample_inward_data['sample_type_code'], 'id'=>'sample_type_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('sample_type_code', array('type'=>'select','options'=>$Sample_Type,'value'=>$sample_type_code, 'id'=>'sample_type_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
 														<span id="error_Sample_Type" class="error invalid-feedback"></span>
 													</div>
 												</div>
@@ -225,17 +226,17 @@
 													<div class="row">
 														<div class="col-sm-4">
 															<div class="form-group">
-																<label class="radio-inline "><input class=" validate[required] radio" type="radio" id="acc_rej_flg" name="acc_rej_flg" value="A" required <?php if($sample_inward_data['acc_rej_flg']=='A'){ echo 'checked';} ?> > Accepted</label>
+																<label class="radio-inline "><input class=" validate[required] radio" type="radio" id="acc_rej_flg" name="acc_rej_flg" value="A" required <?php if(trim($sample_inward_data['acc_rej_flg'])=='A' || trim($sample_inward_data['acc_rej_flg'])=='PS'){ echo 'checked';} ?> > Accepted</label>
 															</div>
 														</div>
 														<div class="col-sm-4">
 															<div class="form-group">
-																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg1"  name="acc_rej_flg" value="R" required <?php if($sample_inward_data['acc_rej_flg']=='R'){ echo 'checked';} ?> > Rejected</label>
+																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg1"  name="acc_rej_flg" value="R" required <?php if(trim($sample_inward_data['acc_rej_flg'])=='R'){ echo 'checked';} ?> > Rejected</label>
 															</div>
 														</div>
 														<div class="col-sm-4">
 															<div class="form-group">
-																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg2"  name="acc_rej_flg" value="P" required <?php if($sample_inward_data['acc_rej_flg']=='P'){ echo 'checked';} ?> > Pending</label>
+																<label class="radio-inline "><input class="validate[required] radio" type="radio" id="acc_rej_flg2"  name="acc_rej_flg" value="P" required <?php if(trim($sample_inward_data['acc_rej_flg'])=='P'){ echo 'checked';} ?> > Pending</label>
 															</div>
 														</div>
 														<input type="hidden" id="inward_id"  name="inward_id">
@@ -264,8 +265,10 @@
 
 							<div class="card-footer">
 								<div class="col-md-12">
-									<!--if confirm then hide btns-->
-									<?php if (!(trim($sample_inward_data['status_flag'])=='S')) { ?>
+									<!--if confirm then hide btns
+									Added the PV flag condtion if sample is commercial - 30-06-2022  						
+								    -->
+									<?php if (!(trim($sample_inward_data['status_flag'])=='S' || trim($sample_inward_data['status_flag'])=='PV')) { ?>
 
 										<div class="col-md-1 float-left">
 											<?php if (!(trim($sample_inward_data['status_flag'])=='')){
@@ -283,14 +286,19 @@
 									} ?>
 
 									<div class="col-md-1 float-right"><a href="../Dashboard/home" class="btn btn-danger">Cancel</a></div>
-												<!--<?php //if ($_SESSION['sample']=='3') { ?>
-													<div class="col-md-1 float-left"><a href="../inward/payment" class="btn btn-primary">Next Section</a></div>
-												<?php //} ?>	-->
+								
 									<?php if ($_SESSION['user_flag']=='RO' || $_SESSION['user_flag']=='SO') { ?>
 
 										<?php if (!(trim($sample_inward_data['status_flag'])=='')) { ?>
 											<div class="col-md-2 float-left"><a href="../InwardDetails/sample_inward_details" class="btn btn-primary">Next Section</a></div>
 										<?php	} ?>
+
+									<?php } ?>
+									<?php if ($_SESSION['user_flag']=='RAL' || $_SESSION['user_flag']=='CAL') { ?>
+
+									<?php if (trim($_SESSION['is_payment_applicable'] =='yes')) { ?>
+										<div class="col-md-2 float-left"><a href="../payment/payment_details" class="btn btn-primary">Next Section</a></div>
+									<?php	} ?>
 
 									<?php } ?>
 								</div>
@@ -303,31 +311,18 @@
 		</section>
 	</div>
 
-		<div class="modal fade" id="paymentmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Confirmation</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
-							Please Note: As you have selected "<b>Commercial</b>" Sample Type , the payment details to be filled in Payment Section.
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-success" id="payment_modal_confirm_button" data-dismiss="modal">Confirm</button>
-						<button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">Cancel</button>
-					</div>
-				</div>
-			</div>
-		</div>
-
 <?php  if(empty($sample_inward_data['users'])){ $receivedfrom = $_SESSION['user_code']; }else{ $receivedfrom = $sample_inward_data['users']; } ?>
 <?php if (isset($_SESSION['org_sample_code'])) { $org_sample_code = $_SESSION['org_sample_code']; }else{ $org_sample_code = '' ; } ?>
 <input type="hidden" id="acc_rej_flg" value="<?php echo $sample_inward_data['acc_rej_flg']; ?> ">
 <input type="hidden" id="org_sample_code" value="<?php echo $org_sample_code; ?> ">
 <input type="hidden" id="sample_status" value="<?php echo trim($sample_inward_data['status_flag']); ?>">
 <input type="hidden" id="receivedfrom" value="<?php echo $receivedfrom; ?>">
+<?php if(empty($sample_type_code)){ 
+		$sample_type = ''; 
+	}else{ 
+		$sample_type = $sample_type_code; 
+	} 
+?>
+<input type="hidden" id="sample_type" value="<?php echo $sample_type; ?>">
 <?php echo $this->Html->Script('inward/sample_inward'); ?>
 <?php echo $this->Html->Script('sample_reg_form'); ?>

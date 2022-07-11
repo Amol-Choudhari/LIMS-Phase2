@@ -8,6 +8,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\Http\Client\Request;
 use Cake\View;
 use Cake\ORM\TableRegistry;
+use mysql_xdevapi\CollectionModify;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 
 class MasterController extends AppController {
@@ -149,32 +150,34 @@ class MasterController extends AppController {
 
 				$isExist = $this->MCommodityCategory->find('all', array('conditions'=> array('UPPER(TRIM(category_name))'=>$category_name_upper, 'display'=>'Y')))->count();
 
-					if ($isExist!='0') {
+				if ($isExist!='0') {
 
-						$category_nm = $this->request->getData('category_name');
-						$this->set('message',  $category_nm . ' record already exist, Please contact administrator to delete it!');
-						$this->set('redirect_to', 'category');
-						return null;
-					}
+					$category_nm = $this->request->getData('category_name');
+					$this->set('message',  $category_nm . ' record already exist, Please contact administrator to delete it!');
+					$this->set('message_theme','failed');								 
+					$this->set('redirect_to', 'category');
+					return null;
+				}
 
-					$categoryInputData = array('category_name'=>$postData['category_name'],'l_category_name'=>$postData['l_category_name'],'min_quantity'=>$postData['min_quantity']);
-					$categoryEntity = $this->MCommodityCategory->newEntity($categoryInputData);
-					$recordPush = $this->MCommodityCategory->save($categoryEntity);
+				$categoryInputData = array('category_name'=>$postData['category_name'],'l_category_name'=>$postData['l_category_name'],'min_quantity'=>$postData['min_quantity']);
+				$categoryEntity = $this->MCommodityCategory->newEntity($categoryInputData);
+				$recordPush = $this->MCommodityCategory->save($categoryEntity);
 
-					if ($recordPush) {
+				if ($recordPush) {
 
-						$message = 'Successfully added new category!';
-						$redirect_to = 'saved_category';
+					$message = 'Successfully added new category!';
+					$redirect_to = 'saved_category';
 
-					} else {
+				} else {
 
-						$message = 'Problem in saving new category, try again later!';
-						$redirect_to = 'saved_category';
+					$message = 'Problem in saving new category, try again later!';
+					$redirect_to = 'saved_category';
 
-					}
+				}
 
 				// set variables to show popup messages FROM view file
 				$this->set('message', $message);
+                $this->set('message_theme',$message_theme);
 				$this->set('redirect_to', $redirect_to);
 			}
 
@@ -189,7 +192,6 @@ class MasterController extends AppController {
 				if ($isExist!='0') {
 
 					$category_nm = $this->request->getData('category_name');
-					//$this->view = '/Element/message_boxes';
 					$this->set('message',  $category_nm . ' record already exist, Please contact administrator to delete it!');
 					$this->set('redirect_to', 'category');
 					return null;
@@ -208,17 +210,20 @@ class MasterController extends AppController {
 				if ($recordUpdate) {
 
 					$message = 'Successfully update category!';
+					$message_theme = 'success';
 					$redirect_to = 'saved_category';
 
 				} else {
 
 					$message = 'Problem in updation, try again later!';
+					$message_theme = 'failed';
 					$redirect_to = 'saved_category';
 				}
 
-			// set variables to show popup messages FROM view file
-			$this->set('message', $message);
-			$this->set('redirect_to', $redirect_to);
+				// set variables to show popup messages FROM view file
+				$this->set('message', $message);
+				$this->set('message_theme',$message_theme);
+				$this->set('redirect_to', $redirect_to);
 			}
 
 		}
@@ -232,13 +237,18 @@ class MasterController extends AppController {
 	// delete commodity category record
 	public function deleteCategory($id){
 
-		$this->autoRender = false;
+		//$this->autoRender = false;
+
 		// checking category code already in use or not
 		$inUsed = $this->MCommodity->find('all', array('conditions'=> array('category_code IS'=>$id, 'display'=>'Y')))->count();
 
 		if ($inUsed!='0') {
-				$message = 'Already in use, could not deleted!';
-				$redirect_to = '../saved_category';
+
+            $this->set('message',  'Already in use, could not deleted!');
+            $this->set('message_theme','failed');
+            $this->set('redirect_to', '../saved_category');
+            return null;
+
 		} else {
 
 			$categoryRecord = array('category_code'=>$id, 'display'=>'N');
@@ -259,11 +269,11 @@ class MasterController extends AppController {
 			}
 		}
 
-			$this->redirect("/master/saved_category");
-			// set variables to show popup messages FROM view file
-			$this->set('message', $message);
-			$this->set('message_theme',$message_theme);
-			$this->set('redirect_to', $redirect_to);
+											 
+        // set variables to show popup messages FROM view file
+        $this->set('message', $message);
+        $this->set('message_theme',$message_theme);
+        $this->set('redirect_to', $redirect_to);
 	}
 
 
@@ -316,7 +326,11 @@ class MasterController extends AppController {
 	public function commodity(){
 
 		$this->authenticateUser();
-
+		
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
+		
 		// load records if session is set
 		if ($this->Session->read('commodity_data')!=null) {
 
@@ -357,8 +371,9 @@ class MasterController extends AppController {
 				if ($isExist!='0') {
 
 					$commodity_nm = $postData['commodity_name'];
-					//$this->view = '/Element/message_boxes';
+			
 					$this->set('message',  $commodity_nm . ' record for this category already exists! Please Contact to Administrator');
+					$this->set('message_theme','failed');
 					$this->set('redirect_to', 'commodity');
 					return null;
 				}
@@ -380,18 +395,21 @@ class MasterController extends AppController {
 				if ($recordPush) {
 
 					$message = 'Successfully added new commodity!';
+                    $message_theme = 'success';
 					$redirect_to = 'saved_commodity';
-					//$this->view = '/Element/message_boxes';
+					
 				} else {
 
 					$message = 'Problem in saving new commodity, try again later!';
+                    $message_theme = 'failed';
 					$redirect_to = 'saved_commodity';
-					//$this->view = '/Element/message_boxes';
+					
 				}
 
-			// set variables to show popup messages FROM view file
-			$this->set('message', $message);
-			$this->set('redirect_to', $redirect_to);
+				// set variables to show popup messages FROM view file
+				$this->set('message', $message);
+				$this->set('message_theme',$message_theme);
+				$this->set('redirect_to', $redirect_to);
 			}
 
 			// update record
@@ -423,16 +441,19 @@ class MasterController extends AppController {
 				if ($recordUpdate) {
 
 					$message = 'Successfully update commodity!';
+					$message_theme = 'success';
 					$redirect_to = 'saved_commodity';
 				} else {
 
 					$message = 'Problem in updation, try again later!';
+					$message_theme = 'failed';
 					$redirect_to = 'saved_commodity';
 				}
 
-			// set variables to show popup messages FROM view file
-			$this->set('message', $message);
-			$this->set('redirect_to', $redirect_to);
+				// set variables to show popup messages FROM view file
+				$this->set('message', $message);
+				$this->set('message_theme',$message_theme);
+				$this->set('redirect_to', $redirect_to);
 			}
 
 		}
@@ -1354,12 +1375,10 @@ class MasterController extends AppController {
 				
 				$duplicate_recored = $this->MTest->find('all', array('conditions'=> array('lower(trim(test_name)) IS'=>strtolower(trim($test_name_value)),'test_code !='=>$testcodeid)))->first();
 			}
-							
-			
-
-			if( $test_type_value != "" 
-			    && $test_name_value != "" 
-			    && $l_test_name_value != "" 
+	
+			if( $test_type_value != ""
+			    && $test_name_value != ""
+			    && $l_test_name_value != ""
 			    && array_key_exists($test_type_value,$test_types)
 			    && empty($duplicate_recored))
 			{
@@ -1468,7 +1487,7 @@ class MasterController extends AppController {
 		$this->loadModel('MFields');
 		$conn = ConnectionManager::get('default');
 
-		$assignTest = $conn->execute("select mt.test_code,mt.test_name, 
+		$assignTest = $conn->execute("select mt.test_code,mt.test_name,
 										case when at.status_flag = 'F' then 'Finalize' else 'Not Finalize' end status from m_test mt
 										inner join ( select test_code,status_flag from test_fields where display='Y' group by test_code,status_flag) as at ON at.test_code = mt.test_code
 										");
@@ -1627,7 +1646,7 @@ class MasterController extends AppController {
 						if(count($data2)<1)
 						{
 							$a['field_value'] = 'a';
-							$abc = $a['field_value'];	
+							$abc = $a['field_value'];
 						}
 						else{
 
@@ -1646,7 +1665,7 @@ class MasterController extends AppController {
 				}
 
 				$field_code_data=trim($field_code_data,",");
-				$conn->execute("delete from test_fields where test_code=$test_code and field_code NOT IN ($field_code_data)");						
+				$conn->execute("delete from test_fields where test_code=$test_code and field_code NOT IN ($field_code_data)");
 
 			}
 			else
@@ -1669,7 +1688,7 @@ class MasterController extends AppController {
 		
 		$conn = ConnectionManager::get('default');        
 
-		$test_code = $this->request->getData("test_code");	 	
+		$test_code = $this->request->getData("test_code");
 
 	 	if(!isset($test_code) || !is_numeric($test_code)){
 			echo "0";
@@ -1704,12 +1723,12 @@ class MasterController extends AppController {
                            
 				'field_validation',
 				'field_type',
-				'field_code',     
-				'field_unit',     
+				'field_code',
+				'field_unit',
             ),
             'conditions' => array( 'TestFields.test_code' =>$test_code )))->toArray();
 			 
-		echo json_encode($test_fields);     
+		echo json_encode($test_fields);
 	  	exit;
     }
 
@@ -1748,7 +1767,7 @@ class MasterController extends AppController {
 
 		if ($this->request->is('post')) {
 
-			$postData = $this->request->getData();				
+			$postData = $this->request->getData();
 
 			$modifiedData = 'false';
 			$message = '';
@@ -1799,10 +1818,10 @@ class MasterController extends AppController {
 					}
 					else{
 
-						if($key != 'save' && !is_numeric($eachField)){							
+						if($key != 'save' && !is_numeric($eachField)){
 							$modifiedData = 'true';
 						}
-					}	
+					}
 
 				}
 
@@ -1833,12 +1852,12 @@ class MasterController extends AppController {
 							$this->loadModel('MTestMethod');
 							$method_name = $this->MTestMethod->find('all',array('fields'=>array('method_name'),'conditions'=>array('method_code'=>$test_method)))->first();
 							$methodName = $method_name['method_name'];
-							$message = 'Test method defined for this test is '.$methodName.'. So, The test method can not be changed.';							
+							$message = 'Test method defined for this test is '.$methodName.'. So, The test method can not be changed.';
 							break;
 
 						} else {
 
-							$message = 'More than one methods are defined for this test. So, The test method can not be changed.';							
+							$message = 'More than one methods are defined for this test. So, The test method can not be changed.';
 							break;
 
 						}
@@ -1891,16 +1910,16 @@ class MasterController extends AppController {
 
 						$this->CommGrade->save($newEntity);
 
-					}		
+					}
 
 					$message = 'Records has been Saved!';
 				}
 
-			}	
+			}
 
  		}
 
- 		$redirect_to = 'commodityGrade';	
+ 		$redirect_to = 'commodityGrade';
  		$this->set('message',$message);
  		$this->set('redirect_to',$redirect_to);
 
@@ -1925,7 +1944,7 @@ class MasterController extends AppController {
 		
 			$commodity=	$conn->execute("select * from m_commodity where category_code=$category_code  and display='Y' order by commodity_name asc")->fetchAll('assoc');
 		 
-			pr($commodity);
+			
 			if(count($commodity)==0)
 			{
 				echo 0;
@@ -1935,7 +1954,7 @@ class MasterController extends AppController {
 				for($i=0;$i<count($commodity);$i++)
 				{
 					$str.="<option value='".$commodity[$i]['commodity_code']."'>".$commodity[$i]['commodity_name']."</option>";					
-				}	
+				}
 				echo $str;
 			}
 
@@ -1948,7 +1967,7 @@ class MasterController extends AppController {
 
 
 	public function getTestByCommodityId()
-	{      
+	{
 			
 		$conn = ConnectionManager::get('default');
 
@@ -1964,7 +1983,7 @@ class MasterController extends AppController {
 			
 		$category = $conn->execute("select mt.test_code,mt.test_name from commodity_test ct
 		  Inner join m_test as mt on mt.test_code = ct.test_code
-		  where ct.commodity_code = $commodity_code 
+		  where ct.commodity_code = $commodity_code
 		  order by mt.test_name")->fetchAll('assoc');
 
 		}
@@ -2009,14 +2028,14 @@ class MasterController extends AppController {
 
 						$testMethods[] = $row1;
 					}
-				}		
+				}
 
 				echo json_encode($testMethods);
 				
 			
 			}else{ echo '1'; }
 
-		}	
+		}
 
 		exit;
 		
@@ -2054,7 +2073,7 @@ class MasterController extends AppController {
 					(CASE WHEN (a. max_grade_value IS NULL OR a. max_grade_value = '') THEN a. max_grade_value ELSE a. grade_value END) as grade_value
 					,a. max_grade_value ,
 					(CASE WHEN (a. max_grade_value IS NULL OR a. max_grade_value = '') THEN a. grade_value ELSE NULL END)
-					 as singleVal from comm_grade as a 
+					 as singleVal from comm_grade as a
 					inner join m_grade_desc as g on g.grade_code=a.grade_code
 					inner join m_commodity_category as cat on  a.category_code=cat.category_code
 					inner join m_commodity as com on com.commodity_code=a.commodity_code
@@ -2072,8 +2091,6 @@ class MasterController extends AppController {
 		$str.=" a.display='Y' order by t.test_name asc";
 				
 		$res = $conn->execute($str)->fetchAll('assoc');
-		
-		//print_r($res);									 
 												
 		echo json_encode($res);
 		exit;
@@ -2112,7 +2129,7 @@ public function createFormula(){
 			$i++;
 		}
 
-		$this->set('test_names', $test_names);			
+		$this->set('test_names', $test_names);
 
 		$method = $this->MTestMethod->find('list',array('keyField'=>'method_code','valueField'=>'method_name','order' => array('method_name' => 'ASC'),'conditions' => array('display' => 'Y')))->toArray();			
 		$this->set('method',$method);
@@ -2139,7 +2156,7 @@ public function createFormula(){
 					||  $start_date == ''){
 
 					$message = 'Invalid form data, please checked properly and resubmit';
-					$redirect_to = 'create-formula';				
+					$redirect_to = 'create-formula';
 			}else{
 
 				$dStart = new DateTime(date('Y-m-d H:i:s'));
@@ -2153,7 +2170,7 @@ public function createFormula(){
 	 			if ($rttttttv1==0) {
 
 					$message ='Please enter a validation range in proper format';
-					$redirect_to = 'create-formula';						
+					$redirect_to = 'create-formula';
 				}
 
 			}
@@ -2161,7 +2178,7 @@ public function createFormula(){
 
         	if($test_type == "f"){
 				
-				$field_validation = $this->request->getData('field_validation_range');				
+				$field_validation = $this->request->getData('field_validation_range');
 				$unit = $this->request->getData('unit');
 				$formula = $this->request->getData('formula');
 
@@ -2231,7 +2248,7 @@ public function createFormula(){
 		 											  AND end_date is null");
         				if (count($data) > 0) {
 
-							if (count($data1) > 0) {								
+							if (count($data1) > 0) {
 
 								$str = "UPDATE test_formula
 										SET end_date='$start_date' ,  unit='$unit'
@@ -2259,7 +2276,7 @@ public function createFormula(){
 													Null,'$formula1','$formula','$field_validation','$unit')");
 								$message = 'The formula has been added!';
 								$redirect_to = 'create-formula';
-							}							
+							}
 
 						}else{
 
@@ -2324,7 +2341,7 @@ public function createFormula(){
 												 Null,'$formula1','$formula','$field_validation')");
 
 							$message = 'The formula has been added!';
-							$redirect_to = 'create-formula';                    		
+							$redirect_to = 'create-formula';
 
 						} else {
 
@@ -2333,7 +2350,7 @@ public function createFormula(){
 													 Null,'$formula1','$formula','$field_validation')");
 
                         		$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';                         		
+								$redirect_to = 'create-formula';
 						}
 
 					} else {
@@ -2343,7 +2360,7 @@ public function createFormula(){
 											 Null,'$formula1','$formula','$field_validation')");
 
                 		$message = 'The formula has been added!';
-						$redirect_to = 'create-formula';    
+						$redirect_to = 'create-formula';
 					}
 
 
@@ -2389,36 +2406,36 @@ public function createFormula(){
 
 					if (count($data1) > 0) {
 
-						if(count($data2) > 0) {								
+						if(count($data2) > 0) {
 
-								if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date'
-																  WHERE method_code=".$data2[0][0]['method_code']."  AND test_code=$test_code AND end_date is null")) {
+							if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date'
+															  WHERE method_code=".$data2[0][0]['method_code']."  AND test_code=$test_code AND end_date is null")) {
 
-													//$this->Session->setFlash('The formula has been updated!');
-								} else {
+												//$this->Session->setFlash('The formula has been updated!');
+							} else {
 
-									//$this->Session->setFlash('The formula has not been updated!');
-								}
+								//$this->Session->setFlash('The formula has not been updated!');
+							}
 
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
-								$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';
+							$message = 'The formula has been added!';
+							$redirect_to = 'create-formula';
 
 						} else {
 
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
-                        		$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';
+							$message = 'The formula has been added!';
+							$redirect_to = 'create-formula';
 						}
 
 					} else {
 
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
-                       			$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';
+						$message = 'The formula has been added!';
+						$redirect_to = 'create-formula';
 					}
 					
                	} else {
@@ -2447,81 +2464,31 @@ public function createFormula(){
 
 			}else{
 
-					if($test_type == "p"){
+				if($test_type == "p"){
 
-						$formula1="PN";
-						$formula = "PN";
-						$field_validation = 0;
+					$formula1="PN";
+					$formula = "PN";
+					$field_validation = 0;
 
-						$data = $this->MTest->query("SELECT test_code FROM test_formula WHERE  test_code='$test_code' AND method_code='$method_code'");
+					$data = $this->MTest->query("SELECT test_code FROM test_formula WHERE  test_code='$test_code' AND method_code='$method_code'");
 
-				 		$data1 = $this->MTest->query("SELECT test_code,method_code FROM test_formula WHERE  test_code='$test_code' AND end_date is null  AND test_formulae='PN'");
+					$data1 = $this->MTest->query("SELECT test_code,method_code FROM test_formula WHERE  test_code='$test_code' AND end_date is null  AND test_formulae='PN'");
 
-                   		if (count($data) > 0) {
+					if (count($data) > 0) {
 
-							if(count($data1) > 0) {
-								
-								if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date' WHERE  method_code=".$data1[0][0]['method_code']." AND test_code=$test_code AND end_date is null")) {
+						if(count($data1) > 0) {
+							
+							if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date' WHERE  method_code=".$data1[0][0]['method_code']." AND test_code=$test_code AND end_date is null")) {
 
-									//$this->Session->setFlash('The formula has been updated!');
-								} else {
-									//$this->Session->setFlash('The formula has not been updated!');
-								}
-
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-                        		
-                        		$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';
-
+								//$this->Session->setFlash('The formula has been updated!');
 							} else {
-
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-
-                        		$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';
+								//$this->Session->setFlash('The formula has not been updated!');
 							}
 
-						} else {
-
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-
-                        		$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';
-						}
-
-					} elseif ($test_type == "y") {
-
-
-							$formula1="YN";
-							$formula = "YN";
-							$field_validation = 0;
-
-							$data = $this->MTest->query("SELECT test_code FROM test_formula WHERE  test_code='$test_code' AND method_code='$method_code' AND test_formulae='YN'");
-
-							$data1 = $this->MTest->query("SELECT test_code,method_code FROM test_formula WHERE  test_code='$test_code' AND end_date is null  ");
-
-                		if (count($data) > 0) {
-
-							if (count($data1) > 0) {
-								
-								if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date' WHERE  test_code=$test_code AND end_date is null")) {
-										//$this->Session->setFlash('The formula has been updated!');
-								} else {
-									//$this->Session->setFlash('The formula has not been updated!');
-								}
-
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-								
-								$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';
-
-							} else {
-
-								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-										
-								$message = 'The formula has been added!';
-								$redirect_to = 'create-formula';		
-							}
+							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+							
+							$message = 'The formula has been added!';
+							$redirect_to = 'create-formula';
 
 						} else {
 
@@ -2529,55 +2496,102 @@ public function createFormula(){
 
 							$message = 'The formula has been added!';
 							$redirect_to = 'create-formula';
-
 						}
 
+					} else {
 
-					} elseif ($test_type == "PA") {
-		
+						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
-						$formula1="PA";
-						$formula = "PA";
-						$field_validation = 0;
-						$data = $this->MTest->query("SELECT test_code FROM test_formula WHERE  test_code='$test_code' AND method_code='$method_code' AND test_formulae='PA'");
-
-						$data1 = $this->MTest->query("SELECT test_code,method_code FROM test_formula WHERE  test_code='$test_code' AND end_date is null  ");
-
-                			if (count($data) > 0) {
-
-								if (count($data1) > 0) {
-									//$str="UPDATE test_formula set end_date='$start_date' WHERE  test_code=$test_code AND method_code='$method_code'";
-
-									if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date' WHERE  test_code=$test_code AND end_date is null")) {
-										//$this->Session->setFlash('The formula has been updated!');
-									} else {
-										//$this->Session->setFlash('The formula has not been updated!');
-									}
-
-									$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-
-									$message = 'The formula has been added!';
-									$redirect_to = 'create-formula';
-
-								} else {
-
-									$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-
-									$message = 'The formula has been added!';
-									$redirect_to = 'create-formula';
-								}
-
-							} else {
-
-									$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-
-									$message = 'The formula has been added!';
-									$redirect_to = 'create-formula';
-							}
+						$message = 'The formula has been added!';
+						$redirect_to = 'create-formula';
 					}
-					
-				}
+
+				} elseif ($test_type == "y") {
+
+
+					$formula1="YN";
+					$formula = "YN";
+					$field_validation = 0;
+
+					$data = $this->MTest->query("SELECT test_code FROM test_formula WHERE  test_code='$test_code' AND method_code='$method_code' AND test_formulae='YN'");
+
+					$data1 = $this->MTest->query("SELECT test_code,method_code FROM test_formula WHERE  test_code='$test_code' AND end_date is null  ");
+
+					if (count($data) > 0) {
+
+						if (count($data1) > 0) {
+							
+							if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date' WHERE  test_code=$test_code AND end_date is null")) {
+									//$this->Session->setFlash('The formula has been updated!');
+							} else {
+								//$this->Session->setFlash('The formula has not been updated!');
+							}
+
+							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+							
+							$message = 'The formula has been added!';
+							$redirect_to = 'create-formula';
+
+						} else {
+
+							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+									
+							$message = 'The formula has been added!';
+							$redirect_to = 'create-formula';
+						}
+
+					} else {
+
+						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+
+						$message = 'The formula has been added!';
+						$redirect_to = 'create-formula';
+
+					}
+
+
+				} elseif ($test_type == "PA") {
+	
+					$formula1="PA";
+					$formula = "PA";
+					$field_validation = 0;
+					$data = $this->MTest->query("SELECT test_code FROM test_formula WHERE  test_code='$test_code' AND method_code='$method_code' AND test_formulae='PA'");
+
+					$data1 = $this->MTest->query("SELECT test_code,method_code FROM test_formula WHERE  test_code='$test_code' AND end_date is null  ");
+
+					if (count($data) > 0) {
+
+						if (count($data1) > 0) {
+							//$str="UPDATE test_formula set end_date='$start_date' WHERE  test_code=$test_code AND method_code='$method_code'";
+
+							if (!$this->MTest->query("UPDATE test_formula SET end_date='$start_date' WHERE  test_code=$test_code AND end_date is null")) {
+								//$this->Session->setFlash('The formula has been updated!');
+							} else {
+								//$this->Session->setFlash('The formula has not been updated!');
+							}
+
+							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+
+							$message = 'The formula has been added!';
+							$redirect_to = 'create-formula';
+
+						} else {
+
+							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+
+							$message = 'The formula has been added!';
+							$redirect_to = 'create-formula';
+						}
+
+					} else {
+
+						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+						$message = 'The formula has been added!';
+						$redirect_to = 'create-formula';
+					}
+				}	
 			}
+		}
 	}
 
 
@@ -2595,7 +2609,7 @@ public function createFormula(){
 		}else{
 
 			$fields = $conn->execute("select  distinct tf.id,mt.test_name,mtm.method_name,start_date,test_formula1,tf.status_flag,tf.test_code,tf.method_code,mtt.test_type_name from test_formula as tf
-				Inner Join m_test as mt on mt.test_code=tf.test_code 
+				Inner Join m_test as mt on mt.test_code=tf.test_code
 				Inner Join m_test_method as mtm on mtm.method_code=tf.method_code
 				Inner Join m_test_type as mtt on mtt.test_type_code=mt.test_type_code  where tf.test_code='$test' and tf.display='Y' and tf.end_date is null")->fetchAll('assoc');
 			
@@ -2613,7 +2627,7 @@ public function createFormula(){
 
 			exit;
 
-		}	       
+		}
 		 
 	}
 
@@ -2686,7 +2700,7 @@ public function createFormula(){
 		if(!isset($method_code) || !is_numeric($method_code)){
 			echo "0";
 			exit;
-		} 
+		}
 
         $test = $conn->execute("select mtm.method_code,tf.start_date,tf.end_date,tf.unit from 								test_formula as tf
 								Inner Join m_test_method as mtm on mtm.method_code=tf.method_code and tf.test_code=$test_code and tf.method_code=$method_code")->fetchAll('assoc');
@@ -2710,7 +2724,7 @@ public function createFormula(){
 		if(!isset($test_code) || !is_numeric($test_code)){
 			echo "0";
 			exit;
-		} 	
+		}
 
 		
 		$test = $conn->execute("select tf.id,mt.field_name from test_fields tf
@@ -2761,7 +2775,7 @@ public function createFormula(){
 					$formulaFields	= $formulaFields."^".$matches[0][$i];
 					$formulaAlfa	= $formulaAlfa."^".$str[0]['field_value'];
 					$formula1 		= str_replace($matches[0][$i], $str[0]['field_value'], $formula1);
-                }  
+                }
 				
                 $formula1			= str_replace("[", "", $formula1);
                 $formula1 			= str_replace("]", "", $formula1);
@@ -2825,25 +2839,6 @@ public function createFormula(){
 
 
 
-
-
-/****************************************************************************************************************************************************************************************************************************************************/
-//																																																													//
-//		// edit category record                                                                                                                                                                                                                     //
-//		/*public function fetchCommodityIdForAssignTest($id){                                                                                                                                                                                       //
-//																																																													//
-//			$this->loadModel('MCommodityCategory');																																																	//
-//			$category_data = $this->MCommodityCategory->find('all', array('fields'=> array('category_code', 'category_name', 'l_category_name', 'min_quantity'), 'conditions'=> array('category_code'=>$id)))->first();								//
-//																																																													//
-//			$this->Session->write('category_code', $id);																																															//
-//			$this->Session->write('category_data', $category_data);																																													//
-//																																																													//
-//			$this->redirect('/Master/category');																																																	//
-//																																																													//
-//	}*/																																																												//
-//																																																													//
-//																																																													//
-/****************************************************************************************************************************************************************************************************************************************************/
 
 
 	// commodity test method starts this funtion name changed FROM commodity_test to assignTestToCommodity on 2021 (listing)
@@ -2912,7 +2907,7 @@ public function createFormula(){
 						{
 							$conn->execute("insert into commodity_test(commodity_code,test_code)values($commodity_code,$test_code1)");
 						}
-					}	
+					}
 
 				}
 
@@ -2959,7 +2954,7 @@ public function createFormula(){
 		$commodity_code = $this->request->getData("commodity_code");
 
 		if(!isset($commodity_code) || !is_numeric($commodity_code)){
-			echo "0";			
+			echo "0";
 		}else{
 
 				$test_fields = $this->CommodityTest->find('all', array(
@@ -2974,13 +2969,13 @@ public function createFormula(){
 		                )
 		            ),
 		            'fields' => array(
-		                'CommodityTest.test_code',     
+		                'CommodityTest.test_code',
 						'a.test_name'
 		            ),
 		            'conditions' => array( 'CommodityTest.commodity_code' =>$commodity_code)))->toArray(); 
-			echo json_encode($test_fields);	
+			echo json_encode($test_fields);
 
-		}	
+		}
 
 		exit;
 
@@ -3029,7 +3024,7 @@ public function createFormula(){
 	public function addReports(){
 
 		$this->authenticateUser();
-		$this->viewBuilder()->setLayout('admin_dashboard');		
+		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->loadModel('MLabel');
 		$this->loadModel('MReport');
 
@@ -3041,12 +3036,12 @@ public function createFormula(){
 
 		if ($this->request->is('post')) {
 
-			$modifiedData = 'false';	
+			$modifiedData = 'false';
 			$report_label = htmlentities($this->request->getData("report_label"),ENT_QUOTES);
 			$report_name = htmlentities($this->request->getData("report_name"),ENT_QUOTES);
 
 			if(!isset($report_label) || !is_numeric($report_label)){
-				$modifiedData = 'true';	
+				$modifiedData = 'true';
 				$message = 'Something went wrong, please checked properly forms value and then resubmit';
 			}
 
@@ -3080,7 +3075,7 @@ public function createFormula(){
 				}else{
 
 					$message = 'Report already exists';
-					$redirect_to = 'add-reports';					
+					$redirect_to = 'add-reports';
 				}
 
 			}
@@ -3117,7 +3112,7 @@ public function createFormula(){
 	public function setReport(){
 
 		$this->authenticateUser();
-		$this->viewBuilder()->setLayout('admin_dashboard');	
+		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->loadModel('MReportlabel');
 
 		$message = '';
@@ -3175,7 +3170,7 @@ public function createFormula(){
 					$oldsetreports[$sval['report_label_code']] = $sval['report_code'];
 				}
 
-				$tsetreports = array_unique(array_merge($selreports,$oldsetreports));			
+				$tsetreports = array_unique(array_merge($selreports,$oldsetreports));
 				$array_flip = array_flip($oldsetreports);
 
 
@@ -3215,18 +3210,18 @@ public function createFormula(){
 				}
 
 				$message = 'Report Save Sucessfully';
-				$redirect_to = 'set-report';	
+				$redirect_to = 'set-report';
 
 			}else{
 
 				$message = 'Please select proper inputs';
-				$redirect_to = 'set-report';	
-			}	
+				$redirect_to = 'set-report';
+			}
 
 		}
 
 		$this->set('message',$message);
-		$this->set('redirect_to',$redirect_to);		
+		$this->set('redirect_to',$redirect_to);
 		$this->set('user_roles',$user_roles);
 		$this->set('report_category',$report_category);
 	}
@@ -3270,14 +3265,14 @@ public function createFormula(){
 
 				if(in_array($rnval['report_code'],$selectedReportsCode))
 				{ 
-					$rlist .= 'checked'; 
+					$rlist .= 'checked';
 				}
 
 				$rlist .= " >";
 				$rlist .= $rnval['report_desc'];
-				$rlist .= "</label> </li>";				
+				$rlist .= "</label> </li>";
 
-				$i++;				
+				$i++;
 			}
 
 			$rlist .= "</ul>";
@@ -3315,10 +3310,346 @@ public function createFormula(){
 		echo json_encode($selectedReports);
 		exit;
       
+	}
+
+
+    ///////////////////////////////////////////////// NEW MASTERS [DDO FOR LABS] //////////////////////////////////////////////////////
+
+    //fetch_edit_id_for_ddo
+    //Description : This function created to get the id fro ddo record
+    //Author : Akash Thakre
+    //Date : 03-06-2022
+
+    public  function fetchEditIdForDdo($id){
+
+        $this->Session->write('ddo_table_id', $id);
+        $this->redirect('/Master/edit_ddo_to_ral_office');
     }
 
 
 
+
+
+	public function addDdoToRalOffice(){
+
+		$this->loadModel('DmiRoOffices');
+        $this->loadModel('LimsDdoDetails');
+        $this->loadModel('DmiPaoDetails');
+        $this->loadModel('DmiUsers');
+
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';	 
+
+		$get_labs = $this->DmiRoOffices->getLabs();
+		
+		$getlistfromddo = $this->LimsDdoDetails->find('all')->select(['lab_id'])->combine('id','lab_id')->toArray();
+		pr($getlistfromddo); exit;
+		$ddolist = $this->DmiPaoDetails->getAllDdoList();
+
+		
+
+        $this->set(compact('get_labs','ddolist'));
+
+	}
+
+
+
+
+    //edit_ddo_to_ral_office
+    //Description : This function created to serve the master for DDO that are used to decide PAO officer for LABS
+    //Author : Akash Thakre
+    //Date : 03-06-2022
+
+    public  function editDdoToRalOffice(){
+
+        $this->loadModel('DmiRoOffices');
+        $this->loadModel('LimsDdoDetails');
+        $this->loadModel('DmiPaoDetails');
+        $this->loadModel('DmiUsers');
+
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';	 
+        
+		if(isset($_SESSION['ddo_table_id'])){
+			
+		}
+
+		$get_labs = $this->DmiRoOffices->getLabs();
+        $getDdo = $this->LimsDdoDetails->getPaoDetails();
+
+        $selectedLab = $this->LimsDdoDetails->getRecordById($_SESSION['ddo_table_id']);
+        $lab_id = $selectedLab['lab_id'];
+        $ddo_id = $selectedLab['dmi_user_id'];
+
+        $get_posted_office_id = $this->DmiUsers->getUserDetailsById($ddo_id);
+        $posted_office_details = $this->DmiRoOffices->getOfficeDetailsById($get_posted_office_id['posted_ro_office']);
+        $posted_office = $posted_office_details[0];
+
+        $ddolist = $this->DmiPaoDetails->getAllDdoList();
+
+        $this->set(compact('get_labs','lab_id','ddolist','ddo_id','posted_office'));
+
+
+		if ($this->request->is('post')) {
+
+			
+			$postData = $this->request->getData();
+
+			$ddoname = $this->DmiUsers->getTableID($postData['ddo_id']);
+		
+			$ral_office = $this->DmiRoOffices->getOfficeDetailsById($postData['ral_office_id']);
+			
+			$savetheDetails = $this->LimsDdoDetails->saveDetails($postData);
+		
+			if($savetheDetails == true) {
+
+				
+				if (isset($_SESSION['ddo_table_id'])) {
+					$message = 'You have edited the DDO <b>: '.base64_decode($ddoname).'</b> for the Labarotary : <b>'.$ral_office[0]."</b>";
+				} else {
+					$message = 'You have selected the DDO <b>: '.base64_decode($ddoname).'for the Labarotory : <b>'.$ral_office[0]."</b>";
+				}
+
+				$message_theme = 'success';
+				$redirect_to = 'ddo_for_labs';
+			
+			} else {
+
+				$message = 'Failed to save the Record';
+				$message_theme = 'success';
+				$redirect_to = 'ddo_for_labs';
+			}
+		
+		}
+
+		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
+		$this->set('redirect_to',$redirect_to);
+
+
+    }
+
+    //ddo_for_labs
+    //Description : This function created to list all the DDO for labs
+    //Author : Akash Thakre
+    //Date : 03-06-2022
+
+    public  function ddoForLabs(){
+
+        //laod model
+        $this->loadModel('LimsDdoDetails');
+        $getDdo = $this->LimsDdoDetails->getPaoDetails();
+        $this->set('getDdo',$getDdo);
+
+    }
+
+
+
+
+
+
+	//fetchEditIdForCharges
+    //Description : This function created to list all the sample commercial charges
+    //Author : Akash Thakre
+    //Date : 22-06-2022
+
+    public  function fetchEditIdForCharge($id){
+
+        $this->Session->write('charge_id', $id);
+        $this->redirect('/Master/edit_commercial_charges');
+    }
+
+
+
+	//delete_id_for_charge
+    //Description : This function created to list all the sample commercial charges
+    //Author : Akash Thakre
+    //Date : 22-06-2022
+
+    public  function deleteIdForCharge($id){
+
+        $this->Session->write('charge_id', $id);
+        $this->redirect('/Master/delete_commercial_charges');
+    }
+
+
+
+	//Commercial Sample Charges
+    //Description : This function created to list all the sample commercial charges
+    //Author : Akash Thakre
+    //Date : 22-06-2022
+
+    public  function commercialCharges(){
+
+        //laod model
+        $this->loadModel('LimsCommercialCharges');
+        $getAllCharges = $this->LimsCommercialCharges->getAllCharges();
+		$category = array();
+		$commodity = array();
+
+		if (!empty($getAllCharges)) {
+
+			$i=0;
+
+			foreach ($getAllCharges as $each) {
+
+				//get category name
+				$get_category = $this->MCommodityCategory->find('all',array('fields'=>'category_name','conditions'=>array('category_code IS'=>$each['category_code'],'display'=>'Y')))->first();
+				//get commodity
+				$get_commodity = $this->MCommodity->find('all',array('fields'=>'commodity_name','conditions'=>array('commodity_code IS'=>$each['commodity_code'],'display'=>'Y')))->first();
+
+				if (!empty($get_category) && !empty($get_commodity)) {
+
+					$category[$i] = $get_category['category_name'];
+					$commodity[$i] = $get_commodity['commodity_name'];
+				}
+
+				$i=$i+1;
+
+				$this->set('category',$category);
+				$this->set('commodity',$commodity);
+				$this->set('charge',$each['charges']);
+			}
+		}
+
+        $this->set('getAllCharges',$getAllCharges);
+
+    }
+
+
+
+	//addCommercialCharges
+    //Description : This function created to list all the sample commercial charges
+    //Author : Akash Thakre
+    //Date : 22-06-2022
+
+	public function addCommercialCharges(){
+
+		//Load Models
+        $this->loadModel('LimsCommercialCharges');
+		$this->loadModel('MCommodityCategory');
+		$this->loadModel('MCommodity');
+
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';	 
+
+		$postData = $this->request->getData();
+	
+		//category lists
+		$commodity_category = $this->MCommodityCategory->find('list',array('valueField'=>'category_name','conditions'=>array('display'=>'Y'),'order'=>'category_name'))->toArray();
+		$this->set('commodity_category',$commodity_category);
+		
+
+		if ($this->request->is('post')) {
+
+			$saveCharges = $this->LimsCommercialCharges->saveCharges($postData);
+
+			if ($saveCharges == true) {
+				$message = 'Commercial Charges Added successfully';
+				$message_theme = 'success';
+				$redirect_to = 'commercial_charges';
+			} else {
+				$message = 'Error Occured!!';
+				$message_theme = 'failed';
+				$redirect_to = 'commercial_charges';
+			}
+
+		}
+
+		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
+		$this->set('redirect_to',$redirect_to);
+	}
+
+
+
+	//addCommercialCharges
+    //Description : This function created to list all the sample commercial charges
+    //Author : Akash Thakre
+    //Date : 22-06-2022
+
+	public function editCommercialCharges(){
+
+		//Load Models
+        $this->loadModel('LimsCommercialCharges');
+		$this->loadModel('MCommodityCategory');
+		$this->loadModel('MCommodity');
+		
+		$record_id = $_SESSION['charge_id'];
+		if (!empty($record_id)) {
+
+
+			$editChargesDetails = $this->LimsCommercialCharges->getChargeById($record_id);	
+			$enteredcategorycode = $this->MCommodityCategory->getCategory($editChargesDetails['category_code']);
+			$eneteredcommoditycode = $this->MCommodity->getCommodity($editChargesDetails['commodity_code']);
+
+		} else {
+			$editChargesDetails = '';
+			$enteredcategorycode = '';
+			$eneteredcommoditycode = '';
+		}
+
+		$this->set('editChargesDetails',$editChargesDetails);
+		$this->set('enteredcategorycode',$enteredcategorycode);
+		$this->set('eneteredcommoditycode',$eneteredcommoditycode);
+
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';	 
+
+		$postData = $this->request->getData();
+		
+
+		if ($this->request->is('post')) {
+
+			$saveCharges = $this->LimsCommercialCharges->saveCharges($postData,$record_id);
+
+			if ($saveCharges == true) {
+				$message = 'Commercial Charges edited successfully';
+				$message_theme = 'success';
+				$redirect_to = 'commercial_charges';
+			} else {
+				$message = 'Error Occured !!';
+				$message_theme = 'failed';
+				$redirect_to = 'commercial_charges';
+			}
+		}
+
+		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
+		$this->set('redirect_to',$redirect_to);
+	}
+
+
+
+	//DELETE MASTER RECORD CALL
+	public function deleteCommercialCharges() {
+
+		$record_id = $this->Session->read('charge_id');
+
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';	 
+		
+        $this->loadModel('LimsCommercialCharges');
+
+		if($this->LimsCommercialCharges->deleteChargeById($record_id) == true) {
+			$message = 'Commercial Charges Deleted successfully';
+			$message_theme = 'success';
+			$redirect_to = 'commercial_charges';
+		} else {
+			$message = 'Error Occured !!';
+			$message_theme = 'success';
+			$redirect_to = 'commercial_charges';
+		}
+
+		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
+		$this->set('redirect_to',$redirect_to);
+	}
 
 }
 

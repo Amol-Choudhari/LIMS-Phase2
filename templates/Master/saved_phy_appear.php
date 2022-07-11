@@ -8,7 +8,7 @@
 				<div class="col-sm-9">
 					<ol class="breadcrumb float-sm-right">
 					<li class="breadcrumb-item"><?php echo $this->Html->link('Dashboard', array('controller' => 'dashboard', 'action'=>'home')); ?></li>
-					<li class="breadcrumb-item"><?php echo $this->Html->link('Code Files', array('controller' => 'master', 'action'=>'code_master_home')); ?></li>
+					<li class="breadcrumb-item"><?php echo $this->Html->link('Reference Master', array('controller' => 'master', 'action'=>'reference_master_home')); ?></li>
 					<li class="breadcrumb-item active"><?php echo $phyAppear['title']; ?></li>
 				</ol>
 			</div>
@@ -19,7 +19,7 @@
 				<div class="row">
 					<div class="col-md-12 mb-2">
 						<?php echo $this->Html->link('Add New', array('controller' => 'master', 'action'=>'new_phy_appear', $phyAppear['action']),array('class'=>'add_btn btn btn-primary float-left')); ?>
-						<?php echo $this->Html->link('Back', array('controller' => 'master', 'action'=>'code-master-home'),array('class'=>'add_btn btn btn-secondary float-right')); ?>
+						<?php echo $this->Html->link('Back', array('controller' => 'master', 'action'=>'reference_master_home'),array('class'=>'add_btn btn btn-secondary float-right')); ?>
 					</div>
 					<div class="col-md-12">
 						<div class="card card-lims">
