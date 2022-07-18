@@ -38,7 +38,7 @@ class EsignController extends AppController {
 		$pdf_file_name = $this->Session->read('pdf_file_name');	
 
 		//if response from ESP for esign request
-		if($this->request->is('post')){
+		//if($this->request->is('post')){
 			
 			//to get FORM base method response POST and convert into associative array
 			////updated on 31-05-2021 for Form Based Esign method by Amol
@@ -56,15 +56,15 @@ class EsignController extends AppController {
 					
 				//calling final submit process now after signature appended in pdf.
 				
-				$this->redirect('https://10.153.72.52/LIMS/FinalGrading/saveFinalGrading');
+				$this->redirect('http://localhost/LIMS-Phase2/FinalGrading/saveFinalGrading');
 	
 			//added this else part  to show esign failed message	
 			}else{
 				
-				$this->redirect('https://10.153.72.52/LIMS/esign/esign_issue');//updated on 31-05-2021 for Form Based Esign method by Amol
+				$this->redirect('http://localhost/LIMS-Phase2/esign/esign_issue');//updated on 31-05-2021 for Form Based Esign method by Amol
 			}
 			
-		}
+		//}
 		
 	}
 
@@ -96,7 +96,7 @@ class EsignController extends AppController {
 		$txn_id = rand().time();
 		$asp_id = 'DMIC-001';
 		$document_hashed = hash_file('sha256',$doc_path);//create pdf hash		
-		$response_url = 'https://10.153.72.52/LIMS/esign/request_esign';
+		$response_url = 'http://localhost/LIMS-Phase2/esign/request_esign';
 
 		$doc_info = 'Sample Grade Report';	
 

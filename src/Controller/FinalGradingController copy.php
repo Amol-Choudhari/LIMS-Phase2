@@ -18,6 +18,7 @@ class FinalGradingController extends AppController
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
+		$this->loadComponent('Ilc');
 	}
 
 /********************************************************************************************************************************************************************************/
@@ -811,6 +812,7 @@ class FinalGradingController extends AppController
 
 		$conn = ConnectionManager::get('default');
 		$user_id = $_SESSION['user_code'];
+		
 		$this->loadModel('Workflow');
 
 		if ($_SESSION['role']=='RAL/CAL OIC') {
@@ -842,35 +844,13 @@ class FinalGradingController extends AppController
 						$final_result[]= $stage_sample_code;
 					}
 				}
+
+				
 			}
 
-		
-			// added for ilc flow 
-			//Conditions to check wheather sample type ilc  
-			$query1 = $conn->execute("SELECT ft.sample_code,ft.sample_code
-									 FROM Final_Test_Result AS ft
-									 INNER JOIN workflow AS w ON ft.org_sample_code=w.org_sample_code
-									 INNER JOIN m_sample_allocate sa ON ft.org_sample_code=sa.org_sample_code
-									 INNER JOIN sample_inward AS si ON ft.org_sample_code=si.org_sample_code
-									 WHERE  si.sample_type_code = 9 AND ft.display='Y' AND w.dst_usr_cd='$user_id' AND w.stage_smpl_flag IN ('AR','FO','FC','FG','FS','VS','FGIO') AND  si.status_flag IN('VS','FG','FC','FO','FS')
-									 GROUP BY ft.sample_code ");
-
-			$final_result_details1 = $query1->fetchAll('assoc');
-
-			//Conditions to check wheather stage sample code is final graded or not.
-			$final_result1 = array();
-			if(!empty($final_result_details1)){
-
-				foreach($final_result_details1 as $stage_sample_code){
-
-					$final_grading1 = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_flag'=>'FG','stage_smpl_cd'=>$stage_sample_code['sample_code'],'src_usr_cd'=>$user_id)))->first();
-
-					if(empty($final_grading1)){
-						$final_result1[]= $stage_sample_code;
-					}
-				}
-			}
-
+			// added for ilc flow 11-07-2022
+			//Conditions to check wheather sample type ilc 
+			$final_result1 = $this->Ilc->ilcFinalGradeAvaiIf($user_id);
 
 		}
 		else 
@@ -911,52 +891,10 @@ class FinalGradingController extends AppController
 				}
 
 			}
-
-
-			/*****************ILC**************************/
-
 			// added for ilc flow 11-07-2022
-
-			$query1 = $conn->execute("SELECT ft.sample_code,ft.sample_code
-									 FROM Final_Test_Result AS ft
-									 INNER JOIN workflow AS w ON ft.org_sample_code=w.org_sample_code
-									 INNER JOIN m_sample_allocate sa ON ft.org_sample_code=sa.org_sample_code
-									 INNER JOIN sample_inward AS si ON ft.org_sample_code=si.org_sample_code
-									 WHERE ft.display='Y'
-									 AND w.dst_usr_cd='$user_id'
-									 AND w.stage_smpl_flag IN('AR','FO','FC','FR')
-									 AND  si.status_flag IN('VS','FO','FC','FR')
-									 GROUP BY ft.sample_code");
-
-			$final_result_details1 = $query1->fetchAll('assoc');
-
-			/* Conditions to check wheather stage sample code is final graded or not.*/
-			$final_result1 = array();
-			if (!empty($final_result_details1)) {
-
-				foreach ($final_result_details1 as $stage_sample_code) {
-
-					$final_grading_details1 = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd'=>$stage_sample_code['sample_code']),'order'=>array('id desc')))->first();
-
-					if (!empty($final_grading_details1)) {
-
-						$final_grading1 = $this->Workflow->find('all',array('conditions'=>array('dst_usr_cd'=>$user_id,'id'=>$final_grading_details['id'],'stage_smpl_flag !='=>'FG')))->first();
-
-						if (!empty($final_grading1)) {
-							$final_result1[]= $stage_sample_code;
-						}
-					}
-				}
-
-			}
-
-			/**********************end******************************************************/
+			$final_result1 = $this->Ilc->ilcFinalGradeAvaiElse($user_id);
 
 		}
-
-		
-
-
 
 		//to be used in below core query format, that's why
 		$arr = "IN(";
@@ -988,49 +926,12 @@ class FinalGradingController extends AppController
 		$result = $query->fetchAll('assoc');
 
 
-
-		// *********************ilc********************
-
-
-		//to be used in below core query format, that's why
-		$arr = "IN(";
-		foreach ($final_result1 as $each) {
-			$arr .= "'";
-			$arr .= $each['sample_code'];
-			$arr .= "',";
-		}
-		$arr .= "'00')";//00 is intensionally given to put last value in string.
-
-		//update the query to avoid duplicate entry in result, done by pravin bhakare 29-10-2021
-		// NOTE : ADDED THE "VS" FLAG IN THIS QUERY TO GET THE VERFIED SAMPLE LIST AVALIBLE FOR GRADING AT THE OIC - 26-05-2022
-		$query1 = $conn->execute("SELECT workflows.stage_smpl_cd,
-		                si.received_date,
-		                st.sample_type_desc,
-		                mcc.category_name,
-		                mc.commodity_name,
-		                ml.ro_office,
-		                workflows.modified AS submitted_on
-		            FROM sample_inward AS si
-		            INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
-		            INNER JOIN m_commodity_category AS mcc ON si.category_code=mcc.category_code
-		            INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
-		            INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
-		            INNER JOIN (select org_sample_code,stage_smpl_cd,modified from workflow where stage_smpl_flag IN('FGIO','FS','FC','VS') GROUP by org_sample_code,stage_smpl_cd,modified) as workflows
-		                      on si.org_sample_code = workflows.org_sample_code
-		            WHERE workflows.stage_smpl_cd ".$arr." ORDER BY workflows.modified desc "  );
-
-		$result1 = $query1->fetchAll('assoc');
-
-		// *********************END***********************
-		
+		// added for ilc flow 11-07-2022
+		$result1 = $this->Ilc->finalgradingresult($final_result1);
+	
 		$newResult = array($result,$result1);		
-		 return $newResult;	
+		return $newResult;	
 
-
-
-
-		
-		
 	}
 
 /*******************************************************************************************************************************************************************************************************/
@@ -1050,6 +951,7 @@ class FinalGradingController extends AppController
 		$this->redirect(array('controller'=>'FinalGrading','action'=>'ilc_grading_by_oic'));
 	}
 
+	
 
 /******************************************************************************************************************************************************************************************************/
 // added for ilcFlow 08-07-2022
@@ -1466,7 +1368,15 @@ class FinalGradingController extends AppController
 		//to show grade selected by OIC while final grading on report pdf
 		$this->loadModel('MGradeDesc');
 		$getGradedesc = $this->MGradeDesc->find('all',array('fields'=>'grade_desc','conditions'=>array('grade_code'=>$_POST['grade_code'])))->first();
-		$this->Session->write('gradeDescFinalReport',$getGradedesc['grade_desc']);
+		if(!empty($getGradedesc)){
+
+			$this->Session->write('gradeDescFinalReport',$getGradedesc['grade_desc']);
+		
+		}else{
+			$this->Session->write('gradeDescFinalReport',null);
+			$this->Session->write('post_grade_code_vs',00);//added for ilc sample only no grading required
+			
+		}
 		
 		$this->Session->write('post_subGradeChecked',$_POST['subgrade']);
 		$this->Session->write('post_category_code',$_POST['category_code']);
@@ -1491,12 +1401,12 @@ class FinalGradingController extends AppController
 		$this->loadModel('Workflow');
 		$conn = ConnectionManager::get('default');
 
-		$sample_code = $this->Session->read('grading_sample_code');
+		$sample_code = trim($this->Session->read('grading_sample_code'));
 
 		//get org sample code
 		$ogrsample1 = $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $sample_code)))->first();
 		$ogrsample = $ogrsample1['org_sample_code'];
-
+		
 		$src_usr_cd = $conn->execute("SELECT src_usr_cd,src_loc_id FROM workflow WHERE org_sample_code='$ogrsample' AND stage_smpl_flag IN ('OF','IF') ");
 
 		$src_usr_cd = $src_usr_cd->fetchAll('assoc');
@@ -1640,6 +1550,19 @@ class FinalGradingController extends AppController
 		$this->set('final_sample_reports',$final_reports);
 	}
 
+	public function ilcFinalizedSamples(){
+
+		$final_reports = $this->ilcSampleTestReports();
+		$this->set('ilc_sample_reports',$final_reports);
+	}
+
+	public function ilcZscore($sample_code){
+
+		$arraylist = $this->ilcAvailableSampleZscore($sample_code);
+		$this->set('final_reports',$arraylist);
+	}
+
+
 /******************************************************************************************************************************************************************************************************/
 
 
@@ -1698,6 +1621,95 @@ class FinalGradingController extends AppController
 		return $final_reports;
 	}
 
+	// create new menu for showing ilc finalized test report result done 13/07-2022 by shreeya
+	public function ilcSampleTestReports(){
+
+		$this->viewBuilder()->setLayout('admin_dashboard');
+		$this->loadModel('Workflow');
+		$this->loadModel('IlcOrgSmplcdMaps');
+		$conn = ConnectionManager::get('default');
+		
+		$query2 = $conn->execute("SELECT si.org_sample_code, w.stage_smpl_cd,mcc.category_name,mc.commodity_name, st.sample_type_desc, w.tran_date,w.stage_smpl_flag,si.status_flag
+				FROM sample_inward AS si
+				INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+				INNER JOIN m_commodity_category AS mcc ON mcc.category_code = si.category_code
+				INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+				INNER JOIN workflow AS w ON w.org_sample_code=si.org_sample_code
+				WHERE  w.stage_smpl_flag='OF' AND si.status_flag='F' AND si.sample_type_code=9 AND si.entry_type IS NULL ");
+				
+		$result = $query2->fetchAll('assoc');
+		$i=0;
+		foreach ($result as $each) {
+			
+			$getSavedList = $this->IlcOrgSmplcdMaps->find('all',array('conditions'=>array('org_sample_code IS'=>$each['org_sample_code'],'status IS'=>'1')))->toArray();
+			
+			foreach ($getSavedList as  $each1) {
+				
+				$getdList = $this->Workflow->find('all',array('conditions'=>array('org_sample_code IS'=>$each1['ilc_org_sample_cd'],'stage_smpl_flag IS'=>'FG')))->toArray();
+				
+				
+				if(empty($getdList)){
+
+					unset($result[$i]);
+					break;
+
+				}	
+			}
+			$i++;
+
+		}
+
+		$this->set('ilc_sample_reports',$result);
+
+		return $result;
+			
+		}
+
+		
+
+	// final result submited Zscore & report list 14-07-2022
+	public function ilcAvailableSampleZscore($sample_code){
+		
+		$this->viewBuilder()->setLayout('admin_dashboard');
+		$this->loadModel('SampleInward');
+		$this->loadModel('Workflow');
+		$conn = ConnectionManager::get('default');
+	
+		//above query added for fetch 'OF' list for ilc sample 18-07-2022
+		// $query1 = $conn->execute("SELECT sm.ilc_org_sample_cd,w.stage_smpl_cd,w.tran_date,ro.ro_office,si.report_pdf
+		// 						FROM ilc_org_smplcd_maps AS sm
+		// 			 			INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
+		// 			 			INNER JOIN dmi_ro_offices AS ro ON ro.id=w.dst_loc_id
+		// 						INNER JOIN sample_inward AS si ON w.org_sample_code=si.org_sample_code
+		// 			 			WHERE  w.stage_smpl_flag='OF' AND sm.org_sample_code='$sample_code' AND sm.status = 1 ");
+
+
+
+		$result = $query1->fetchAll('assoc');
+
+		// if (count($result)>0) {
+
+			$this->set('result',$result);
+			
+			$i=1;		
+			$arraylist= array();		
+			foreach ($result as $each) {
+
+				//fetch date according to FG flag 
+				$getList = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd'=>$each['stage_smpl_cd'],'stage_smpl_flag IS'=>'FG')))->first();
+				$arraylist[$i]= $getList['tran_date'];
+				// print_r($arraylist[$i]);
+				
+			$i++;	
+			}
+			// exit;
+			$this->set('final_reports',$arraylist);
+				
+		// }
+	}
+	
+	
+	
 /******************************************************************************************************************************************************************************************************/
 
 	//to generate report pdf for preview and store on server

@@ -812,6 +812,7 @@ class FinalGradingController extends AppController
 
 		$conn = ConnectionManager::get('default');
 		$user_id = $_SESSION['user_code'];
+		
 		$this->loadModel('Workflow');
 
 		if ($_SESSION['role']=='RAL/CAL OIC') {
@@ -843,9 +844,10 @@ class FinalGradingController extends AppController
 						$final_result[]= $stage_sample_code;
 					}
 				}
+
+				
 			}
 
-		
 			// added for ilc flow 11-07-2022
 			//Conditions to check wheather sample type ilc 
 			$final_result1 = $this->Ilc->ilcFinalGradeAvaiIf($user_id);
@@ -949,6 +951,7 @@ class FinalGradingController extends AppController
 		$this->redirect(array('controller'=>'FinalGrading','action'=>'ilc_grading_by_oic'));
 	}
 
+	
 
 /******************************************************************************************************************************************************************************************************/
 // added for ilcFlow 08-07-2022
@@ -1365,7 +1368,15 @@ class FinalGradingController extends AppController
 		//to show grade selected by OIC while final grading on report pdf
 		$this->loadModel('MGradeDesc');
 		$getGradedesc = $this->MGradeDesc->find('all',array('fields'=>'grade_desc','conditions'=>array('grade_code'=>$_POST['grade_code'])))->first();
-		$this->Session->write('gradeDescFinalReport',$getGradedesc['grade_desc']);
+		if(!empty($getGradedesc)){
+
+			$this->Session->write('gradeDescFinalReport',$getGradedesc['grade_desc']);
+		
+		}else{
+			$this->Session->write('gradeDescFinalReport',null);
+			$this->Session->write('post_grade_code_vs',00);//added for ilc sample only no grading required
+			
+		}
 		
 		$this->Session->write('post_subGradeChecked',$_POST['subgrade']);
 		$this->Session->write('post_category_code',$_POST['category_code']);
@@ -1390,12 +1401,12 @@ class FinalGradingController extends AppController
 		$this->loadModel('Workflow');
 		$conn = ConnectionManager::get('default');
 
-		$sample_code = $this->Session->read('grading_sample_code');
+		$sample_code = trim($this->Session->read('grading_sample_code'));
 
 		//get org sample code
 		$ogrsample1 = $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $sample_code)))->first();
 		$ogrsample = $ogrsample1['org_sample_code'];
-
+		
 		$src_usr_cd = $conn->execute("SELECT src_usr_cd,src_loc_id FROM workflow WHERE org_sample_code='$ogrsample' AND stage_smpl_flag IN ('OF','IF') ");
 
 		$src_usr_cd = $src_usr_cd->fetchAll('assoc');
@@ -1539,6 +1550,19 @@ class FinalGradingController extends AppController
 		$this->set('final_sample_reports',$final_reports);
 	}
 
+	public function ilcFinalizedSamples(){
+
+		$final_reports = $this->ilcSampleTestReports();
+		$this->set('ilc_sample_reports',$final_reports);
+	}
+
+	public function ilcZscore($sample_code){
+
+		$arraylist = $this->ilcAvailableSampleZscore($sample_code);
+		$this->set('final_reports',$arraylist);
+	}
+
+
 /******************************************************************************************************************************************************************************************************/
 
 
@@ -1597,6 +1621,93 @@ class FinalGradingController extends AppController
 		return $final_reports;
 	}
 
+	// create new menu for showing ilc finalized test report result done 13/07-2022 by shreeya
+	public function ilcSampleTestReports(){
+
+		$this->viewBuilder()->setLayout('admin_dashboard');
+		$this->loadModel('Workflow');
+		$this->loadModel('IlcOrgSmplcdMaps');
+		$conn = ConnectionManager::get('default');
+		
+		$query2 = $conn->execute("SELECT si.org_sample_code, w.stage_smpl_cd,mcc.category_name,mc.commodity_name, st.sample_type_desc, w.tran_date,w.stage_smpl_flag,si.status_flag
+				FROM sample_inward AS si
+				INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+				INNER JOIN m_commodity_category AS mcc ON mcc.category_code = si.category_code
+				INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+				INNER JOIN workflow AS w ON w.org_sample_code=si.org_sample_code
+				WHERE  w.stage_smpl_flag='OF' AND si.status_flag='F' AND si.sample_type_code=9 AND si.entry_type IS NULL ");
+				
+		$result = $query2->fetchAll('assoc');
+		$i=0;
+		foreach ($result as $each) {
+			
+			$getSavedList = $this->IlcOrgSmplcdMaps->find('all',array('conditions'=>array('org_sample_code IS'=>$each['org_sample_code'],'status IS'=>'1')))->toArray();
+			
+			foreach ($getSavedList as  $each1) {
+				
+				$getdList = $this->Workflow->find('all',array('conditions'=>array('org_sample_code IS'=>$each1['ilc_org_sample_cd'],'stage_smpl_flag IS'=>'FG')))->toArray();
+				
+				
+				if(empty($getdList)){
+
+					unset($result[$i]);
+					break;
+
+				}	
+			}
+			$i++;
+
+		}
+
+		$this->set('ilc_sample_reports',$result);
+
+		return $result;
+			
+		}
+
+		
+
+	// final result submited Zscore & report list 14-07-2022
+	public function ilcAvailableSampleZscore($sample_code){
+		
+		$this->viewBuilder()->setLayout('admin_dashboard');
+		$this->loadModel('SampleInward');
+		$this->loadModel('Workflow');
+		$conn = ConnectionManager::get('default');
+	
+		// above query added for fetch 'OF' list for ilc sample 18-07-2022
+		$query1 = $conn->execute("SELECT sm.ilc_org_sample_cd,w.stage_smpl_cd,w.tran_date,ro.ro_office,si.report_pdf
+								FROM ilc_org_smplcd_maps AS sm
+					 			INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
+					 			INNER JOIN dmi_ro_offices AS ro ON ro.id=w.dst_loc_id
+								INNER JOIN sample_inward AS si ON w.org_sample_code=si.org_sample_code
+					 			WHERE  w.stage_smpl_flag='OF' AND sm.org_sample_code='$sample_code' AND sm.status = 1 ");
+
+		$result = $query1->fetchAll('assoc');
+
+		// if (count($result)>0) {
+
+			$this->set('result',$result);
+			
+			$i=1;		
+			$arraylist= array();		
+			foreach ($result as $each) {
+
+				//fetch date according to FG flag 
+				$getList = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd'=>$each['stage_smpl_cd'],'stage_smpl_flag IS'=>'FG')))->first();
+				$arraylist[$i]= $getList['tran_date'];
+				// print_r($arraylist[$i]);
+				
+			$i++;	
+			}
+			// exit;
+			$this->set('final_reports',$arraylist);
+				
+		// }
+	}
+	
+	
+	
 /******************************************************************************************************************************************************************************************************/
 
 	//to generate report pdf for preview and store on server

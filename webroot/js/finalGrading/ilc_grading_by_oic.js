@@ -45,20 +45,20 @@ $(document).ready(function(){
 		e.preventDefault();
 		$("#array").val(' ');
 		$("#array").val(arr);
-
+		//alert('he');
 		var category_code=$("#category_code").val();
 		var commodity_code=$("#commodity_code").val();
 		var sample_code=$("#sample_code").val();
-		//var grd_standrd=$("#grd_standrd").val(null);
+		var grd_standrd = null;
 		var remark=$("#remark").val();
 		var remark_new=$("#remark_new").val();
 		var tran_date=$("#tran_date").val();
 		var result_flg= $('input[name=result_flg]:checked', '#frm_final_grading').val();
 		var login_timestamp=$("#login_timestamp").val();
-		//var arraygrade= $("#array").val(null);
-		// var grade_code;
-		// var subgrade;
-
+		var arraygrade = null;
+		var grade_code = null;
+		var subgrade = null;
+		
 		// To check sub grading value is checked or not ,
 	
 		if(commodity_code==''){
@@ -84,7 +84,7 @@ $(document).ready(function(){
 			alert(msg);
 			return;
 		}
-
+		
 		if(result_flg == 'R' || result_flg == 'N'){
 
 		}else{
@@ -92,7 +92,7 @@ $(document).ready(function(){
 			alert(msg);
 			return;
 		}
-
+	
 		if(result_flg == 'R'){//if set for retest, dont ask for esign
 
 			$("#button").val('add');
@@ -147,13 +147,14 @@ $(document).ready(function(){
 						xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
 				},
 				success: function (data) {
-
+					
 					var res = data.match(/#([^']+)#/)[1];//getting data bitween ## from response
-
+					
 					if(res == 1){
-
+						
 						//to esign and final grading of sample
 						esign_consent_box();
+						
 					}
 				}
 			});

@@ -954,8 +954,8 @@ class SampleForwardController extends AppController {
 
 		$this->viewBuilder()->setLayout('pdf_layout');
 
-		// $sample_code = $stage_sample_code;
-		
+		$sample_code = trim($stage_sample_code);
+		// print_r($sample_code); exit;
 		$this->loadModel('SampleInward');
 		$conn = ConnectionManager::get('default');
 
@@ -966,7 +966,7 @@ class SampleForwardController extends AppController {
 								 INNER JOIN m_unit_weight AS a ON a.unit_id = si.parcel_size
 								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
 								 INNER JOIN m_commodity AS m ON m.commodity_code = si.commodity_code
-								 WHERE w.stage IN('3','4') AND si.display='Y' AND  si.status_flag IN('F','H') AND  w.stage_smpl_cd=TRIM('$stage_sample_code') ");
+								 WHERE w.stage IN('3','4') AND si.display='Y' AND  si.status_flag IN('F','H') AND  w.stage_smpl_cd=TRIM('$sample_code') ");
 		
 		$str_data = $query->fetchAll('assoc');
 		$this->set('str_data',$str_data);
@@ -1325,7 +1325,7 @@ class SampleForwardController extends AppController {
 					
 					$subsmplres = $query2->fetchAll('assoc');
 
-						
+				
 					foreach ($subsmplres as $each1) {
 
 						$subsamplelist[$i][] = $each1['stage_smpl_cd'];
