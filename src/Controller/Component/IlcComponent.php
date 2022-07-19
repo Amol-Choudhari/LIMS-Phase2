@@ -411,8 +411,6 @@
 
 		}
 
-
-
 		// check wheather stage sample code is final graded or not
 		public  Function ilcFinalGradeAvaiElse()
 		{
@@ -433,7 +431,7 @@
 									 GROUP BY ft.sample_code");
 
 			$final_result_details1 = $query1->fetchAll('assoc');
-
+            
 			/* Conditions to check wheather stage sample code is final graded or not.*/
 			$final_result1 = array();
 			if (!empty($final_result_details1)) {
@@ -494,13 +492,6 @@
 			
 		}	
 		
-
-
-
-		
-		
-		
-
 
     }
 

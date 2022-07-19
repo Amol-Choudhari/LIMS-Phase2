@@ -47,7 +47,7 @@
 															<td class="text-center"><?php echo $res2['category_name']; ?></td>
 															<td class="text-center"><?php echo $res2['commodity_name']; ?></td>										
 															<td class="text-center"><?php echo $res2['sample_type_desc'] ?></td>
-															<td class="text-center"><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'ilc_available_sample_zscore', $res2['stage_smpl_cd']),array('class'=>'glyphicon glyphicon-share','title'=>'finalized result submited by RAL/CAL')); ?></td>
+															<td class="text-center"><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'ilc_available_sample_zscore', trim($res2['stage_smpl_cd'])),array('class'=>'glyphicon glyphicon-share','title'=>'finalized result submited by RAL/CAL')); ?></td>
 
 														</tr>
 												<?php $i=$i+1; }} ?>				

@@ -18,8 +18,10 @@
 						<?php echo $this->Form->create(); ?>
 							<div class="card card-lims">
 							
-								<div class="card-header"><h3 class="card-title-new">List of Finalized Result Submited By RAL's/CAL's for sample code</h3></div>
-									
+								<div class="card-header"><h3 class="card-title-new">List of Finalized Result Submited By RAL's/CAL's for sample code <?php echo $getcommodity['org_sample_code']; ?></h3></div>
+								  
+									<P class="p-2 text-center"><b> Org Sample Code : </b><?php echo $getcommodity['org_sample_code']; ?> <b> Category : </b><?php echo $getcommodity['category_name']; ?>  <b> Commodity :</b> <?php echo $getcommodity['category_name']; ?> <b> Sample Type : </b><?php echo $getcommodity['sample_type_desc']; ?></p>
+								
 									<div class="form-horizontal">
 										<table id="finalized_samples_list" class="table table-striped table-bordered table-hover">
 											<thead class="tablehead">
@@ -43,7 +45,7 @@
 														foreach ($result as $res2) { ?>
 														
 														<tr>
-															<td class="text-center"><?php echo $i; ?></td>                                        
+															<td class="text-center"><?php echo $i; ?></td>                                     
 															<td class="text-center"><?php echo $res2['ilc_org_sample_cd']; ?></td>
 															<td class="text-center"><?php echo $res2['stage_smpl_cd']; ?> - <?php echo $res2['ro_office']; ?> </td>
 														    <td class="text-center"><?php echo $res2['tran_date']; ?></td>

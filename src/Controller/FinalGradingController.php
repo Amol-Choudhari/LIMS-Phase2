@@ -849,7 +849,7 @@ class FinalGradingController extends AppController
 			}
 
 			// added for ilc flow 11-07-2022
-			//Conditions to check wheather sample type ilc 
+			//Conditions to check wheather is not sample type ilc 
 			$final_result1 = $this->Ilc->ilcFinalGradeAvaiIf($user_id);
 
 		}
@@ -892,6 +892,7 @@ class FinalGradingController extends AppController
 
 			}
 			// added for ilc flow 11-07-2022
+			//Conditions to check wheather sample type ilc 
 			$final_result1 = $this->Ilc->ilcFinalGradeAvaiElse($user_id);
 
 		}
@@ -1556,7 +1557,7 @@ class FinalGradingController extends AppController
 		$this->set('ilc_sample_reports',$final_reports);
 	}
 
-	public function ilcZscore($sample_code){
+	public function ilcSampleZscore($sample_code){
 
 		$arraylist = $this->ilcAvailableSampleZscore($sample_code);
 		$this->set('final_reports',$arraylist);
@@ -1621,14 +1622,16 @@ class FinalGradingController extends AppController
 		return $final_reports;
 	}
 
-	// create new menu for showing ilc finalized test report result done 13/07-2022 by shreeya
-	public function ilcSampleTestReports(){
+	// create new fun for showing ilc finalized sample done 13/07-2022 by shreeya
+	public function ilcSampleTestReports(){ 
+		
 
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->loadModel('Workflow');
 		$this->loadModel('IlcOrgSmplcdMaps');
 		$conn = ConnectionManager::get('default');
 		
+		//fetch the list of org sample code with OF flag done 13-07-2022 by shreeya
 		$query2 = $conn->execute("SELECT si.org_sample_code, w.stage_smpl_cd,mcc.category_name,mc.commodity_name, st.sample_type_desc, w.tran_date,w.stage_smpl_flag,si.status_flag
 				FROM sample_inward AS si
 				INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
@@ -1641,28 +1644,26 @@ class FinalGradingController extends AppController
 		$i=0;
 		foreach ($result as $each) {
 			
+			//orignal code
 			$getSavedList = $this->IlcOrgSmplcdMaps->find('all',array('conditions'=>array('org_sample_code IS'=>$each['org_sample_code'],'status IS'=>'1')))->toArray();
 			
 			foreach ($getSavedList as  $each1) {
-				
+				//new generated mapping code with FG flag
 				$getdList = $this->Workflow->find('all',array('conditions'=>array('org_sample_code IS'=>$each1['ilc_org_sample_cd'],'stage_smpl_flag IS'=>'FG')))->toArray();
-				
-				
+			
 				if(empty($getdList)){
 
 					unset($result[$i]);
 					break;
-
 				}	
 			}
 			$i++;
-
 		}
 
 		$this->set('ilc_sample_reports',$result);
 
 		return $result;
-			
+	
 		}
 
 		
@@ -1675,7 +1676,22 @@ class FinalGradingController extends AppController
 		$this->loadModel('Workflow');
 		$conn = ConnectionManager::get('default');
 	
-		// above query added for fetch 'OF' list for ilc sample 18-07-2022
+		//fetch commodity , category_code ,org sample code $ sample_type done 19-07-2022 by shreeya
+		$query = $conn->execute("SELECT sm.org_sample_code,mcc.category_name,mc.commodity_name,st.sample_type_desc
+								FROM ilc_org_smplcd_maps AS sm
+					 			INNER JOIN workflow AS w ON sm.org_sample_code=w.org_sample_code
+								INNER JOIN sample_inward AS si ON w.org_sample_code=si.org_sample_code
+								INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+								INNER JOIN m_commodity_category AS mcc ON mcc.category_code =si.category_code
+								INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+							
+					 			WHERE  w.stage_smpl_flag='SI' AND sm.org_sample_code='$sample_code' ");
+		$getcommodity = $query->fetch('assoc');
+
+		$this->set('getcommodity',$getcommodity);
+
+		
+		// above query added for fetch 'OF' list for ilc sample done 18-07-2022 by shreeya
 		$query1 = $conn->execute("SELECT sm.ilc_org_sample_cd,w.stage_smpl_cd,w.tran_date,ro.ro_office,si.report_pdf
 								FROM ilc_org_smplcd_maps AS sm
 					 			INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
@@ -1693,7 +1709,7 @@ class FinalGradingController extends AppController
 			$arraylist= array();		
 			foreach ($result as $each) {
 
-				//fetch date according to FG flag 
+				//fetch date according to FG flag date's
 				$getList = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd'=>$each['stage_smpl_cd'],'stage_smpl_flag IS'=>'FG')))->first();
 				$arraylist[$i]= $getList['tran_date'];
 				// print_r($arraylist[$i]);
