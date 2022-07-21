@@ -88,6 +88,7 @@ class InwardController extends AppController{
 		$this->loadModel('DmiUserRoles');
 		$this->loadModel('MCommodity');
 		$this->loadModel('UserRole');
+		$this->loadModel('DmiStates');
 		$conn = ConnectionManager::get('default');
 
 		// set variables to show popup messages from view file
@@ -208,6 +209,10 @@ class InwardController extends AppController{
 		//months array
 		$monthArray = array('1'=>'January','2'=>'February','3'=>'March','4'=>'April','5'=>'May','6'=>'June','7'=>'July','8'=>'August','9'=>'September','10'=>'October','11'=>'November','12'=>'December');
 		$this->set('monthArray',$monthArray);
+
+		// Apply "Order by" clause to get state list by order wise (Done By Pravin 10-01-2018)
+		$states = $this->DmiStates->find('list', array('valueField'=>'state_name','conditions'=>array('OR'=>array('delete_status IS NULL','delete_status'=>'no')),'order'=>array('state_name')))->toArray();
+		$this->set('states',$states);
 
 		//to fetch record data to show in update/view mode
 		$sample_inward_data=array();
@@ -723,11 +728,11 @@ class InwardController extends AppController{
 
 				} else {
 
-					//SAMPLE INWARD CONFIRMED
-					//FROM
-					//$this->DmiSmsEmailTemplates->sendMessage(75,$get_info[0]['dst_usr_cd']);
-					//To
-					//$this->DmiSmsEmailTemplates->sendMessage(76,$get_info[1]['dst_usr_cd']);
+					#Sample Confirmed by Inward Officer,RAL-CAL-OIC,RO,SO
+					$smsDetail = $this->Customfunctions->getSmsId('inward'); pr($sms_id); exit;
+					$this->DmiSmsEmailTemplates->sendMessage($smsDetail['from_sms_id'],$smsDetail['from_user']); exit;
+					#Send to Destination User
+					$this->DmiSmsEmailTemplates->sendMessage($smsDetail['to_sms_id'],$smsDetail['to_user']);
 
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
@@ -956,7 +961,6 @@ class InwardController extends AppController{
 									AND sample_inward.stage_sample_code='$sample_code'");
 
 		$sample_data = $query->fetchAll('assoc');
-
 		//to get designation
 		$designation = $sample_data[0]['designation'];
 		$query = $conn->execute("SELECT role_name FROM user_role WHERE role_code='$designation'");

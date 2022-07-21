@@ -365,11 +365,13 @@
 	
 				//replacing dynamic values in the email message
 				$email_message = $this->replaceDynamicValuesFromMessage($sample_code,$email_message,$userCode);
-				//print_r($sms_message);
-				//print_r("</br>");
-				//print_r($destination_mob_nos_values);
-				//print_r("</br>");
-				//print_r($destination_email_ids_values);
+				
+				print_r($sms_message);
+				print_r("</br>");
+				print_r($destination_mob_nos_values);
+				print_r("</br>");
+				print_r($destination_email_ids_values);
+				exit;
 
 				//To send SMS on list of mobile nos.
 				if (!empty($find_message_record['sms_message'])) {
@@ -472,7 +474,7 @@
 		
 		//REPLACE DYNAMIC VALUES IN MESSAGE STRING
 		public function replaceDynamicValuesFromMessage($sample_code,$message,$userCode) {
-
+			
 			//Getting Count Before Execution
 			$total_occurrences = substr_count($message,"%%");
 
@@ -485,100 +487,61 @@
 					switch ($matches[1]) {
 
 						case "sample_code":
-							
 							$message = str_replace("%%sample_code%%",$this->getReplaceDynamicValues('sample_code',$sample_code,$userCode),$message);
-					
 						break;
 
 						case "sample_registration_date":
-							
-							$message = str_replace("%%sample_registration_date%%",$this->getReplaceDynamicValues('sample_registration_date',$sample_code,$userCode),$message);	
-
+							$message = str_replace("%%sample_registration_date%%",$this->getReplaceDynamicValues('sample_registration_date',$sample_code,$userCode),$message);
 						break;
 							
-						case "inward_officer_name":
-
-							$message = str_replace("%%inward_officer_name%%",$this->getReplaceDynamicValues('inward_officer_name',$sample_code,$userCode),$message);
-					
+						case "inward_officer":
+							$message = str_replace("%%inward_officer%%",$this->getReplaceDynamicValues('inward_officer',$sample_code,$userCode),$message);
 						break;
-						
-						case "outward_clerk":
-						
-							$message = str_replace("%%outward_clerk%%",$this->getReplaceDynamicValues('outward_clerk',$sample_code,$userCode),$message);
-							
-						break;
-
+				
 						case "commodities":
-						
 							$message = str_replace("%%commodities%%",$this->getReplaceDynamicValues('commodities',$sample_code,$userCode),$message);
-			
-							break;
+						break;
 							
-					    case "source_user_role":
-						
-								$message = str_replace("%%source_user_role%%",$this->getReplaceDynamicValues('source_user_role',$sample_code,$userCode),$message);
-				
+					    case "s_user_role":
+							$message = str_replace("%%s_user_role%%",$this->getReplaceDynamicValues('s_user_role',$sample_code,$userCode),$message);
 						break;	
 
-					    case "destination_user_role":
-						
-								$message = str_replace("%%destination_user_role%%",$this->getReplaceDynamicValues('destination_user_role',$sample_code,$userCode),$message);
-				
+					    case "d_user_role":
+							$message = str_replace("%%d_user_role%%",$this->getReplaceDynamicValues('d_user_role',$sample_code,$userCode),$message);
 						break;	
 
-					  	case "source_office":
-						
-							$message = str_replace("%%source_office%%",$this->getReplaceDynamicValues('source_office',$sample_code,$userCode),$message);
-				
+					  	case "s_office":
+							$message = str_replace("%%s_office%%",$this->getReplaceDynamicValues('s_office',$sample_code,$userCode),$message);
 						break;
 
-					  	case "destination_office":
-						
-							$message = str_replace("%%destination_office%%",$this->getReplaceDynamicValues('destination_office',$sample_code,$userCode),$message);
-				
+					  	case "d_office":
+							$message = str_replace("%%d_office%%",$this->getReplaceDynamicValues('d_office',$sample_code,$userCode),$message);
 						break;
 
-					 	case "ro_so_officer_name":
-						
-							$message = str_replace("%%ro_so_officer_name%%",$this->getReplaceDynamicValues('ro_so_officer_name',$sample_code,$userCode),$message);
-				
+					 	case "ro_so_oic":
+							$message = str_replace("%%ro_so_oic%%",$this->getReplaceDynamicValues('ro_so_oic',$sample_code,$userCode),$message);
 						break;			
 							
-					  	case "ro_so_oic_name":
-						
-							$message = str_replace("%%ro_so_oic_name%%",$this->getReplaceDynamicValues('ro_so_oic_name',$sample_code,$userCode),$message);
-				
+					  	case "ral_cal_oic":
+							$message = str_replace("%%ral_cal_oic%%",$this->getReplaceDynamicValues('ral_cal_oic',$sample_code,$userCode),$message);
 						break;
 
-					    case "ral_cal_oic_name":
-						
-							$message = str_replace("%%ral_cal_oic_name%%",$this->getReplaceDynamicValues('ral_cal_oic_name',$sample_code,$userCode),$message);
-				
-						break;
-
+		
 					    case "chemist":
-						
 							$message = str_replace("%%chemist%%",$this->getReplaceDynamicValues('chemist',$sample_code,$userCode),$message);
-				
 						break;
 
 					   	case "chief_chemist":
-						
 							$message = str_replace("%%chief_chemist%%",$this->getReplaceDynamicValues('chief_chemist',$sample_code,$userCode),$message);
-				
 						break;
 
 					   	case "lab_incharge":
-						
 							$message = str_replace("%%lab_incharge%%",$this->getReplaceDynamicValues('lab_incharge',$sample_code,$userCode),$message);
-				
 						break;
 							
 						default:						
-							
 							$message = $this->replaceBetween($message, '%%', '%%', '');	
 							$default_value = 'yes';						
-						
 						break;	
 					}
 				
@@ -614,80 +577,40 @@
 			
 			//Get the Source User and their role from sample 
 
-			$sampleInformation = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code])->order(['id'=>'desc'])->first();
-
-			if (!empty($sampleInformation)) {
-
-				$inward_officer_data = $DmiUsers->find()->select(['f_name','l_name','role'])->where(['id IS' => $userCode, 'status' => 'active'])->first();
-				if(!empty($inward_officer_data)){
-
-					$ral_cal_oic_data = $DmiUsers->find()->select(['f_name','l_name','role'])->where(['id IS' => $sampleInformation['dst_usr_cd'], 'status' => 'active'])->first();
-			
-				}	
-
-				$ro_so_oic_data = $DmiUsers->find()->select(['f_name','l_name','role'])->where(['id IS' => $sampleInformation['dst_usr_cd'], 'status' => 'active'])->first();
-			
-				$ro_so_officer_data = $DmiUsers->find()->select(['f_name','l_name','role'])->where(['id IS' => $userCode, 'status' => 'active'])->first();
-			
-				//get source office
-				$get_source_user_office = $sampleInformation['src_loc_id'];
-				$source_office_posted = $DmiRoOffices->find('all')->select(['ro_office'])->where(['id IN' => $get_source_user_office,'OR' => [['delete_status IS' => null], ['delete_status IS' => 'no']]])->first();
-				
-				//get source user roles
-				$get_source_user_role = $sampleInformation['src_usr_cd'];
-				$source_user_role = $DmiUsers->find()->select(['role'])->where(['id IS' => $get_source_user_role, 'status' => 'active'])->first();
-
-				//get_destination_user_role
-				$get_destination_user_role = $sampleInformation['dst_usr_cd'];
-				$destination_user_role = $DmiUsers->find()->select(['role'])->where(['id IS' => $get_destination_user_role, 'status' => 'active'])->first();
-				
-				//get commodity code
-				$get_comodity_code = $SampleInward->find()->select(['commodity_code'])->where(['org_sample_code IS' => $sampleInformation['org_sample_code']])->first();
-				$get_commodity_id = explode(',',$get_comodity_code['commodity_code']);
-				//get commodity name
-				$get_commodity_name = $MCommodity->find('all',array('conditions'=>array('commodity_code IN'=>$get_commodity_id,'display'=>'Y')))->first();
-			
-			}
-
-			
+			$sampleDetails = $SampleInward->getSampleDetails();
+		
 
 
 			switch ($replace_variable_value) {
 					
 					case "sample_code":
-
 						$sample_code = $sampleInformation['stage_smpl_cd'];
 						return $sample_code;  		
-	
 					break;
 		
 					case "sample_registration_date":
-							
-						$sample_resgistration_date = $sampleInformation['created'];						
-
+						$sample_resgistration_date = $sampleInformation['created'];
 						return $sample_resgistration_date;  		
-							
 					break;
 							
 					case "inward_officer_name":
-
-							$inward_officer = $inward_officer_data['f_name']." ".$inward_officer_data['l_name'];
-							return $inward_officer; 
+						$inward_officer = $inward_officer_data['f_name']." ".$inward_officer_data['l_name'];
+						return $inward_officer; 
 					break;
 							
 					case "commodities":
-							$commodities = $get_commodity_name['commodity_name'];
-							return $commodities;
+						$commodities = $get_commodity_name['commodity_name'];
+						return $commodities;
 					break;
 					
 					case "ral_cal_oic_name":
-							$ral_cal_oic_name = $ral_cal_oic_data['f_name']." ".$ral_cal_oic_data['l_name'];
-							return $ral_cal_oic_name; 
+						$ral_cal_oic_name = $ral_cal_oic_data['f_name']." ".$ral_cal_oic_data['l_name'];
+						return $ral_cal_oic_name; 
 					break;
 
 					case "source_office":
-							$source_office = $source_office_posted['ro_office'];
-							return $source_office; 
+						$source_office = $source_office_posted['ro_office'];
+						return $source_office; 
 					break;
 
 					case "source_office":
@@ -696,40 +619,37 @@
 					break;
 					
 					case "ro_so_oic_name":
-							$ro_so_oic = $ro_so_oic_data['f_name']." ".$ro_so_oic_data['l_name'];
-							return $ro_so_oic; 
+						$ro_so_oic = $ro_so_oic_data['f_name']." ".$ro_so_oic_data['l_name'];
+						return $ro_so_oic; 
 					break;
 
 					case "ro_so_officer_name":
-							$ro_so_officer = $ro_so_officer_data['f_name']." ".$ro_so_officer_data['l_name']; 
-							return $ro_so_officer; 
+						$ro_so_officer = $ro_so_officer_data['f_name']." ".$ro_so_officer_data['l_name']; 
+						return $ro_so_officer; 
 					break;
 
 					case "chemist":
-							$chemist = $chemist['f_name']." ".$chemist['l_name']; 
-							return $chemist; 
+						$chemist = $chemist['f_name']." ".$chemist['l_name']; 
+						return $chemist; 
 					break;
 
 					case "lab_incharge":
-							$lab_incharge = $lab_incharge['f_name']." ".$lab_incharge['l_name']; 
-							return $lab_incharge; 
+						$lab_incharge = $lab_incharge['f_name']." ".$lab_incharge['l_name']; 
+						return $lab_incharge; 
 					break;
 
 					case "source_user_role":
-						  $source_user_role = $source_user_role['role'];
-						  return $source_user_role; 
+						$source_user_role = $source_user_role['role'];
+						return $source_user_role; 
 					break;
 
 					case "destination_user_role":
-						  $destination_user_role = $destination_user_role['role']; 
-						  return $destination_user_role; 
+						$destination_user_role = $destination_user_role['role']; 
+						return $destination_user_role; 
 					break;
 
-					
-	
-					default:
-						
-					$message = '%%';						
+					default:	
+						$message = '%%';						
 					break;
 			}
 			

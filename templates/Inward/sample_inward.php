@@ -129,35 +129,35 @@
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Type Of Sample <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('sample_type_code', array('type'=>'select','options'=>$Sample_Type,'value'=>$sample_type_code, 'id'=>'sample_type_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('sample_type_code', array('type'=>'select','options'=>$Sample_Type,'value'=>$sample_type_code, 'id'=>'sample_type_code', 'label'=>false,'empty'=>'--Select Sample--','class'=>'form-control','required'=>true,)); ?>
 														<span id="error_Sample_Type" class="error invalid-feedback"></span>
 													</div>
 												</div>
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Container Type <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('container_code', array('type'=>'select','options'=>$con,'value'=>$sample_inward_data['container_code'], 'id'=>'container_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('container_code', array('type'=>'select','options'=>$con,'value'=>$sample_inward_data['container_code'], 'id'=>'container_code', 'label'=>false,'empty'=>'--Select Container--','class'=>'form-control','required'=>true,)); ?>
 														<span id="error_container_code" class="error invalid-feedback"></span>
 													</div>
 												</div>
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Physical Appearance <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('entry_flag', array('type'=>'select','options'=>$phy_app,'value'=>$sample_inward_data['entry_flag'], 'id'=>'entry_flag', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('entry_flag', array('type'=>'select','options'=>$phy_app,'value'=>$sample_inward_data['entry_flag'], 'id'=>'entry_flag', 'label'=>false,'empty'=>'--Select Physical Appearance--','class'=>'form-control','required'=>true,)); ?>
 														<span id="error_entry_flag" class="error invalid-feedback"></span>
 													</div>
 												</div>
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Package Condition <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('par_condition_code', array('type'=>'select','options'=>$parcel_condition,'value'=>$sample_inward_data['par_condition_code'], 'id'=>'par_condition_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('par_condition_code', array('type'=>'select','options'=>$parcel_condition,'value'=>$sample_inward_data['par_condition_code'], 'id'=>'par_condition_code', 'label'=>false,'empty'=>'--Select Package Condition--','class'=>'form-control','required'=>true,)); ?>
 														<span id="error_parcel_condition" class="error invalid-feedback"></span>
 													</div>
 												</div>
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Sample Condition <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('sam_condition_code', array('type'=>'select','options'=>$sample_condition,'value'=>$sample_inward_data['sam_condition_code'], 'id'=>'sam_condition_code', 'label'=>false,'empty'=>'--Select--','class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('sam_condition_code', array('type'=>'select','options'=>$sample_condition,'value'=>$sample_inward_data['sam_condition_code'], 'id'=>'sam_condition_code', 'label'=>false,'empty'=>'--Select Sample Condition--','class'=>'form-control','required'=>true,)); ?>
 														<span id="error_sample_condition" class="error invalid-feedback"></span>
 													</div>
 												</div>
@@ -167,13 +167,13 @@
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Quantity <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-3">
-														<?php echo $this->Form->control('sample_total_qnt', array('type'=>'number', 'id'=>'sample_total_qnt','value'=>$sample_inward_data['sample_total_qnt'], 'label'=>false,'class'=>'form-control','placeholder'=>"Qty",'required'=>true,)); ?>
+														<?php echo $this->Form->control('sample_total_qnt', array('type'=>'number', 'id'=>'sample_total_qnt','value'=>$sample_inward_data['sample_total_qnt'], 'label'=>false,'class'=>'form-control','placeholder'=>"Enter the Quanity",'required'=>true,)); ?>
 														<span id="error_sample_total_qnt" class="error invalid-feedback"></span>
 													</div>
 													<div class="col-md-6">
 														<label for="inputEmail3" class="col-sm-3 col-form-label">Unit <span class="required-star">*</span></label>
 														<div class="custom-file col-sm-5">
-															<?php echo $this->Form->control('parcel_size', array('type'=>'select','options'=>$grade_desc,'value'=>$sample_inward_data['parcel_size'], 'id'=>'parcel_size', 'label'=>false,'empty'=>'---','class'=>'form-control','required'=>true,)); ?>
+															<?php echo $this->Form->control('parcel_size', array('type'=>'select','options'=>$grade_desc,'value'=>$sample_inward_data['parcel_size'], 'id'=>'parcel_size', 'label'=>false,'empty'=>'--Select Units--','class'=>'form-control','required'=>true,)); ?>
 															<span id="error_parcel_size" class="error invalid-feedback"></span>
 														</div>
 													</div>
@@ -203,7 +203,7 @@
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">Expiry Month <span class="required-star">*</span></label>
 													<div class="custom-file col-sm-4">
-														<?php echo $this->Form->control('expiry_month', array('type'=>'select','options'=>$monthArray,'value'=>$sample_inward_data['expiry_month'], 'id'=>'expiry_month', 'label'=>false,'class'=>'form-control','required'=>true,)); ?>
+														<?php echo $this->Form->control('expiry_month', array('type'=>'select','options'=>$monthArray,'value'=>$sample_inward_data['expiry_month'], 'id'=>'expiry_month', 'label'=>false,'class'=>'form-control','required'=>true,'empty'=>'--Select Month--')); ?>
 														<span id="error_expiry_month" class="error invalid-feedback"></span>
 													</div>
 
@@ -211,6 +211,72 @@
 													<div class="custom-file col-sm-3">
 														<?php echo $this->Form->control('expiry_year', array('type'=>'text', 'id'=>'expiry_year','value'=>$sample_inward_data['expiry_year'], 'label'=>false,'class'=>'form-control','placeholder'=>'Select year','required'=>true,)); ?>
 														<span id="error_expiry_year" class="error invalid-feedback"></span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								
+								<div id="customer_details">
+									<div class="card-header"><h3 class="card-title-new">Customer's Details</h3></div>
+									<div class="form-horizontal">
+										<p class="badge badge-success">Note: 1) This Details will need to feel if the Sample is for Commercial Sample Type. <br></p>
+										<div class="card-body marginB10">
+											<div class="row">
+												<div class="col-sm-6">
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">Customer's Name <span class="required-star">*</span></label>
+														<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('customer_name', array('type'=>'text','id'=>'customer_name','escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer full name')); ?>
+															<span id="error_customer_name" class="error invalid-feedback"></span>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">Email Id <span class="required-star">*</span></label>
+														<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('customer_email_id', array('type'=>'text', 'id'=>'customer_email_id', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the email id')); ?>
+															<span id="error_customer_email_id" class="error invalid-feedback"></span>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">Address <span class="required-star">*</span></label>
+														<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('street_address', array('type'=>'textarea', 'id'=>'street_address', 'escape'=>false, 'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer address')); ?>
+															<span id="error_street_address" class="error invalid-feedback"></span>
+														</div>
+													</div>
+												</div>
+												<div class="col-sm-6">
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">State/Region <span class="required-star">*</span></label>
+															<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('state', array('type'=>'select', 'id'=>'state','label'=>false,'class'=>'form-control','options'=>$states,'empty'=>'--Select State--')); ?>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">District <span class="required-star">*</span></label>
+															<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('district', array('type'=>'select', 'id'=>'district','label'=>false, 'class'=>'form-control','options'=>array(),'empty'=>'--Select District--')); ?>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">Pin Code <span class="required-star">*</span></label>
+															<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('postal_code', array('type'=>'text', 'id'=>'postal_code', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the pincode')); ?>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">Mobile No. <span class="required-star">*</span></label>
+															<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('customer_mobile_no', array('type'=>'text', 'id'=>'customer_mobile_no', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer mobile number')); ?>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="inputEmail3" class="col-sm-3 col-form-label">Phone No.</label>
+															<div class="custom-file col-sm-9">
+															<?php echo $this->Form->control('customer_fax_no', array('type'=>'text', 'id'=>'customer_fax_no', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the phone number')); ?>
+														</div>
 													</div>
 												</div>
 											</div>
@@ -288,18 +354,15 @@
 									<div class="col-md-1 float-right"><a href="../Dashboard/home" class="btn btn-danger">Cancel</a></div>
 								
 									<?php if ($_SESSION['user_flag']=='RO' || $_SESSION['user_flag']=='SO') { ?>
-
 										<?php if (!(trim($sample_inward_data['status_flag'])=='')) { ?>
 											<div class="col-md-2 float-left"><a href="../InwardDetails/sample_inward_details" class="btn btn-primary">Next Section</a></div>
 										<?php	} ?>
-
 									<?php } ?>
+
 									<?php if ($_SESSION['user_flag']=='RAL' || $_SESSION['user_flag']=='CAL') { ?>
-
-									<?php if (trim($_SESSION['is_payment_applicable'] =='yes')) { ?>
-										<div class="col-md-2 float-left"><a href="../payment/payment_details" class="btn btn-primary">Next Section</a></div>
-									<?php	} ?>
-
+										<?php if (trim($_SESSION['is_payment_applicable'] =='yes')) { ?>
+											<div class="col-md-2 float-left"><a href="../payment/payment_details" class="btn btn-primary">Next Section</a></div>
+										<?php	} ?>
 									<?php } ?>
 								</div>
 							</div>
@@ -317,12 +380,7 @@
 <input type="hidden" id="org_sample_code" value="<?php echo $org_sample_code; ?> ">
 <input type="hidden" id="sample_status" value="<?php echo trim($sample_inward_data['status_flag']); ?>">
 <input type="hidden" id="receivedfrom" value="<?php echo $receivedfrom; ?>">
-<?php if(empty($sample_type_code)){ 
-		$sample_type = ''; 
-	}else{ 
-		$sample_type = $sample_type_code; 
-	} 
-?>
+<?php if(empty($sample_type_code)){ $sample_type = ''; }else{ $sample_type = $sample_type_code; } ?>
 <input type="hidden" id="sample_type" value="<?php echo $sample_type; ?>">
 <?php echo $this->Html->Script('inward/sample_inward'); ?>
 <?php echo $this->Html->Script('sample_reg_form'); ?>

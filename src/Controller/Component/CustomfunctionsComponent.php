@@ -618,7 +618,6 @@
 
 					echo"Sorry.. Something wrong happened. ";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login again</a><?php
 					exit;
-
 				}
 
 			} else {
@@ -644,10 +643,8 @@
 		$duplicate_code = $SampleInward->find('all',array('fields'=>array('org_sample_code'),'conditions'=>array('org_sample_code IS'=>$sample_code)))->first();
 		
 		if (empty($duplicate_code)) {
-
 			return $sample_code;
 		} else {
-
 			$this->createSampleCode();
 		}
 	}
@@ -928,7 +925,7 @@
 		
 		if (empty($data['payment_amount']) && empty($data['payment_transaction_id']) && empty($data['bharatkosh_payment_done']) && empty($data['payment_trasaction_date'])) {
 		
-				return false;
+			return false;
 		}
 		
 		if (empty($payment_receipt_docs)) {
@@ -946,7 +943,7 @@
 		$bharatkosh_payment_done = $this->radioButtonInputCheck($post_input_request);
 		
 		if ($bharatkosh_payment_done == null) { 
-				return false;
+			return false;
 		}
 
 
@@ -970,54 +967,80 @@
 			$pao_user_email_id = $DmiUsers->find('all',array('fields'=>'email', 'conditions'=>array('id IS'=>$pao_user_id['pao_user_id'])))->first();
 		
 			$lims_sample_payment_detailsEntity = $LimsSamplePaymentDetails->newEntity(array(
-					'sample_code'=>$sample_code,
-					'amount_paid'=>$payment_amount,
-					'transaction_id'=>$payment_transaction_id,
-					'transaction_date'=>$payment_trasaction_date,
-					'payment_receipt_docs'=>$payment_receipt_docs,
-					'bharatkosh_payment_done'=>$bharatkosh_payment_done,
-					'reason_option_comment'=>$payment_confirmation_query['reason_option_comment'],
-					'reason_comment'=>$payment_confirmation_query['reason_comment'],
-					'district_id'=>$district_id,
-					'payment_confirmation'=>'replied',
-					'pao_id'=>$pao_id,
-					'created'=>date('Y-m-d H:i:s'),
-					'modified'=>date('Y-m-d H:i:s')
-				));
+
+				'sample_code'=>$sample_code,
+				'amount_paid'=>$payment_amount,
+				'transaction_id'=>$payment_transaction_id,
+				'transaction_date'=>$payment_trasaction_date,
+				'payment_receipt_docs'=>$payment_receipt_docs,
+				'bharatkosh_payment_done'=>$bharatkosh_payment_done,
+				'reason_option_comment'=>$payment_confirmation_query['reason_option_comment'],
+				'reason_comment'=>$payment_confirmation_query['reason_comment'],
+				'district_id'=>$district_id,
+				'payment_confirmation'=>'replied',
+				'pao_id'=>$pao_id,
+				'created'=>date('Y-m-d H:i:s'),
+				'modified'=>date('Y-m-d H:i:s')
+			));
 						
 			if($LimsSamplePaymentDetails->save($lims_sample_payment_detailsEntity)){
-					
-					$user_email_id = $pao_user_email_id['email'];
-					$current_level = 'pao';
-					$DmiSmsEmailTemplates->sendMessage(2056,$sample_code);
-			
-					return true;	
+				
+				$user_email_id = $pao_user_email_id['email'];
+				$current_level = 'pao';
+				$DmiSmsEmailTemplates->sendMessage(2056,$sample_code);
+		
+				return true;	
 			}
+
 		}else{
+
 			$lims_sample_payment_detailsEntity = $LimsSamplePaymentDetails->newEntity(array(
-					'sample_code'=>$sample_code,
-					'amount_paid'=>$payment_amount,
-					'transaction_id'=>$payment_transaction_id,
-					'transaction_date'=>$payment_trasaction_date,
-					'payment_receipt_docs'=>$payment_receipt_docs,
-					'bharatkosh_payment_done'=>$bharatkosh_payment_done,
-					'payment_confirmation'=>'saved',
-					'district_id'=>$district_id, 
-					'pao_id'=>$pao_id,
-					'created'=>date('Y-m-d H:i:s'),
-					'modified'=>date('Y-m-d H:i:s')
-				));
+
+				'sample_code'=>$sample_code,
+				'amount_paid'=>$payment_amount,
+				'transaction_id'=>$payment_transaction_id,
+				'transaction_date'=>$payment_trasaction_date,
+				'payment_receipt_docs'=>$payment_receipt_docs,
+				'bharatkosh_payment_done'=>$bharatkosh_payment_done,
+				'payment_confirmation'=>'saved',
+				'district_id'=>$district_id, 
+				'pao_id'=>$pao_id,
+				'created'=>date('Y-m-d H:i:s'),
+				'modified'=>date('Y-m-d H:i:s')
+			));
 
 			if($LimsSamplePaymentDetails->save($lims_sample_payment_detailsEntity)){
 				
-					return true;	
+				return true;	
 			}
-			
 		}
 		
 	}
 
 
+
+
+	public function getSmsId($sms_action){
+
+		$user_role = $_SESSION['role'];
+
+
+		if ($sms_action=='inward') {
+			$from_id = 75;
+			$to_id = 76;
+		}
+
+
+		$Workflow = TableRegistry::getTableLocator()->get('Workflow');
+
+		$sample_code = $_SESSION['org_sample_code'];
+		$sendingTo = $_SESSION['user_code'];
+		
+		$getDetails =	$Workflow->find('all')->where(['stage_smpl_cd' => $sample_code])->order('id desc')->first();
+		$receiver = $getDetails['dst_usr_cd'];
+		
+		return array('from_user'=>$sendingTo,'from_sms_id'=>$from_id,'to_user'=>$receiver,'to_sms_id'=>$to_id);
+	}
 
 
 }
