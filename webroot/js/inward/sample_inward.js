@@ -21,7 +21,6 @@
 	var sample_type = $("#sample_type").val();
 	if(sample_type != ''){
 		$('#sample_type_code').attr("style", "pointer-events: none;").css("background-color", "lightgray");
-   		
 	}
 
 
@@ -184,18 +183,11 @@
 	//call to login validations
 	$('#save').click(function (e) {
 
-		/*if (sample_inward_form_validations() == false) {
+		if (sample_inward_form_validations() == false) {
 			e.preventDefault();
 		} else {
 			$('#frm_sample_inward').submit();
 		}
-		*/
-		if (customer_details_validations() == false) {
-			e.preventDefault();
-		} else {
-			$('#frm_sample_inward').submit();
-		}
-		
 	});
 
 
@@ -217,6 +209,13 @@
 		var ref_src_code = $('#ref_src_code').val();
 		var expiry_month = $('#expiry_month').val();
 		var expiry_year = $('#expiry_year').val();
+		var customer_name=$("#customer_name").val();
+		var customer_email_id = $("#customer_email_id").val();
+		var street_address = $("#street_address").val();
+		var state = $("#state").val();
+		var district = $("#district").val();
+		var postal_code = $("#postal_code").val();
+		var customer_mobile_no = $("#customer_mobile_no").val();
 
 		var value_return = 'true';
 
@@ -344,6 +343,62 @@
 			value_return = 'false';
 		}
 
+		if(customer_name==""){
+
+			$("#error_customer_name").show().text("Please Enter Customer Full Name.");
+			$("#customer_name").addClass("is-invalid");
+			$("#customer_name").click(function(){$("#error_customer_name").hide().text;$("#customer_name").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(customer_email_id==""){
+
+			$("#error_customer_email_id").show().text("Please Enter Email.");
+			$("#customer_email_id").addClass("is-invalid");
+			$("#customer_email_id").click(function(){$("#error_customer_email_id").hide().text;$("#customer_email_id").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(street_address==""){
+
+			$("#error_street_address").show().text("Please Enter Street Address.");
+			$("#street_address").addClass("is-invalid");
+			$("#street_address").click(function(){$("#error_street_address").hide().text;$("#street_address").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(state==""){
+
+			$("#error_state").show().text("Please Select State.");
+			$("#state").addClass("is-invalid");
+			$("#state").click(function(){$("#error_state").hide().text;$("#state").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(district==""){
+
+			$("#error_district").show().text("Please Select District.");
+			$("#district").addClass("is-invalid");
+			$("#district").click(function(){$("#error_district").hide().text;$("#district").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(postal_code==""){
+
+			$("#error_postal_code").show().text("Please Enter Postal Code.");
+			$("#postal_code").addClass("is-invalid");
+			$("#postal_code").click(function(){$("#error_postal_code").hide().text;$("#postal_code").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(customer_mobile_no==""){
+
+			$("#error_customer_mobile_no").show().text("Please Enter Customer Mobile Number.");
+			$("#customer_mobile_no").addClass("is-invalid");
+			$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
 		if(value_return == 'false'){
 
 			var msg = "Please check some fields are missing or not proper.";
@@ -363,23 +418,26 @@
 		var sample_type_code = $('#sample_type_code').val();
 
 		if(sample_type_code == '3'){
-
+			
 			$.confirm({
 				title: 'Commercial Sample',
-				content: 'Please Note: As you have selected <b>Commercial</b> Sample Type the payment details to be filled in <i>Payment Section</i>. <br>After saving the <i>Inward Section</i> the Payment Section will be avaible to fill.',
+				content:"<u>Please Note :</u> As you have selected <b>Commercial</b> Sample Type. <br> You need to submit the payment details in the <i><b>Payment Section</b></i> which will available after saving the <i><b>Inward Section</b></i>.<br>",
 				icon: 'glyphicon glyphicon-info-sign',
 				type: 'info',
 				columnClass: 'm',
 				buttons: {
 					OK: {
 						btnClass: 'btn-info',
-						action: function(){}
+						action: function(){
+						
+						}
 					},
 					cancel: function () {
 						$("#sample_type_code option:eq(0)").prop("selected", true);
 					}
 				}
 			});
+
 		}
 	});
 
@@ -474,88 +532,4 @@
 				$("#district").append(data);
 			}
 		});
-	}
-
-
-	function customer_details_validations(){
-
-		var customer_name=$("#customer_name").val();
-		var customer_email_id = $("#customer_email_id").val();
-		var street_address = $("#street_address").val();
-		var state = $("#state").val();
-		var district = $("#district").val();
-		var postal_code = $("#postal_code").val();
-		var customer_mobile_no = $("#customer_mobile_no").val();
-	
-		var value_return = 'true';
-
-		if(customer_name==""){
-
-			$("#error_customer_name").show().text("Please Enter Customer Full Name.");
-			$("#customer_name").addClass("is-invalid");
-			$("#customer_name").click(function(){$("#error_customer_name").hide().text;$("#customer_name").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-
-		if(customer_email_id==""){
-
-			$("#error_customer_email_id").show().text("Please Enter Email.");
-			$("#customer_email_id").addClass("is-invalid");
-			$("#customer_email_id").click(function(){$("#error_customer_email_id").hide().text;$("#customer_email_id").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-
-		if(street_address==""){
-
-			$("#error_street_address").show().text("Please Enter Street Address.");
-			$("#street_address").addClass("is-invalid");
-			$("#street_address").click(function(){$("#error_street_address").hide().text;$("#street_address").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-
-		if(state==""){
-
-			$("#error_state").show().text("Please Select State.");
-			$("#state").addClass("is-invalid");
-			$("#state").click(function(){$("#error_state").hide().text;$("#state").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(district==""){
-
-			$("#error_district").show().text("Please Select District.");
-			$("#district").addClass("is-invalid");
-			$("#district").click(function(){$("#error_district").hide().text;$("#district").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(postal_code==""){
-
-			$("#error_postal_code").show().text("Please Enter Postal Code.");
-			$("#postal_code").addClass("is-invalid");
-			$("#postal_code").click(function(){$("#error_postal_code").hide().text;$("#postal_code").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(customer_mobile_no==""){
-
-			$("#error_customer_mobile_no").show().text("Please Enter Customer Mobile Number.");
-			$("#customer_mobile_no").addClass("is-invalid");
-			$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		
-		if(value_return == 'false'){
-
-			var msg = "Please check some fields are missing or not proper.";
-			renderToast('error', msg);
-			return false;
-
-		}else{
-			exit();
-		}
 	}

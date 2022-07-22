@@ -217,72 +217,76 @@
 										</div>
 									</div>
 								</div>
-								
-								<div id="customer_details">
-									<div class="card-header"><h3 class="card-title-new">Customer's Details</h3></div>
-									<div class="form-horizontal">
-										<p class="badge badge-success">Note: 1) This Details will need to feel if the Sample is for Commercial Sample Type. <br></p>
-										<div class="card-body marginB10">
-											<div class="row">
-												<div class="col-sm-6">
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">Customer's Name <span class="required-star">*</span></label>
-														<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('customer_name', array('type'=>'text','id'=>'customer_name','escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer full name')); ?>
-															<span id="error_customer_name" class="error invalid-feedback"></span>
-														</div>
-													</div>
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">Email Id <span class="required-star">*</span></label>
-														<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('customer_email_id', array('type'=>'text', 'id'=>'customer_email_id', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the email id')); ?>
-															<span id="error_customer_email_id" class="error invalid-feedback"></span>
-														</div>
-													</div>
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">Address <span class="required-star">*</span></label>
-														<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('street_address', array('type'=>'textarea', 'id'=>'street_address', 'escape'=>false, 'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer address')); ?>
-															<span id="error_street_address" class="error invalid-feedback"></span>
-														</div>
+				
+								<div class="card-header"><h3 class="card-title-new">Customer's Details</h3></div>
+								<div class="form-horizontal">
+									<div class="card-body marginB10">
+										<div class="row">
+											<div class="col-sm-6">
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">Customer's Name <span class="required-star">*</span></label>
+													<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('customer_name', array('type'=>'text','id'=>'customer_name','escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer full name','value'=>$customer_details['customer_name'])); ?>
+														<span id="error_customer_name" class="error invalid-feedback"></span>
 													</div>
 												</div>
-												<div class="col-sm-6">
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">State/Region <span class="required-star">*</span></label>
-															<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('state', array('type'=>'select', 'id'=>'state','label'=>false,'class'=>'form-control','options'=>$states,'empty'=>'--Select State--')); ?>
-														</div>
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">Email Id <span class="required-star">*</span></label>
+													<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('customer_email_id', array('type'=>'text', 'id'=>'customer_email_id', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the email id','value'=>base64_decode($customer_details['customer_email_id']))); ?>
+														<span id="error_customer_email_id" class="error invalid-feedback"></span>
 													</div>
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">District <span class="required-star">*</span></label>
-															<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('district', array('type'=>'select', 'id'=>'district','label'=>false, 'class'=>'form-control','options'=>array(),'empty'=>'--Select District--')); ?>
-														</div>
+												</div>
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">Address <span class="required-star">*</span></label>
+													<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('street_address', array('type'=>'textarea', 'id'=>'street_address', 'escape'=>false, 'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer address','value'=>$customer_details['street_address'])); ?>
+														<span id="error_street_address" class="error invalid-feedback"></span>
 													</div>
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">Pin Code <span class="required-star">*</span></label>
-															<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('postal_code', array('type'=>'text', 'id'=>'postal_code', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the pincode')); ?>
-														</div>
+												</div>
+											</div>
+											<div class="col-sm-6">
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">State/Region <span class="required-star">*</span></label>
+														<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('state', array('type'=>'select', 'id'=>'state','label'=>false,'class'=>'form-control','options'=>$states,'empty'=>'--Select State--','value'=>$customer_details['state'])); ?>
+														<span id="error_state" class="error invalid-feedback"></span>
 													</div>
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">Mobile No. <span class="required-star">*</span></label>
-															<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('customer_mobile_no', array('type'=>'text', 'id'=>'customer_mobile_no', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer mobile number')); ?>
-														</div>
+												</div>
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">District <span class="required-star">*</span></label>
+														<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('district', array('type'=>'select', 'id'=>'district','label'=>false, 'class'=>'form-control','options'=>array(),'empty'=>'--Select District--','value'=>$customer_details['district'])); ?>
+														<span id="error_district" class="error invalid-feedback"></span>
+
 													</div>
-													<div class="form-group row">
-														<label for="inputEmail3" class="col-sm-3 col-form-label">Phone No.</label>
-															<div class="custom-file col-sm-9">
-															<?php echo $this->Form->control('customer_fax_no', array('type'=>'text', 'id'=>'customer_fax_no', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the phone number')); ?>
-														</div>
+												</div>
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">Pin Code <span class="required-star">*</span></label>
+														<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('postal_code', array('type'=>'text', 'id'=>'postal_code', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the pincode','value'=>$customer_details['postal_code'])); ?>
+														<span id="error_postal_code" class="error invalid-feedback"></span>
+
+													</div>
+												</div>
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">Mobile No. <span class="required-star">*</span></label>
+														<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('customer_mobile_no', array('type'=>'text', 'id'=>'customer_mobile_no', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the customer mobile number','value'=>base64_decode($customer_details['customer_mobile_no']))); ?>
+														<span id="error_customer_mobile_no" class="error invalid-feedback"></span>
+													</div>
+												</div>
+												<div class="form-group row marginB26">
+													<label for="inputEmail3" class="col-sm-3 col-form-label">Phone No.</label>
+														<div class="custom-file col-sm-9">
+														<?php echo $this->Form->control('customer_fax_no', array('type'=>'text', 'id'=>'customer_fax_no', 'escape'=>false,'class'=>'form-control input-field','label'=>false,'placeholder'=>'Enter the phone number','value'=>$customer_details['customer_fax_no'])); ?>
 													</div>
 												</div>
 											</div>
 										</div>
 									</div>
 								</div>
+							
 
 								<div class="col-md-6 offset-3">
 									<div class="card">
@@ -331,9 +335,7 @@
 
 							<div class="card-footer">
 								<div class="col-md-12">
-									<!--if confirm then hide btns
-									Added the PV flag condtion if sample is commercial - 30-06-2022  						
-								    -->
+									<!--if confirm then hide btns Added the PV flag condtion if sample is commercial - 30-06-2022 -->
 									<?php if (!(trim($sample_inward_data['status_flag'])=='S' || trim($sample_inward_data['status_flag'])=='PV')) { ?>
 
 										<div class="col-md-1 float-left">

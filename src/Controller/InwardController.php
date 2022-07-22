@@ -24,6 +24,7 @@ class InwardController extends AppController{
 		$this->loadModel('DmiRoOffices');
 		$this->loadModel('DmiUsers');
 		$this->loadModel('DmiSmsEmailTemplates');
+		$this->loadModel('LimsCustomerDetails');
 	}
 
 /****************************************************************************************************************************************************************************************************************************************************************/
@@ -234,6 +235,7 @@ class InwardController extends AppController{
 		//on 23-03-2021 by Akash
 		$org_samp_sess_var = $this->Session->read('org_sample_code');
 		$sample_inward_data = $this->SampleInward->find('all',array('conditions'=>array('org_sample_code IS'=>$org_samp_sess_var),'order'=>'inward_id desc'))->first();
+		$customer_details = $this->LimsCustomerDetails->find('all')->where(['org_sample_code IS' => $org_samp_sess_var])->order('id desc')->first();
 		
 		if (!empty($org_samp_sess_var) && !empty($sample_inward_data)) {
 			
@@ -287,6 +289,15 @@ class InwardController extends AppController{
 			$sample_inward_data['rej_reason']='';
 			$sample_inward_data['status_flag']='';
 
+			// This is added for the customer details by Akash on 22-07-2022
+			$customer_details['customer_name'] = '';
+			$customer_details['customer_email_id'] = '';
+			$customer_details['street_address'] = '';
+			$customer_details['state'] = '';
+			$customer_details['district'] = '';
+			$customer_details['postal_code'] = '';
+			$customer_details['customer_mobile_no'] = '';
+			$customer_details['customer_fax_no'] = '';
 
 			$commodity_list = array();
 		}
@@ -295,6 +306,7 @@ class InwardController extends AppController{
 		$this->set('commodity_list',$commodity_list);
 		$this->set('sample_inward_data',$sample_inward_data);
 		$this->set('sample_inward_form_status',$sample_inward_form_status);
+		$this->set('customer_details',$customer_details);
 
 		//for sample details progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
@@ -542,6 +554,11 @@ class InwardController extends AppController{
 					
 					//$this->Customfunctions->getSampleRegisterOffice($org_sample_code);
 					$this->Customfunctions->sampleTypeInformation($org_sample_code);
+
+
+					//Save the Customers Information ny Akash (22-07-2022) 
+					$this->LimsCustomerDetails->saveCustomerDetails($org_sample_code,$postData);
+
 					// For Maintaining Action Log by Akash (26-04-2022)
 					$this->LimsUserActionLogs->saveActionLog('New Sample Saved','Success');
 					$message = 'You have successfully saved Sample Inward. Please note Sample Code is '.$org_sample_code;

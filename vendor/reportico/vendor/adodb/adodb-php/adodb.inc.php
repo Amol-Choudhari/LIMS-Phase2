@@ -421,11 +421,11 @@ if (!defined('_ADODB_LAYER')) {
 	//
 	var $dataProvider = 'native';
 	var $databaseType = 'postgres';		/// RDBMS currently in use, eg. odbc, mysql, mssql
-	var $database = 'aqcmstest';			/// Name of database to be used.
-	var $host = '10.153.72.53';				/// The hostname of the database server
+	var $database = 'dmi';			/// Name of database to be used.
+	var $host = 'localhost';				/// The hostname of the database server
 	var $port = '5432';				/// The port of the database server
-	var $user = 'dsm';				/// The username which is used to connect to the database server.
-	var $password = '';			/// Password for the username. For security, we no longer store it.
+	var $user = 'postgres';				/// The username which is used to connect to the database server.
+	var $password = '123';			/// Password for the username. For security, we no longer store it.
 	var $debug = false;			/// if set to true will output sql statements
 	var $maxblobsize = 262144;	/// maximum size of blobs or large text fields (262144 = 256K)-- some db's die otherwise like foxpro
 	var $concat_operator = '+'; /// default concat operator -- change to || for Oracle/Interbase
