@@ -37,14 +37,24 @@ class LimsCustomerDetailsTable extends Table{
             $postal_code = htmlentities($postData['postal_code'], ENT_QUOTES);
             $sample_type_code = htmlentities($postData['sample_type_code'], ENT_QUOTES);
 
+            $record_id = $this->find('all')->select(['id'])->where(['org_sample_code IS' => $org_sample_code])->first();
+
             //edit array
             if ($record_id != null) {
         
                 $data_array = array(
-                    'id'=>$record_id,
-                    'charges'=>$charges,
-                    'user_email_id'=>$_SESSION['username'],
-                    'modified'=>date('Y-m-d H:i:s'),
+
+                    'id'=>$record_id['id'],
+                    'customer_name'=>$customer_name,
+                    'customer_email_id'=>base64_encode($customer_email_id),
+                    'customer_mobile_no'=>base64_encode($customer_mobile_no),
+                    'customer_fax_no'=>$customer_fax_no,
+                    'street_address'=>$street_address,
+                    'state'=>$state,
+                    'district'=>$district,
+                    'postal_code'=>$postal_code,
+                    'sample_type_code'=>$sample_type_code,
+                    'modified'=>date('Y-m-d H:i:s')
                 );
     
             } else {

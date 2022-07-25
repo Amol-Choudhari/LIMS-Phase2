@@ -157,6 +157,7 @@
 		unset($_SESSION['sample']);
 		unset($_SESSION['stage_sample_code']);
 	?>
+	<input type="hidden" id="actualqty" value="<?php echo $getqty[0]['sample_total_qnt']; ?>">
 
 	<?php echo $this->Html->Script('sampleAccept/sample_accept'); ?>
 	<?php echo $this->Html->Script('sample_forward_form'); ?>

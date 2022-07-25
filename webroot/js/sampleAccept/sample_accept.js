@@ -1,6 +1,7 @@
-$(document).ready(function(){
 	
-	//applied conditional selection by default to Duplicate analysis, if sample type is challenged
+	$(document).ready(function(){
+	
+		//applied conditional selection by default to Duplicate analysis, if sample type is challenged
 		//added on 27-10-2021 by Amol
 		$('input[name="ral_cal"]').click(function(){
 
@@ -8,7 +9,7 @@ $(document).ready(function(){
 				$("#result_dupl_duplicate_flag").prop("checked", true);
 			}else{
 				$("#result_dupl_duplicate_flag").prop("checked", false);
-			}	
+			}
 		});
 
 
@@ -107,15 +108,18 @@ $(document).ready(function(){
 
 	});
 
-	var actualqty = $(".actualquantity").text().trim();
+	var actualqty = $("#actualqty").val().trim();
 
 	$("#actual_received_qty").focusout(function() {
-		var qtyinput = $("#actual_received_qty").val();
-		if(actualqty < qtyinput){
-			$.alert("The Value You Have entered is Greater than the actual recieved value");
-			$("#actual_received_qty").val('');
-			return false;
-		};
+		var qtyinput = $("#actual_received_qty").val().trim(); 
+		if (qtyinput != '') {
+			if(qtyinput > actualqty){
+				$.alert("The Value You Have entered is Greater than the actual recieved value");
+				$("#actual_received_qty").val('');
+				return false;
+			};
+		}
+		
 	});
 
 // enable save button after keyup of inputfield, done by pravin bhakare,11-12-2019

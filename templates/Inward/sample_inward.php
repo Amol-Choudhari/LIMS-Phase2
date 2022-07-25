@@ -256,7 +256,7 @@
 												<div class="form-group row marginB26">
 													<label for="inputEmail3" class="col-sm-3 col-form-label">District <span class="required-star">*</span></label>
 														<div class="custom-file col-sm-9">
-														<?php echo $this->Form->control('district', array('type'=>'select', 'id'=>'district','label'=>false, 'class'=>'form-control','options'=>array(),'empty'=>'--Select District--','value'=>$customer_details['district'])); ?>
+														<?php echo $this->Form->control('district', array('type'=>'select', 'id'=>'district','label'=>false, 'class'=>'form-control','options'=>$district_list,'empty'=>'--Select District--','value'=>$customer_details['district'])); ?>
 														<span id="error_district" class="error invalid-feedback"></span>
 
 													</div>
