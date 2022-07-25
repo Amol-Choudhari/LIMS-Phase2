@@ -304,6 +304,13 @@
 														</a>
 													</li>
 
+													<li class="nav-item">
+														<a href="<?php echo $this->request->getAttribute('webroot');?>FinalGrading/ilc_finalized_zscore" class="bg-cyan nav-link">
+															<i class="nav-icon fas fa-poll-h"></i>
+															<p>ILC Finalized Z-score</p>
+														</a>
+													</li>
+
 											<?php } ?>
 										</li>
 									</ul>

@@ -19,6 +19,7 @@ class DashboardController extends AppController{
 					$this->viewBuilder()->setLayout('admin_dashboard');
 					$this->viewBuilder()->setHelpers(['Form','Html']);
 					$this->loadComponent('Customfunctions');
+					$this->loadComponent('Ilc');
 			
 			$username = $this->getRequest()->getSession()->read('username');
 			

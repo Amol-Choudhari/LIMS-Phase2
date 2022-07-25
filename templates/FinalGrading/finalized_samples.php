@@ -46,7 +46,7 @@
 															<td><?php echo $res2['category_name']; ?></td>
 															<td><?php echo $res2['commodity_name']; ?></td>										
 															<td><?php echo $res2['sample_type_desc'] ?></td>
-															<td><a href="<?php echo $res2['report_pdf']; ?>" target='_blank' class="btn btn-info">View</a></td>
+															<td><a href="<?php echo trim($res2['report_pdf']); ?>" target='_blank' class="btn btn-info">View</a></td>
 														</tr>
 												<?php $i=$i+1; }} ?>				
 											</tbody>

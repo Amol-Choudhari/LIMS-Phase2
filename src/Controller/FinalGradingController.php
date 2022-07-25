@@ -814,6 +814,7 @@ class FinalGradingController extends AppController
 		$user_id = $_SESSION['user_code'];
 		
 		$this->loadModel('Workflow');
+		$this->loadComponent('Ilc');
 
 		if ($_SESSION['role']=='RAL/CAL OIC') {
 
@@ -1674,6 +1675,8 @@ class FinalGradingController extends AppController
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->loadModel('SampleInward');
 		$this->loadModel('Workflow');
+		$this->loadModel('IlcOrgSmplcdMaps');
+	
 		$conn = ConnectionManager::get('default');
 	
 		//fetch commodity , category_code ,org sample code $ sample_type done 19-07-2022 by shreeya
@@ -1692,7 +1695,7 @@ class FinalGradingController extends AppController
 
 		
 		// above query added for fetch 'OF' list for ilc sample done 18-07-2022 by shreeya
-		$query1 = $conn->execute("SELECT sm.ilc_org_sample_cd,w.stage_smpl_cd,w.tran_date,ro.ro_office,si.report_pdf
+		$query1 = $conn->execute("SELECT sm.ilc_org_sample_cd,w.stage_smpl_cd,w.tran_date,ro.ro_office,si.report_pdf,sm.zscore
 								FROM ilc_org_smplcd_maps AS sm
 					 			INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
 					 			INNER JOIN dmi_ro_offices AS ro ON ro.id=w.dst_loc_id
@@ -1710,20 +1713,55 @@ class FinalGradingController extends AppController
 			foreach ($result as $each) {
 
 				//fetch date according to FG flag date's
-				$getList = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd'=>$each['stage_smpl_cd'],'stage_smpl_flag IS'=>'FG')))->first();
+				$getList = $this->Workflow->find('all',array('con+ditions'=>array('stage_smpl_cd'=>$each['stage_smpl_cd'],'stage_smpl_flag IS'=>'FG')))->first();
 				$arraylist[$i]= $getList['tran_date'];
-				// print_r($arraylist[$i]);
+				
 				
 			$i++;	
 			}
-			// exit;
-			$this->set('final_reports',$arraylist);
+			
+			//Save the Zscore on 21-07-2022 by Shreeya 
+			if ($this->request->is('post')) {
+
+				if (null !==($this->request->getData('save_zscore'))) {
 				
+					$zscore = $_POST['zscore'];
+					$ilc_org_sample_cd = $_POST['ilc_org_sample_cd'];
+					$getZscore = $this->IlcOrgSmplcdMaps->updateAll(array('zscore' => "$zscore"),array('ilc_org_sample_cd IS'=>$ilc_org_sample_cd,'status IS'=>1));
+				
+				}
+			}
+
+			$this->set('final_reports',$arraylist);
+			
 		// }
 	}
 	
+	//FORWARD LETTER PDF VIEW
+	public function ilcGnrtLtrPdf($sample_code) {
+
+		$this->viewBuilder()->setLayout('pdf_layout');
+		$conn = ConnectionManager::get('default');
+
+		
+		// ilc pdf generate text and contain pase heare
 	
+		//Call to the PDF Creation Common Method
+		$this->callTcpdf($this->render(),'I');
+	}
 	
+
+
+	public function ilcFinalizedZscore(){
+
+		$this->viewBuilder()->setLayout('admin_dashboard');
+		$this->loadModel('SampleInward');
+		$this->loadModel('Workflow');
+		$this->loadModel('IlcOrgSmplcdMaps');
+
+		
+	}
+
 /******************************************************************************************************************************************************************************************************/
 
 	//to generate report pdf for preview and store on server
