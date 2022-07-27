@@ -256,8 +256,12 @@
 
 					//added the "inward_section" => Y flag to show in the confirmed sample list on 04-07-2022
 					$SampleInward->updateAll(array('payment_section'=>'Y'),array('org_sample_code'=>$sample_code));
-					//save the section save flag on the Sample Details Table : Akash : 25-07-2022
-					$SampleInwardDetails->updateAll(array('payment_section'=>'Y'),array('org_sample_code'=>$org_sample_code));
+					
+					if ($_SESSION['user_flag'] =='RO' || $_SESSION['user_flag'] =='SO') { 
+						//save the section save flag on the Sample Details Table : Akash : 25-07-2022
+						$SampleInwardDetails->updateAll(array('payment_section'=>'Y'),array('org_sample_code'=>$org_sample_code));
+					}
+					
 
 					//Save the Workflow entry
 					$workflow_data = array(

@@ -573,6 +573,7 @@ class InwardController extends AppController{
 					}
 					
 					//save the section save flag on the Sample Details Table : Akash : 25-07-2022
+					$this->loadModel('SampleInwardDetails');
 					$this->SampleInwardDetails->updateAll(array('details_section'=>'Y'),array('org_sample_code'=>$org_sample_code));
 
 					//Save the Customers Information ny Akash (22-07-2022) 
@@ -729,7 +730,7 @@ class InwardController extends AppController{
 				
 
 				//get role and office where sample available after confirmed
-				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
+				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office,w.src_usr_cd
 									     FROM sample_inward AS si
 										 INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
 										 INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
@@ -769,12 +770,9 @@ class InwardController extends AppController{
 
 				} else {
 
-					#Sample Confirmed by Inward Officer,RAL-CAL-OIC,RO,SO
-					$smsDetail = $this->Customfunctions->getSmsId('inward');
-					$this->DmiSmsEmailTemplates->sendMessage($smsDetail['from_sms_id'],$smsDetail['from_user']); exit;
-					#Send to Destination User
-					$this->DmiSmsEmailTemplates->sendMessage($smsDetail['to_sms_id'],$smsDetail['to_user']);
-
+					//Sample Registration SMS/EMAIL
+					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd']); #source user
+					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd']); #destination user
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				

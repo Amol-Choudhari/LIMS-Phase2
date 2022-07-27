@@ -1416,7 +1416,7 @@ class FinalGradingController extends AppController
 
 		$commodity_code=$this->Session->read('sample_test_mc');
 		$sample_code1=$this->Session->read('sample_test_code');
-
+	
 		$str1="SELECT org_sample_code FROM workflow WHERE display='Y' ";
 
 		if ($sample_code1!='') {

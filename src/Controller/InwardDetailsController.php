@@ -499,7 +499,7 @@ class InwardDetailsController extends AppController {
 
 
 				//get role and office where sample available after confirmed
-				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
+				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office,w.src_usr_cd
 											FROM sample_inward AS si
 											INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
 											INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
@@ -509,7 +509,7 @@ class InwardDetailsController extends AppController {
 				$get_info = $query->fetchAll('assoc');
 	
 				// For Maintaining Action Log by Akash (26-04-2022)
-				$this->LimsUserActionLogs->saveActionLog('New Sample Confirmed','Success');
+				$this->LimsUserActionLogs->saveActionLog('New Sample Registered','Success');
 
 				// for commercial sample
 				if ($_SESSION['sample'] == 3) {
@@ -537,17 +537,9 @@ class InwardDetailsController extends AppController {
 					}
 
 				} else {
-										
-					if ($user_role['role'] == 'RO/SO OIC') {
-						//Message When RO/SO OIC Confirmed the Sample
-						//$this->DmiSmsEmailTemplates->sendMessage(2004,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
-					} else {
-						//Message When Sample is Confirmed by RO / SO Officer.
-						//$this->DmiSmsEmailTemplates->sendMessage(2002,$org_sample_code,$userCode=$get_info[1]['dst_usr_cd']);
-						//message to the RO/SO OIC for available sample confirmed by RO / SO Offier
-						//$this->DmiSmsEmailTemplates->sendMessage(2003,$org_sample_code,$userCode=$get_info[0]['dst_usr_cd']);
-					}
-
+					
+					//Sample Registration SMS/EMAIL
+					$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd']); #sender
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				

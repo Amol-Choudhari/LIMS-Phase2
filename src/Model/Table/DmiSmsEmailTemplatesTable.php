@@ -39,7 +39,7 @@
 		);
 		
 		
-		public function sendMessage($message_id, $sample_code, $userCode=null) {
+		public function sendMessage($message_id,$userCode,$sample_code) {
 
 			
 			$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
@@ -52,30 +52,34 @@
 
 			if (!empty($find_message_record)) {
 
-				$destination_values = $find_message_record['destination'];				
-				$destination_array = explode(',',$destination_values);
+				$getUserId = $this->getUserDet($userCode,$find_message_record['destination']);
+
 				$m=0;
 				$e=0;
 				$destination_mob_nos = array();
-				$log_dest_mob_nos = array();				
+				$log_dest_mob_nos = array();
 				$destination_email_ids = array();
 
-					
-				//Sample Inward Confirmed
-				if (in_array(101,$destination_array)) { 
+				
 
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-					
-					if (!empty($sampleDetailsData)) {
+				// Inward Officer
+				if ($getUserId == 101) { 
 
-						$inwardOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$source_user_email_id = base64_decode($inwardOfficerData['email']); //for email encoding
-						$source_user_mobile_no = base64_decode($inwardOfficerData['phone']); //for mobile encoding
+					$inwardOfficerData = $DmiUsers->getUserDetailsById($userCode);
 
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.$source_user_mobile_no; 
-						$log_dest_mob_nos[$m] = '91'.$source_user_mobile_no;
-						$destination_email_ids[$e] = $source_user_email_id;
+					if (!empty($inwardOfficerData)) {
+
+						if ($inwardOfficerData['role'] == 'Inward Officer') {
+
+							$email_id = base64_decode($inwardOfficerData['email']); //for email encoding
+							$mobile_no = base64_decode($inwardOfficerData['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						
+						}
 
 					} else {
 						
@@ -89,24 +93,24 @@
 				}
 
 				
-				//Sample Inward Confirmed - To
-				if (in_array(102,$destination_array)) {
+				// RAL/CAL OIC
+				if ($getUserId == 102) { 
 
-
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+					$ralCalOicOfficerData = $DmiUsers->getUserDetailsById($userCode);
 		
-					if (!empty($sampleDetailsData)) {
+					if (!empty($ralCalOicOfficerData)) {
 
-						$ralCalOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-					
-						$destination_user_mobile_no = base64_decode($ralCalOicOfficerData['phone']); //for mobile encoding
-						$destination_user_email_id = base64_decode($ralCalOicOfficerData['email']); //for email encoding
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = $destination_user_email_id;
-					
+						if ($ralCalOicOfficerData['role'] == 'RAL/CAL OIC') {
+
+							$email_id = base64_decode($ralCalOicOfficerData['email']); //for email encoding
+							$mobile_no = base64_decode($ralCalOicOfficerData['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
@@ -120,7 +124,7 @@
 				}
 
 				//Chemist
-				if (in_array(103,$destination_array)) {
+				if ($getUserId == 103) { 
 
 					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 					$destination_user_code = $sample['user_code'];
@@ -148,8 +152,8 @@
 					
 				}
 			
-				//chief_chemist
-				if (in_array(104,$destination_array)) {
+				// Chief chemist
+				if ($getUserId == 104) { 
 
 					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 					$destination_user_code = $sample['user_code'];
@@ -168,7 +172,7 @@
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -178,8 +182,8 @@
 				}
 		
 
-				//lab_incharge	
-				if (in_array(105,$destination_array)) {
+				// Lab Incharge
+				if ($getUserId == 105) { 
 
 					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 					$destination_user_code = $sample['user_code'];
@@ -207,8 +211,8 @@
 					
 				}
 			
-				//dol
-				if (in_array(106,$destination_array)) {
+				// DOL
+				if ($getUserId == 106) { 
 
 					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 					$destination_user_code = $sample['user_code'];
@@ -236,8 +240,8 @@
 					
 				}
 
-				//inward_clerk
-				if (in_array(107,$destination_array)) {
+				// Inward Clerk
+				if ($getUserId == 107) { 
 
 					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 					$destination_user_code = $sample['user_code'];
@@ -265,8 +269,8 @@
 					
 				}
 
-				//outward_clerk
-				if (in_array(108,$destination_array)) {
+				// Outward Clerk
+				if ($getUserId == 108) { 
 
 					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 					$destination_user_code = $sample['user_code'];
@@ -294,8 +298,8 @@
 					
 				}
 
-				//RO SO officer
-				if (in_array(109,$destination_array)) {
+				// RO Officer
+				if ($getUserId == 109) { 
 
 					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 
@@ -322,8 +326,120 @@
 					
 				}
 
-				//RO-SO/OIC
-				if (in_array(110,$destination_array)) {
+				// RO/SO-OIC
+				if ($getUserId == 110) { 
+
+					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+						
+					if (!empty($sampleDetailsData)) {
+						
+						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
+						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
+						$destination_user_email_id = $roSoOicOfficerData['email'];
+						
+						//This is addded on 27-04-2021 for base64decoding by AKASH
+						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
+						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
+						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
+					
+					} else {
+						
+						$destination_mob_nos[$m] = null;
+						$log_dest_mob_nos[$m] = null;		   
+						$destination_email_ids[$e] = null;
+					}
+
+					$m=$m+1;
+					$e=$e+1;
+					
+				}
+
+				// PAO/DDO
+				if ($getUserId == 111) { 
+
+					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+						
+					if (!empty($sampleDetailsData)) {
+						
+						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
+						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
+						$destination_user_email_id = $roSoOicOfficerData['email'];
+						
+						//This is addded on 27-04-2021 for base64decoding by AKASH
+						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
+						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
+						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
+					
+					} else {
+						
+						$destination_mob_nos[$m] = null;
+						$log_dest_mob_nos[$m] = null;		   
+						$destination_email_ids[$e] = null;
+					}
+
+					$m=$m+1;
+					$e=$e+1;
+					
+				}
+
+				// HO
+				if ($getUserId == 112) { 
+
+					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+						
+					if (!empty($sampleDetailsData)) {
+						
+						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
+						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
+						$destination_user_email_id = $roSoOicOfficerData['email'];
+						
+						//This is addded on 27-04-2021 for base64decoding by AKASH
+						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
+						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
+						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
+					
+					} else {
+						
+						$destination_mob_nos[$m] = null;
+						$log_dest_mob_nos[$m] = null;		   
+						$destination_email_ids[$e] = null;
+					}
+
+					$m=$m+1;
+					$e=$e+1;
+					
+				}
+			
+				// SO Officer
+				if ($getUserId == 113) { 
+
+					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+						
+					if (!empty($sampleDetailsData)) {
+						
+						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
+						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
+						$destination_user_email_id = $roSoOicOfficerData['email'];
+						
+						//This is addded on 27-04-2021 for base64decoding by AKASH
+						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
+						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
+						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
+					
+					} else {
+						
+						$destination_mob_nos[$m] = null;
+						$log_dest_mob_nos[$m] = null;		   
+						$destination_email_ids[$e] = null;
+					}
+
+					$m=$m+1;
+					$e=$e+1;
+					
+				}
+			
+				// Sr Chemist
+				if ($getUserId == 114) { 
 
 					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
 						
@@ -354,17 +470,17 @@
 				
 				$sms_message = $find_message_record['sms_message']; 
 				$destination_mob_nos_values = implode(',',$destination_mob_nos);
-				$log_dest_mob_nos_values = implode(',',$log_dest_mob_nos);											  
+				$log_dest_mob_nos_values = implode(',',$log_dest_mob_nos);
 				$email_message = $find_message_record['email_message'];
 				$destination_email_ids_values = implode(',',$destination_email_ids);
 				$email_subject = $find_message_record['email_subject'];
-				$template_id = $find_message_record['template_id'];//added on 12-05-2021 by Amol, new field																										 
+				$template_id = $find_message_record['template_id'];//added on 12-05-2021 by Amol, new field
 				
 				//replacing dynamic values in the email message
-				$sms_message = $this->replaceDynamicValuesFromMessage($sample_code,$sms_message,$userCode);
+				$sms_message = $this->replaceDynamicValuesFromMessage($sms_message,$userCode,$sample_code);
 	
 				//replacing dynamic values in the email message
-				$email_message = $this->replaceDynamicValuesFromMessage($sample_code,$email_message,$userCode);
+				$email_message = $this->replaceDynamicValuesFromMessage($email_message,$userCode,$sample_code);
 				
 				print_r($sms_message);
 				print_r("</br>");
@@ -473,7 +589,7 @@
 		}
 		
 		//REPLACE DYNAMIC VALUES IN MESSAGE STRING
-		public function replaceDynamicValuesFromMessage($sample_code,$message,$userCode) {
+		public function replaceDynamicValuesFromMessage($message,$userCode,$sample_code) {
 			
 			//Getting Count Before Execution
 			$total_occurrences = substr_count($message,"%%");
@@ -487,56 +603,52 @@
 					switch ($matches[1]) {
 
 						case "sample_code":
-							$message = str_replace("%%sample_code%%",$this->getReplaceDynamicValues('sample_code',$sample_code,$userCode),$message);
+							$message = str_replace("%%sample_code%%",$this->getReplaceDynamicValues('sample_code',$userCode,$sample_code),$message);
 						break;
 
-						case "sample_registration_date":
-							$message = str_replace("%%sample_registration_date%%",$this->getReplaceDynamicValues('sample_registration_date',$sample_code,$userCode),$message);
-						break;
-							
-						case "inward_officer":
-							$message = str_replace("%%inward_officer%%",$this->getReplaceDynamicValues('inward_officer',$sample_code,$userCode),$message);
+						case "srs_user":
+							$message = str_replace("%%srs_user%%",$this->getReplaceDynamicValues('srs_user',$userCode,$sample_code),$message);
 						break;
 				
 						case "commodities":
-							$message = str_replace("%%commodities%%",$this->getReplaceDynamicValues('commodities',$sample_code,$userCode),$message);
+							$message = str_replace("%%commodities%%",$this->getReplaceDynamicValues('commodities',$userCode,$sample_code),$message);
 						break;
 							
-					    case "s_user_role":
-							$message = str_replace("%%s_user_role%%",$this->getReplaceDynamicValues('s_user_role',$sample_code,$userCode),$message);
+					    case "des_usr_role":
+							$message = str_replace("%%des_usr_role%%",$this->getReplaceDynamicValues('des_usr_role',$userCode,$sample_code),$message);
 						break;	
 
-					    case "d_user_role":
-							$message = str_replace("%%d_user_role%%",$this->getReplaceDynamicValues('d_user_role',$sample_code,$userCode),$message);
+					    case "des_office":
+							$message = str_replace("%%des_office%%",$this->getReplaceDynamicValues('des_office',$userCode,$sample_code),$message);
 						break;	
 
-					  	case "s_office":
-							$message = str_replace("%%s_office%%",$this->getReplaceDynamicValues('s_office',$sample_code,$userCode),$message);
+					  	case "dst_user":
+							$message = str_replace("%%dst_user%%",$this->getReplaceDynamicValues('dst_user',$userCode,$sample_code),$message);
 						break;
 
-					  	case "d_office":
-							$message = str_replace("%%d_office%%",$this->getReplaceDynamicValues('d_office',$sample_code,$userCode),$message);
+					  	case "sample_flow":
+							$message = str_replace("%%sample_flow%%",$this->getReplaceDynamicValues('sample_flow',$userCode,$sample_code),$message);
 						break;
 
-					 	case "ro_so_oic":
-							$message = str_replace("%%ro_so_oic%%",$this->getReplaceDynamicValues('ro_so_oic',$sample_code,$userCode),$message);
+					 	case "category":
+							$message = str_replace("%%category%%",$this->getReplaceDynamicValues('category',$userCode,$sample_code),$message);
 						break;			
 							
-					  	case "ral_cal_oic":
-							$message = str_replace("%%ral_cal_oic%%",$this->getReplaceDynamicValues('ral_cal_oic',$sample_code,$userCode),$message);
+					  	case "sample_date":
+							$message = str_replace("%%sample_date%%",$this->getReplaceDynamicValues('sample_date',$userCode,$sample_code),$message);
 						break;
 
 		
-					    case "chemist":
-							$message = str_replace("%%chemist%%",$this->getReplaceDynamicValues('chemist',$sample_code,$userCode),$message);
+					    case "letr_ref_no":
+							$message = str_replace("%%letr_ref_no%%",$this->getReplaceDynamicValues('letr_ref_no',$userCode,$sample_code),$message);
 						break;
 
-					   	case "chief_chemist":
-							$message = str_replace("%%chief_chemist%%",$this->getReplaceDynamicValues('chief_chemist',$sample_code,$userCode),$message);
+					   	case "ref_src_code":
+							$message = str_replace("%%ref_src_code%%",$this->getReplaceDynamicValues('ref_src_code',$userCode,$sample_code),$message);
 						break;
 
-					   	case "lab_incharge":
-							$message = str_replace("%%lab_incharge%%",$this->getReplaceDynamicValues('lab_incharge',$sample_code,$userCode),$message);
+					   	case "exp_sample":
+							$message = str_replace("%%exp_sample%%",$this->getReplaceDynamicValues('exp_sample',$userCode,$sample_code),$message);
 						break;
 							
 						default:						
@@ -558,99 +670,107 @@
 				}
 			
 			}
-
+			
 			return $message;
 		}
 		
 			
 		//GET REPLACE DYNAMIC VALUES IN MESSAGE STRING
-		public function getReplaceDynamicValues($replace_variable_value,$sample_code, $userCode) {
+		public function getReplaceDynamicValues($replace_variable_value,$userCode,$sample_code) {
 			
-			if (!isset($_SESSION['org_sample_code'])) { $_SESSION['org_sample_code']=null;}
-
 			$Workflow = TableRegistry::getTableLocator()->get('Workflow');
 			$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
 			$DmiRoOffices = TableRegistry::getTableLocator()->get('DmiRoOffices');
 			$MCommodityCategory = TableRegistry::getTableLocator()->get('MCommodityCategory');
 			$MCommodity = TableRegistry::getTableLocator()->get('MCommodity');
 			$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
-			
+			$MSampleType = TableRegistry::getTableLocator()->get('MSampleType');
 			//Get the Source User and their role from sample 
 
-			$sampleDetails = $SampleInward->getSampleDetails();
-		
+			$org_sample_code = $Workflow->find('all')->select(['org_sample_code'])->where(['stage_smpl_cd' => $sample_code])->order('id')->first();
+			
+			$sampleDetails = $SampleInward->getSampleDetailsByCode($org_sample_code['org_sample_code']);
+
+			$sample_type = $MSampleType->getSampleType($sampleDetails['sample_type_code']);
+
+			$get_commodity_name = $MCommodity->getCommodity($sampleDetails['commodity_code']);
+
+			$get_category = $MCommodityCategory->getCategory($sampleDetails['category_code']);
+			
+			$src_user_name =  $DmiUsers->getUserDetailsById($userCode);
+
+			$month_name = $this->getMonthName($sampleDetails['expiry_month']);
+			
+			//get role and office where sample available after confirmed
+			$getSampleInfo = $Workflow->find('all')->where(['stage_smpl_cd IS' => $sample_code])->order('id desc')->first();
+			$des_usr_role =  $DmiUsers->getUserDetailsById($getSampleInfo['dst_usr_cd']);
+			$des_office = $DmiRoOffices->getOfficeDetailsById($getSampleInfo['dst_loc_id']);
+			
 
 
 			switch ($replace_variable_value) {
 					
-					case "sample_code":
-						$sample_code = $sampleInformation['stage_smpl_cd'];
-						return $sample_code;  		
-					break;
-		
-					case "sample_registration_date":
-						$sample_resgistration_date = $sampleInformation['created'];
-						return $sample_resgistration_date;  		
-					break;
-							
-					case "inward_officer_name":
-						$inward_officer = $inward_officer_data['f_name']." ".$inward_officer_data['l_name'];
-						return $inward_officer; 
-					break;
-							
-					case "commodities":
-						$commodities = $get_commodity_name['commodity_name'];
-						return $commodities;
-					break;
-					
-					case "ral_cal_oic_name":
-						$ral_cal_oic_name = $ral_cal_oic_data['f_name']." ".$ral_cal_oic_data['l_name'];
-						return $ral_cal_oic_name; 
-					break;
+				case "sample_code":
+					return $sample_code;
+				break;
 
-					case "source_office":
-						$source_office = $source_office_posted['ro_office'];
-						return $source_office; 
-					break;
+				case "srs_user":
+					$srs_user = $src_user_name['f_name']." ".$src_user_name['l_name'];
+					return $srs_user; 
+				break;
+						
+				case "commodities":
+					$commodities = $get_commodity_name;
+					return $commodities;
+				break;
+				
+				case "des_usr_role":
+					$des_usr_role = $des_usr_role['role'];
+					return $des_usr_role; 
+				break;
 
-					case "source_office":
-						$source_office = $source_office_posted['ro_office'];
-						return $source_office; 
-					break;
-					
-					case "ro_so_oic_name":
-						$ro_so_oic = $ro_so_oic_data['f_name']." ".$ro_so_oic_data['l_name'];
-						return $ro_so_oic; 
-					break;
+				case "des_office":
+					return $des_office[0]; 
+				break;
 
-					case "ro_so_officer_name":
-						$ro_so_officer = $ro_so_officer_data['f_name']." ".$ro_so_officer_data['l_name']; 
-						return $ro_so_officer; 
-					break;
+				case "dst_user":
+					$dst_user = $src_user_name['f_name']." ".$src_user_name['l_name'];
+					return $dst_user; 
+				break;
+				
+				case "sample_flow":
+					$sample_flow = $sample_type;
+					return $sample_flow; 
+				break;
 
-					case "chemist":
-						$chemist = $chemist['f_name']." ".$chemist['l_name']; 
-						return $chemist; 
-					break;
+				case "category":
+					$category = $get_category; 
+					return $category; 
+				break;
 
-					case "lab_incharge":
-						$lab_incharge = $lab_incharge['f_name']." ".$lab_incharge['l_name']; 
-						return $lab_incharge; 
-					break;
+				case "sample_date":
+					$sample_date = $sampleDetails['created']; 
+					return $sample_date; 
+				break;
 
-					case "source_user_role":
-						$source_user_role = $source_user_role['role'];
-						return $source_user_role; 
-					break;
+				case "letr_ref_no":
+					$letr_ref_no = $sampleDetails['letr_ref_no'];
+					return $letr_ref_no; 
+				break;
 
-					case "destination_user_role":
-						$destination_user_role = $destination_user_role['role']; 
-						return $destination_user_role; 
-					break;
+				case "ref_src_code":
+					$ref_src_code = $sampleDetails['ref_src_code'];
+					return $ref_src_code; 
+				break;
 
-					default:	
-						$message = '%%';						
-					break;
+				case "exp_sample":
+					$exp_sample = $month_name." ".$sampleDetails['expiry_year']; 
+					return $exp_sample; 
+				break;
+
+				default:	
+					$message = '%%';
+				break;
 			}
 			
 	
@@ -668,4 +788,60 @@
 			return substr_replace($str,$replacement,$start);
 		}
 
+
+		// This function replace the value between two character  (Done By pravin 9-08-2018)
+		function getUserDet($userCode,$destination_values) {
+
+			$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
+			$details = $DmiUsers->getUserDetailsById($userCode);
+			$getID = $this->smsUserId(trim($details['role']));
+			$destination_array = explode(',',$destination_values);
+			$lookUp = in_array($getID,$destination_array);
+			if ($lookUp==1) {
+				return $getID;
+			}
+		}
+
+		public function smsUserId($role){
+
+			//Current selected values from edit page for LMIS
+			
+			if ($role == 'Inward Officer') { $dest_id = 101; }
+
+			if ($role == 'RAL/CAL OIC') { $dest_id = 102; }
+
+			if ($role == 'Jr Chemist') { $dest_id = 103; }
+
+			if ($role == 'chief_chemist') { $dest_id = 104; }
+
+			if ($role == 'Lab Incharge') { $dest_id = 105; }
+
+			if ($role == 'DOL') { $dest_id = 106; }
+
+			if ($role == 'inward_clerk') { $dest_id = 107; }
+
+			if ($role == 'outward_clerk') { $dest_id = 108; }
+
+			if ($role == 'RO Officer') { $dest_id = 109; }
+
+			if ($role == 'RO/SO OIC') { $dest_id = 110; }
+
+			if ($role == 'accounts') { $dest_id = 111; }
+
+			if ($role == 'Head Office') { $dest_id = 112; }
+
+			if ($role == 'SO Officer') { $dest_id = 113; }
+
+			if ($role == 'Sr Chemist') { $dest_id = 114; }
+
+			return $dest_id;
+		}
+
+
+
+	//This function is created for convert the month no to month name
+	function getMonthName($value){
+		$monthName = date("F", mktime(0, 0, 0, $value, 10));
+		return $monthName;
+	}
 }
