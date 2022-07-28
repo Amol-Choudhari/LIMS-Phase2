@@ -108,10 +108,12 @@
 
 	});
 
-	var actualqty = $("#actualqty").val().trim();
-
+	
 	$("#actual_received_qty").focusout(function() {
-		var qtyinput = $("#actual_received_qty").val().trim(); 
+
+		var actualqty = parseFloat($("#actualqty").val());
+		var qtyinput = parseFloat($("#actual_received_qty").val()); 
+		
 		if (qtyinput != '') {
 			if(qtyinput > actualqty){
 				$.alert("The Value You Have entered is Greater than the actual recieved value");

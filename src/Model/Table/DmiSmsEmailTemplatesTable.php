@@ -590,7 +590,7 @@
 		
 		//REPLACE DYNAMIC VALUES IN MESSAGE STRING
 		public function replaceDynamicValuesFromMessage($message,$userCode,$sample_code) {
-			
+			pr($message);
 			//Getting Count Before Execution
 			$total_occurrences = substr_count($message,"%%");
 
@@ -606,24 +606,32 @@
 							$message = str_replace("%%sample_code%%",$this->getReplaceDynamicValues('sample_code',$userCode,$sample_code),$message);
 						break;
 
-						case "srs_user":
-							$message = str_replace("%%srs_user%%",$this->getReplaceDynamicValues('srs_user',$userCode,$sample_code),$message);
-						break;
-				
 						case "commodities":
 							$message = str_replace("%%commodities%%",$this->getReplaceDynamicValues('commodities',$userCode,$sample_code),$message);
 						break;
-							
-					    case "des_usr_role":
-							$message = str_replace("%%des_usr_role%%",$this->getReplaceDynamicValues('des_usr_role',$userCode,$sample_code),$message);
+
+						case "src_user":
+							$message = str_replace("%%src_user%%",$this->getReplaceDynamicValues('src_user',$userCode,$sample_code),$message);
+						break;
+				
+					    case "src_usr_role":
+							$message = str_replace("%%src_usr_role%%",$this->getReplaceDynamicValues('src_usr_role',$userCode,$sample_code),$message);
 						break;	
 
-					    case "des_office":
-							$message = str_replace("%%des_office%%",$this->getReplaceDynamicValues('des_office',$userCode,$sample_code),$message);
+					    case "src_office":
+							$message = str_replace("%%src_office%%",$this->getReplaceDynamicValues('src_office',$userCode,$sample_code),$message);
 						break;	
 
 					  	case "dst_user":
 							$message = str_replace("%%dst_user%%",$this->getReplaceDynamicValues('dst_user',$userCode,$sample_code),$message);
+						break;
+
+					  	case "dst_usr_role":
+							$message = str_replace("%%dst_usr_role%%",$this->getReplaceDynamicValues('dst_usr_role',$userCode,$sample_code),$message);
+						break;
+
+					  	case "dst_office":
+							$message = str_replace("%%dst_office%%",$this->getReplaceDynamicValues('dst_office',$userCode,$sample_code),$message);
 						break;
 
 					  	case "sample_flow":
@@ -687,24 +695,29 @@
 			$MSampleType = TableRegistry::getTableLocator()->get('MSampleType');
 			//Get the Source User and their role from sample 
 
-			$org_sample_code = $Workflow->find('all')->select(['org_sample_code'])->where(['stage_smpl_cd' => $sample_code])->order('id')->first();
+			$workflowData = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code])->order('id')->first();
+		
+			$sampleDetails = $SampleInward->getSampleDetailsByCode($workflowData['org_sample_code']);
 			
-			$sampleDetails = $SampleInward->getSampleDetailsByCode($org_sample_code['org_sample_code']);
-
 			$sample_type = $MSampleType->getSampleType($sampleDetails['sample_type_code']);
 
-			$get_commodity_name = $MCommodity->getCommodity($sampleDetails['commodity_code']);
+			$commodities = $MCommodity->getCommodity($sampleDetails['commodity_code']);
 
 			$get_category = $MCommodityCategory->getCategory($sampleDetails['category_code']);
 			
-			$src_user_name =  $DmiUsers->getUserDetailsById($userCode);
+			//Get User Name
+			$src_user_name =  $DmiUsers->getUserDetailsById($workflowData['src_usr_cd']);
+			$dst_user_name =  $DmiUsers->getUserDetailsById($workflowData['dst_usr_cd']);
 
 			$month_name = $this->getMonthName($sampleDetails['expiry_month']);
 			
-			//get role and office where sample available after confirmed
-			$getSampleInfo = $Workflow->find('all')->where(['stage_smpl_cd IS' => $sample_code])->order('id desc')->first();
-			$des_usr_role =  $DmiUsers->getUserDetailsById($getSampleInfo['dst_usr_cd']);
-			$des_office = $DmiRoOffices->getOfficeDetailsById($getSampleInfo['dst_loc_id']);
+			//User Role
+			$src_usr_role =  $DmiUsers->getUserDetailsById($workflowData['src_usr_cd']);
+			$dst_usr_role =  $DmiUsers->getUserDetailsById($workflowData['dst_usr_cd']);
+
+			//Offices
+			$src_office = $DmiRoOffices->getOfficeDetailsById($workflowData['src_loc_id']);
+			$dst_office = $DmiRoOffices->getOfficeDetailsById($workflowData['dst_loc_id']);
 			
 
 
@@ -714,29 +727,36 @@
 					return $sample_code;
 				break;
 
-				case "srs_user":
-					$srs_user = $src_user_name['f_name']." ".$src_user_name['l_name'];
-					return $srs_user; 
-				break;
-						
 				case "commodities":
-					$commodities = $get_commodity_name;
 					return $commodities;
 				break;
-				
-				case "des_usr_role":
-					$des_usr_role = $des_usr_role['role'];
-					return $des_usr_role; 
+
+				case "src_user":
+					$src_user = $src_user_name['f_name']." ".$src_user_name['l_name']; 
+					return $src_user; 
 				break;
 
-				case "des_office":
-					return $des_office[0]; 
+				case "src_usr_role":
+					return $src_usr_role['role'];
+				break;	
+				
+				case "src_office":
+					return $src_office[0]; 
 				break;
 
 				case "dst_user":
-					$dst_user = $src_user_name['f_name']." ".$src_user_name['l_name'];
+					$dst_user = $dst_user_name['f_name']." ".$dst_user_name['l_name'];
 					return $dst_user; 
 				break;
+				
+				case "dst_usr_role":
+					return $dst_usr_role['role'];
+				break;
+
+				case "dst_office":
+					return $dst_office[0]; 
+				break;
+
 				
 				case "sample_flow":
 					$sample_flow = $sample_type;
@@ -767,6 +787,8 @@
 					$exp_sample = $month_name." ".$sampleDetails['expiry_year']; 
 					return $exp_sample; 
 				break;
+
+				
 
 				default:	
 					$message = '%%';

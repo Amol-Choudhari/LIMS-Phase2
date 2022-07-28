@@ -225,7 +225,7 @@ class SampleForwardController extends AppController {
 						
 							//Sample Forward SMS/EMAIL
 							#$this->DmiSmsEmailTemplates->sendMessage(129,$get_user_codes['src_usr_cd'],$new_sample_code); #source user
-							$this->DmiSmsEmailTemplates->sendMessage(130,$get_user_codes['dst_usr_cd'],$new_sample_code); #destination user
+							#$this->DmiSmsEmailTemplates->sendMessage(130,$get_user_codes['dst_usr_cd'],$new_sample_code); #destination user
 							
 							// For Maintaining Action Log by Akash (26-04-2022)
 							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
@@ -441,26 +441,32 @@ class SampleForwardController extends AppController {
 
 							$conn->execute($str);
 
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
+
 							$message = 'The sample with registration code '.$this->request->getData('stage_sample_code').' is forwarded to '.$user_flag_new.' '.$ro_office_new.' with code as '.$new_sample_code;
 							$message_theme = 'success';
 							$redirect_to = 'forwarded_list';
 
 						} else {
-
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 							$message = 'Sorry... The Sample not forwarded properly. Please check.';
 							$message_theme = 'failed';
 							$redirect_to = 'available_to_forward_list';
 						}
 
 					} else {
-
+						// For Maintaining Action Log by Akash (26-04-2022)
+						$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 						$message = 'The selected sample is already forwarded.';
 						$message_theme = 'alertinfo';
 						$redirect_to = 'available_to_forward_list';
 					}
 
 				} else {
-
+					// For Maintaining Action Log by Akash (26-04-2022)
+					$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 					$message = 'Sorry... Please select proper inputs';
 					$message_theme = 'warning';
 					$redirect_to = 'available_to_forward_list';
@@ -600,6 +606,9 @@ class SampleForwardController extends AppController {
 							//Call to the Common SMS/Email Sending Method
 							//$this->DmiSmsEmailTemplates->sendMessage(2004,$sample_code);
 
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Reject at Forward Stage','Success');
+
 							$message = 'Sample Rejected Successfully';
 							$message_theme = 'success';
 							$redirect_to = 'rejected_list';
@@ -607,7 +616,7 @@ class SampleForwardController extends AppController {
 					}
 
 				} else {
-
+					
 					$message = 'Please enter sample rejection reason.';
 					$message_theme = 'warning';
 					$redirect_to = 'available_to_forward_list';

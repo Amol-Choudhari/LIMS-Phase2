@@ -771,8 +771,8 @@ class InwardController extends AppController{
 				} else {
 
 					//Sample Registration SMS/EMAIL
-					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd']); #source user
-					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd']); #destination user
+					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd'],$org_sample_code); #source user
+					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #destination user
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				

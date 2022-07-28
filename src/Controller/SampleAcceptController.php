@@ -20,6 +20,8 @@ class SampleAcceptController extends AppController
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
+		$this->loadModel('DmiSmsEmailTemplates');
+		$this->loadModel('LimsUserActionLogs');
 	}
 
 /********************************************************************************************************************************************************************************************************************************/
@@ -213,26 +215,35 @@ class SampleAcceptController extends AppController
 						$user_flag_new = $user_flag1[0]['user_flag'];
 						$ro_office_new = $user_flag1[0]['ro_office'];
 
+						$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'OF'])->first();
+
+
 						if ($acceptstatus_flag=="A") {
 
 							//call to the common SMS/Email sending method
 							$this->loadModel('DmiSmsEmailTemplates');
 
-							//Sample Accepted by the Officer
-							//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code,$user_code);
+							//Sample Accept SMS/EMAIL
+							#$this->DmiSmsEmailTemplates->sendMessage(131,$frd_usr_cd['dst_usr_cd'],$sample_code); #accepting user
+							#$this->DmiSmsEmailTemplates->sendMessage(132,$frd_usr_cd['src_usr_cd'],$sample_code); #forwarding user
 
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Accept','Success');
 							$message = 'The sample with registration code '.$sample_code.' is Accpeted by '.$user_flag_new.' '.$ro_office_new.'';
 							$message_theme = 'success';
 							$redirect_to = 'available_to_accept_list';
 
 						} else {
 
-							//call to the common SMS/Email sending method
-							$this->loadModel('DmiSmsEmailTemplates');
-							//$this->DmiSmsEmailTemplates->sendMessage(2014,$sample_code,$user_code);
-
 							$conn->execute("UPDATE sample_inward SET acc_rej_flg='R', reject_date=now() WHERE org_sample_code='$ogrsample'");
 
+							$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'OF'])->first();
+							//Sample Reject SMS/EMAIL
+							#$this->DmiSmsEmailTemplates->sendMessage(133,$frd_usr_cd['dst_usr_cd'],$sample_code); #rejecting user
+							#$this->DmiSmsEmailTemplates->sendMessage(134,$frd_usr_cd['src_usr_cd'],$sample_code); #forwarding user
+
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Reject','Success');
 							$message = 'The sample with registration code '.$sample_code.' is Rejected by '.$user_flag_new.' '.$ro_office_new.'';
 							$message_theme = 'success';
 							$redirect_to = 'available_to_accept_list';

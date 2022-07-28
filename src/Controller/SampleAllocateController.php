@@ -21,6 +21,8 @@ use Cake\View;
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
+		$this->loadModel('DmiSmsEmailTemplates');
+		$this->loadModel('LimsUserActionLogs');
 	}
 
 /********************************************************************************************************************************************************************************************************************************/
@@ -68,255 +70,237 @@ use Cake\View;
 
 		$allocate_sample_cd = trim($this->Session->read('allocate_sample_cd'));//trim added on 03-06-2022 by Shreeya
 
-			if (!empty($allocate_sample_cd)) {
+		if (!empty($allocate_sample_cd)) {
 
-				//Load Models
-				$this->loadModel('CodeDecode');
-				$this->loadModel('MSampleAllocate');
-				$this->loadModel('DmiUsers');
-				$this->loadModel('ActualTestData');
-				$this->loadModel('Workflow');
-				$this->loadModel('MUnitWeight');
+			//Load Models
+			$this->loadModel('CodeDecode');
+			$this->loadModel('MSampleAllocate');
+			$this->loadModel('DmiUsers');
+			$this->loadModel('ActualTestData');
+			$this->loadModel('Workflow');
+			$this->loadModel('MUnitWeight');
 
-				$this->set('allocate_sample_cd',array($allocate_sample_cd=>$allocate_sample_cd));
+			$this->set('allocate_sample_cd',array($allocate_sample_cd=>$allocate_sample_cd));
 
-				$user_type = $this->DmiUsers->find('list',array('order' => array('role' => 'ASC'),'keyField' => 'role','valueField'=>'role','conditions'=>array('role IN' =>array('Jr Chemist','Sr Chemist'), 'status'=>'active')))->toArray();
+			$user_type = $this->DmiUsers->find('list',array('order' => array('role' => 'ASC'),'keyField' => 'role','valueField'=>'role','conditions'=>array('role IN' =>array('Jr Chemist','Sr Chemist'), 'status'=>'active')))->toArray();
+			$this->set('user_type',$user_type);
 
-				$this->set('user_type',$user_type);
+			//Change variable name grade_desc to unit_desc
+			$this->loadModel('MUnitWeight');
+			$unit_desc = $this->MUnitWeight->find('list',array('order' => array('unit_weight' => 'ASC'),'fields'=>array('unit_id','unit_weight'),'conditions' => array('display' => 'Y')))->toArray();
+			$this->set('unit_desc',$unit_desc);
 
-				//Change variable name grade_desc to unit_desc
-				$this->loadModel('MUnitWeight');
-				$unit_desc = $this->MUnitWeight->find('list',array('order' => array('unit_weight' => 'ASC'),'fields'=>array('unit_id','unit_weight'),'conditions' => array('display' => 'Y')))->toArray();
-				$this->set('unit_desc',$unit_desc);
+			if ($this->request->is('post')) {
 
-					if ($this->request->is('post')) {
-						$postData = $this->request->getData();
+				$postData = $this->request->getData();
 
-						//Post Data Validations
-						$validate_err = $this->allocatePostValidations($this->request->getData());
+				//Post Data Validations
+				$validate_err = $this->allocatePostValidations($this->request->getData());
 
-						if ($validate_err != '') {
+				if ($validate_err != '') {
 
-							$this->set('validate_err',$validate_err);
-							return null;
+					$this->set('validate_err',$validate_err);
+					return null;
+				}
 
-						}
+				//HTML Encoding
+				foreach ($postData as $key => $value) {
 
-						//HTML Encoding
-						foreach ($postData as $key => $value) {
+					$postData[$key] = htmlentities($postData[$key], ENT_QUOTES);
+				}
 
-							$postData[$key] = htmlentities($postData[$key], ENT_QUOTES);
+				//Date & Time Format Check
+				$dStart = new \DateTime(date('Y-m-d H:i:s'));
 
-						}
+				$date = $dStart->createFromFormat('d/m/Y',$postData["rec_from_dt"]);
+				$from_dt = $date->format('Y-m-d');
+				$from_dt = date('Y-m-d',strtotime($from_dt));
 
-							//Date & Time Format Check
-							$dStart = new \DateTime(date('Y-m-d H:i:s'));
+				$date1 = $dStart->createFromFormat('d/m/Y', $postData['rec_to_dt']);
+				$to_dt=$date1->format('Y/m/d');
+				$to_dt = date('Y-m-d',strtotime($to_dt));
 
-							$date = $dStart->createFromFormat('d/m/Y',$postData["rec_from_dt"]);
-							$from_dt = $date->format('Y-m-d');
-							$from_dt = date('Y-m-d',strtotime($from_dt));
+				if ($postData['category_code']==0) {
 
-							$date1 = $dStart->createFromFormat('d/m/Y', $postData['rec_to_dt']);
-							$to_dt=$date1->format('Y/m/d');
-							$to_dt = date('Y-m-d',strtotime($to_dt));
+					$query = $conn->execute("SELECT category_code FROM m_commodity WHERE commodity_code='".$postData['commodity_code']."'");
+					$category_code = $query->fetchAll('assoc');
+					$category_code = $category_code[0];
+				}
 
-							if ($postData['category_code']==0) {
+				//Save Records
+				if (isset($postData['save'])) {
 
-								$query = $conn->execute("SELECT category_code FROM m_commodity WHERE commodity_code='".$postData['commodity_code']."'");
-								$category_code = $query->fetchAll('assoc');
-								$category_code = $category_code[0];
-							}
+					$sample_code = trim($postData['stage_sample_code']);
+					$postData['sample_code'] = $sample_code;
 
-						//Save Records
-						if (isset($postData['save'])) {
+					$query = $conn->execute("SELECT si.org_sample_code
+												FROM sample_inward AS si
+												INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
+												WHERE w.stage_smpl_cd = '$sample_code'");
 
-							$sample_code = trim($postData['stage_sample_code']);
-							$postData['sample_code'] = $sample_code;
+					$ogrsample1 = $query->fetchAll('assoc');
 
-							$query = $conn->execute("SELECT si.org_sample_code
-														FROM sample_inward AS si
-														INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
-														WHERE w.stage_smpl_cd = '$sample_code'");
+					$ogrsample	= $ogrsample1[0]['org_sample_code'];
+					$postData['org_sample_code'] = $ogrsample;
+					$postData['rec_from_dt'] = $from_dt;
+					$postData['rec_to_dt'] = $to_dt;
+					$postData['lab_code'] = $_SESSION['posted_ro_office'];
 
-							$ogrsample1 = $query->fetchAll('assoc');
+					//Date & Time Format Method
+					$dStart = new \DateTime(date('Y-m-d H:i:s'));
 
-							$ogrsample	= $ogrsample1[0]['org_sample_code'];
-							$postData['org_sample_code'] = $ogrsample;
-							$postData['rec_from_dt'] = $from_dt;
-							$postData['rec_to_dt'] = $to_dt;
-							$postData['lab_code'] = $_SESSION['posted_ro_office'];
+					$expect_complt = $dStart->createFromFormat('d/m/Y', $postData['expect_complt']);
+					$expect_complt1	= $expect_complt->format('Y/m/d');
+					$expect_complt1 = date('Y-m-d',strtotime($expect_complt1));
 
-							//Date & Time Format Method
-							$dStart = new \DateTime(date('Y-m-d H:i:s'));
+					$postData['expect_complt']	= $expect_complt1;
 
-							$expect_complt = $dStart->createFromFormat('d/m/Y', $postData['expect_complt']);
-							$expect_complt1	= $expect_complt->format('Y/m/d');
-							$expect_complt1 = date('Y-m-d',strtotime($expect_complt1));
+					if ($postData['category_code']==0) {
 
-							$postData['expect_complt']	= $expect_complt1;
+						$postData['category_code']	= $category_code['category_code'];
 
-							if ($postData['category_code']==0) {
+						$dStart = new \DateTime(date('Y-m-d H:i:s'));
 
-								$postData['category_code']	= $category_code['category_code'];
+						$expect_complt = $dStart->createFromFormat('d/m/Y', $postData['expect_complt']);
+						$expect_complt1	= $expect_complt->format('Y/m/d');
+						$expect_complt1 = date('Y-m-d',strtotime($expect_complt1));
 
-								$dStart = new \DateTime(date('Y-m-d H:i:s'));
-
-								$expect_complt = $dStart->createFromFormat('d/m/Y', $postData['expect_complt']);
-								$expect_complt1	= $expect_complt->format('Y/m/d');
-								$expect_complt1 = date('Y-m-d',strtotime($expect_complt1));
-
-								$postData['expect_complt']	= $expect_complt1;
-							}
-
-							$sampleAllocateEntity = $this->MSampleAllocate->newEntity($postData);
-
-							$allocateResult = $this->MSampleAllocate->save($sampleAllocateEntity);
-
-								if ($allocateResult) {
-
-									if ($_SESSION['role']=='Lab Incharge') {
-
-										$conn->execute("UPDATE workflow SET stage_smpl_flag='LI' WHERE org_sample_code='$ogrsample' AND stage_smpl_flag='OF'");
-
-										$conn->execute("UPDATE sample_inward SET status_flag='LA' WHERE org_sample_code='$ogrsample'");
-
-									} else {
-
-										$conn->execute("UPDATE sample_inward SET status_flag='A' WHERE org_sample_code='$ogrsample'");
-
-									}
-
-
-									$alloc_to_user_code	= $postData['alloc_to_user_code'];
-
-									$stage_smpl_cd = $postData['chemist_code'];
-
-									$user_data1 = $this->DmiUsers->find('all', array('conditions'=> array('id' =>$alloc_to_user_code)))->first();
-
-									$role_code = $user_data1['posted_ro_office'];
-
-									$tran_date = $postData['tran_date'];
-
-									$data = $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd' => $sample_code)))->toArray();
-
-									$stage = $data[0]['stage']+1;
-
-									$workflow_data = array("org_sample_code"=>$ogrsample,
-															"src_loc_id"=>$_SESSION["posted_ro_office"],
-															"src_usr_cd"=>$_SESSION["user_code"],
-															"dst_loc_id"=>$role_code,
-															"dst_usr_cd"=>$alloc_to_user_code,
-															"stage_smpl_cd"=>$stage_smpl_cd,
-															"user_code"=>$_SESSION["user_code"],
-															"tran_date"=>$tran_date,
-															"stage"=>$stage,"stage_smpl_flag"=>"TA");
-
-									$_SESSION["sample"] = $postData['stage_sample_code'];
-
-									$codeDecodeEntity = $this->CodeDecode->newEntity($postData);
-
-										if (!$this->CodeDecode->save($codeDecodeEntity)) {
-
-											$message = 'Sorry.. There is some technical issues. please check';
-											$message_theme = 'failed';
-											$redirect_to = 'sample_allocate';
-
-										}
-
-									$workflowEntity = $this->Workflow->newEntity($workflow_data);
-
-									$this->Workflow->save($workflowEntity);
-
-									$_SESSION["posted_ro_office"] = $_SESSION["posted_ro_office"];
-									$_SESSION["loc_user_id"] = $_SESSION["user_code"];
-
-
-									$test = explode(",",$postData['tests']);
-
-									$test = array_unique($test);
-
-									for ($i=0;$i<count($test);$i++) {
-
-										$postData['test_code']= $test[$i];
-										$test_alloc[] = $postData;
-
-									}
-
-									$ActualTestDataEntity = $this->ActualTestData->newEntities($test_alloc);
-
-									foreach ($ActualTestDataEntity as $eachData) {
-
-										if (!$this->ActualTestData->save($eachData)) {
-
-											$message = 'Sorry.. There is some technical issues. please check';
-											$message_theme = 'failed';
-											$redirect_to = 'sample_allocate';
-										}
-									}
-
-									$get_id = $this->MSampleAllocate->find('all',array('fields'=>'sr_no','conditions'=>array('sample_code'=>$sample_code),'order'=>'sr_no desc'))->first();
-									$lastInsertedId = $get_id['sr_no'];
-
-									$query = $conn->execute("SELECT chemist_code,f_name ,l_name, role
-																FROM m_sample_allocate AS s
-																INNER JOIN dmi_users AS u ON s.alloc_to_user_code=u.id
-																WHERE sr_no='$lastInsertedId'");
-
-									$chemist_code = $query->fetchAll('assoc');
-
-									//Load Model For User Role
-									$this->loadModel('Workflow');
-
-									//Get Source User Role
-									$get_source_user_role = $this->Workflow->find()->select(['src_usr_cd'])->where(['stage_smpl_cd IS' => $chemist_code[0]['chemist_code']])->first();
-									$sourceusercode = $get_source_user_role['src_usr_cd'];
-									$source_user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$sourceusercode)))->first();
-
-									//Get Destination User Role
-									$get_destination_user_role = $this->Workflow->find()->select(['dst_usr_cd'])->where(['stage_smpl_cd IS' => $chemist_code[0]['chemist_code']])->first();
-									$destinationusercode = $get_destination_user_role['dst_usr_cd'];
-									//$destination_user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
-
-									//Call To the Common SMS/Email Sending Method
-									$this->loadModel('DmiSmsEmailTemplates');
-									//print_r($chemist_code); exit;
-									if ($source_user_role['role'] == 'Inward Officer') {
-
-										//When Sample Is Allocated by Inward Officer
-										//$this->DmiSmsEmailTemplates->sendMessage(2023,$chemist_code[0]['chemist_code'],$sourceusercode);
-										//Sample Is Allocated to Chemist
-										//$this->DmiSmsEmailTemplates->sendMessage(2024,$chemist_code[0]['chemist_code'],$destinationusercode);
-									
-									} elseif ($source_user_role['role'] == 'RAL/CAL OIC') {
-
-
-									}
-
-
-									$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';
-									$message_theme = 'success';
-									$redirect_to = 'available_to_allocate';
-
-								} else {
-
-										$message = 'Sorry.. There is some technical issues. please check';
-										$message_theme = 'failed';
-										$redirect_to = 'sample_allocate';
-
-								}
-
-						} elseif (isset($postData['update'])) {
-
-
-						}
-
+						$postData['expect_complt']	= $expect_complt1;
 					}
-			}
 
-			//Set Variables To Show Popup Messages From View File
-			$this->set('message',$message);
-			$this->set('message_theme',$message_theme);
-			$this->set('redirect_to',$redirect_to);
+					$sampleAllocateEntity = $this->MSampleAllocate->newEntity($postData);
+
+					$allocateResult = $this->MSampleAllocate->save($sampleAllocateEntity);
+
+					if ($allocateResult) {
+
+						if ($_SESSION['role']=='Lab Incharge') {
+
+							$conn->execute("UPDATE workflow SET stage_smpl_flag='LI' WHERE org_sample_code='$ogrsample' AND stage_smpl_flag='OF'");
+
+							$conn->execute("UPDATE sample_inward SET status_flag='LA' WHERE org_sample_code='$ogrsample'");
+
+						} else {
+
+							$conn->execute("UPDATE sample_inward SET status_flag='A' WHERE org_sample_code='$ogrsample'");
+
+						}
+
+
+						$alloc_to_user_code	= $postData['alloc_to_user_code'];
+
+						$stage_smpl_cd = $postData['chemist_code'];
+
+						$user_data1 = $this->DmiUsers->find('all', array('conditions'=> array('id' =>$alloc_to_user_code)))->first();
+
+						$role_code = $user_data1['posted_ro_office'];
+
+						$tran_date = $postData['tran_date'];
+
+						$data = $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd' => $sample_code)))->toArray();
+
+						$stage = $data[0]['stage']+1;
+
+						$workflow_data = array("org_sample_code"=>$ogrsample,
+												"src_loc_id"=>$_SESSION["posted_ro_office"],
+												"src_usr_cd"=>$_SESSION["user_code"],
+												"dst_loc_id"=>$role_code,
+												"dst_usr_cd"=>$alloc_to_user_code,
+												"stage_smpl_cd"=>$stage_smpl_cd,
+												"user_code"=>$_SESSION["user_code"],
+												"tran_date"=>$tran_date,
+												"stage"=>$stage,
+												"stage_smpl_flag"=>"TA");
+
+						$_SESSION["sample"] = $postData['stage_sample_code'];
+
+						$codeDecodeEntity = $this->CodeDecode->newEntity($postData);
+
+						if (!$this->CodeDecode->save($codeDecodeEntity)) {
+
+							// For Maintaining Action Log by Akash (28-07-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Failed');
+							$message = 'Sorry.. There is some technical issues. please check';
+							$message_theme = 'failed';
+							$redirect_to = 'sample_allocate';
+
+						}
+
+						$workflowEntity = $this->Workflow->newEntity($workflow_data);
+
+						$this->Workflow->save($workflowEntity);
+
+						$_SESSION["posted_ro_office"] = $_SESSION["posted_ro_office"];
+						$_SESSION["loc_user_id"] = $_SESSION["user_code"];
+
+
+						$test = explode(",",$postData['tests']);
+
+						$test = array_unique($test);
+
+						for ($i=0;$i<count($test);$i++) {
+
+							$postData['test_code']= $test[$i];
+							$test_alloc[] = $postData;
+
+						}
+
+						$ActualTestDataEntity = $this->ActualTestData->newEntities($test_alloc);
+
+						foreach ($ActualTestDataEntity as $eachData) {
+
+							if (!$this->ActualTestData->save($eachData)) {
+
+								// For Maintaining Action Log by Akash (28-07-2022)
+								$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Failed');
+								$message = 'Sorry.. There is some technical issues. please check';
+								$message_theme = 'failed';
+								$redirect_to = 'sample_allocate';
+							}
+						}
+
+						$get_id = $this->MSampleAllocate->find('all',array('fields'=>'sr_no','conditions'=>array('sample_code'=>$sample_code),'order'=>'sr_no desc'))->first();
+						$lastInsertedId = $get_id['sr_no'];
+
+						$query = $conn->execute("SELECT chemist_code,f_name ,l_name, role
+													FROM m_sample_allocate AS s
+													INNER JOIN dmi_users AS u ON s.alloc_to_user_code=u.id
+													WHERE sr_no='$lastInsertedId'");
+
+						$chemist_code = $query->fetchAll('assoc');
+
+						// For Maintaining Action Log by Akash (28-07-2022)
+						$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Success');
+
+						$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $stage_smpl_cd])->order('id desc')->first();
+
+						//Sample Allocate SMS/EMAIL
+						$this->DmiSmsEmailTemplates->sendMessage(133,$frd_usr_cd['src_usr_cd'],$sample_code); #allocating user
+						#$this->DmiSmsEmailTemplates->sendMessage(134,$frd_usr_cd['src_usr_cd'],$sample_code); #aloocated/chemist user
+
+						$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';
+						$message_theme = 'success';
+						$redirect_to = 'available_to_allocate';
+
+					} else {
+
+						// For Maintaining Action Log by Akash (28-07-2022)
+						$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Failed');
+						$message = 'Sorry.. There is some technical issues. please check';
+						$message_theme = 'failed';
+						$redirect_to = 'sample_allocate';
+					}
+
+				} elseif (isset($postData['update'])) {
+
+				}
+			}
+		}
+
+		//Set Variables To Show Popup Messages From View File
+		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
+		$this->set('redirect_to',$redirect_to);
 
 	}
 
