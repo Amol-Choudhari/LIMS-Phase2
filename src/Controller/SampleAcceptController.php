@@ -238,6 +238,7 @@ class SampleAcceptController extends AppController
 							$conn->execute("UPDATE sample_inward SET acc_rej_flg='R', reject_date=now() WHERE org_sample_code='$ogrsample'");
 
 							$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'OF'])->first();
+
 							//Sample Reject SMS/EMAIL
 							#$this->DmiSmsEmailTemplates->sendMessage(133,$frd_usr_cd['dst_usr_cd'],$sample_code); #rejecting user
 							#$this->DmiSmsEmailTemplates->sendMessage(134,$frd_usr_cd['src_usr_cd'],$sample_code); #forwarding user

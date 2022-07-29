@@ -739,7 +739,7 @@ class InwardController extends AppController{
 
 				$get_info = $query->fetchAll('assoc');
 
-				
+				#pr($get_info); exit;
 				// For Maintaining Action Log by Akash (26-04-2022)
 				$this->LimsUserActionLogs->saveActionLog('New Sample Confirmed','Success');
 
@@ -771,7 +771,7 @@ class InwardController extends AppController{
 				} else {
 
 					//Sample Registration SMS/EMAIL
-					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd'],$org_sample_code); #source user
+					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #source user
 					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #destination user
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}

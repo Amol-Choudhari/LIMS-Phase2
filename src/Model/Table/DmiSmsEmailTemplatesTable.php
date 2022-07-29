@@ -65,14 +65,14 @@
 				// Inward Officer
 				if ($getUserId == 101) { 
 
-					$inwardOfficerData = $DmiUsers->getUserDetailsById($userCode);
+					$inward_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($inwardOfficerData)) {
+					if (!empty($inward_data)) {
 
-						if ($inwardOfficerData['role'] == 'Inward Officer') {
+						if (trim($inward_data['role']) == 'Inward Officer') {
 
-							$email_id = base64_decode($inwardOfficerData['email']); //for email encoding
-							$mobile_no = base64_decode($inwardOfficerData['phone']); //for mobile encoding
+							$email_id = base64_decode($inward_data['email']); //for email encoding
+							$mobile_no = base64_decode($inward_data['phone']); //for mobile encoding
 
 							//This is addded on 27-04-2021 for base64decoding by AKASH
 							$destination_mob_nos[$m] = '91'.$mobile_no; 
@@ -96,14 +96,14 @@
 				// RAL/CAL OIC
 				if ($getUserId == 102) { 
 
-					$ralCalOicOfficerData = $DmiUsers->getUserDetailsById($userCode);
+					$ral_cal_oic_data = $DmiUsers->getUserDetailsById($userCode);
 		
-					if (!empty($ralCalOicOfficerData)) {
+					if (!empty($ral_cal_oic_data)) {
 
-						if ($ralCalOicOfficerData['role'] == 'RAL/CAL OIC') {
+						if (trim($ral_cal_oic_data['role']) == 'RAL/CAL OIC') {
 
-							$email_id = base64_decode($ralCalOicOfficerData['email']); //for email encoding
-							$mobile_no = base64_decode($ralCalOicOfficerData['phone']); //for mobile encoding
+							$email_id = base64_decode($ral_cal_oic_data['email']); //for email encoding
+							$mobile_no = base64_decode($ral_cal_oic_data['phone']); //for mobile encoding
 
 							//This is addded on 27-04-2021 for base64decoding by AKASH
 							$destination_mob_nos[$m] = '91'.$mobile_no; 
@@ -123,27 +123,29 @@
 					
 				}
 
+
 				//Chemist
 				if ($getUserId == 103) { 
 
-					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-					$destination_user_code = $sample['user_code'];
+					$jr_chemist_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($destination_user_code)) {
+					if (!empty($jr_chemist_data)) {
 						
-						$chemistData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $chemistData['phone'];
-						$destination_user_email_id = $chemistData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = $destination_user_email_id;
-					
+						if (trim($jr_chemist_data['role']) == 'Jr Chemist') {
+
+							$email_id = base64_decode($jr_chemist_data['email']); //for email encoding
+							$mobile_no = base64_decode($jr_chemist_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -152,23 +154,25 @@
 					
 				}
 			
+
 				// Chief chemist
 				if ($getUserId == 104) { 
 
-					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-					$destination_user_code = $sample['user_code'];
+					$sr_chemist_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($destination_user_code)) {
+					if (!empty($sr_chemist_data)) {
 						
-						$chiefChemistData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $chiefChemistData['phone'];
-						$destination_user_email_id = $chiefChemistData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($sr_chemist_data['role']) == 'Sr Chemist') {
+
+							$email_id = base64_decode($sr_chemist_data['email']); //for email encoding
+							$mobile_no = base64_decode($sr_chemist_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
@@ -185,24 +189,25 @@
 				// Lab Incharge
 				if ($getUserId == 105) { 
 
-					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-					$destination_user_code = $sample['user_code'];
+					$lab_incharge_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($destination_user_code)) {
+					if (!empty($lab_incharge_data)) {
 						
-						$labInchargeData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $labInchargeData['phone'];
-						$destination_user_email_id = $labInchargeData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($lab_incharge_data['role']) == 'Sr Chemist') {
+
+							$email_id = base64_decode($lab_incharge_data['email']); //for email encoding
+							$mobile_no = base64_decode($lab_incharge_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -211,27 +216,29 @@
 					
 				}
 			
+
 				// DOL
 				if ($getUserId == 106) { 
 
-					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-					$destination_user_code = $sample['user_code'];
+					$dol_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($destination_user_code)) {
+					if (!empty($dol_data)) {
 						
-						$dolData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $dolData['phone'];
-						$destination_user_email_id = $dolData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($dol_data['role']) == 'dol') {
+
+							$email_id = base64_decode($dol_data['email']); //for email encoding
+							$mobile_no = base64_decode($dol_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -240,27 +247,29 @@
 					
 				}
 
+
 				// Inward Clerk
 				if ($getUserId == 107) { 
 
-					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-					$destination_user_code = $sample['user_code'];
+					$inward_clerk_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($destination_user_code)) {
+					if (!empty($inward_clerk_data)) {
 						
-						$inwardClerkData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $inwardClerkData['phone'];
-						$destination_user_email_id = $inwardClerkData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($inward_clerk_data['role']) == 'Inward Clerk') {
+
+							$email_id = base64_decode($inward_clerk_data['email']); //for email encoding
+							$mobile_no = base64_decode($inward_clerk_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -272,24 +281,25 @@
 				// Outward Clerk
 				if ($getUserId == 108) { 
 
-					$sample = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-					$destination_user_code = $sample['user_code'];
+					$outward_clerk_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($destination_user_code)) {
+					if (!empty($outward_clerk_data)) {
 						
-						$outwardClerkData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $outwardClerkData['phone'];
-						$destination_user_email_id = $outwardClerkData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($outward_clerk_data['role']) == 'Outward Clerk') {
+
+							$email_id = base64_decode($outward_clerk_data['email']); //for email encoding
+							$mobile_no = base64_decode($outward_clerk_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -301,23 +311,25 @@
 				// RO Officer
 				if ($getUserId == 109) { 
 
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+					$ro_data = $DmiUsers->getUserDetailsById($userCode);
 
-					if (!empty($sampleDetailsData)) {
+					if (!empty($ro_data)) {
 						
-						$roSoOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $roSoOfficerData['phone'];
-						$destination_user_email_id = $roSoOfficerData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($ro_data['role']) == 'RO Officer') {
+
+							$email_id = base64_decode($ro_data['email']); //for email encoding
+							$mobile_no = base64_decode($ro_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -329,23 +341,25 @@
 				// RO/SO-OIC
 				if ($getUserId == 110) { 
 
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+					$ro_so_oic_data = $DmiUsers->getUserDetailsById($userCode);
+
+					if (!empty($ro_so_oic_data)) {
 						
-					if (!empty($sampleDetailsData)) {
-						
-						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
-						$destination_user_email_id = $roSoOicOfficerData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($ro_so_oic_data['role']) == 'RO/SO-OIC') {
+
+							$email_id = base64_decode($ro_so_oic_data['email']); //for email encoding
+							$mobile_no = base64_decode($ro_so_oic_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -357,23 +371,22 @@
 				// PAO/DDO
 				if ($getUserId == 111) { 
 
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-						
-					if (!empty($sampleDetailsData)) {
-						
-						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
-						$destination_user_email_id = $roSoOicOfficerData['email'];
-						
+					$ddo_data = $DmiUsers->getUserDetailsById($userCode);
+
+					if (!empty($ddo_data)) {
+
+						$email_id = base64_decode($ddo_data['email']); //for email encoding
+						$mobile_no = base64_decode($ddo_data['phone']); //for mobile encoding
+
 						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						$destination_mob_nos[$m] = '91'.$mobile_no; 
+						$log_dest_mob_nos[$m] = '91'.$mobile_no;
+						$destination_email_ids[$e] = $email_id;
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -385,23 +398,25 @@
 				// HO
 				if ($getUserId == 112) { 
 
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+					$ho_data = $DmiUsers->getUserDetailsById($userCode);
+
+					if (!empty($ho_data)) {
 						
-					if (!empty($sampleDetailsData)) {
-						
-						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
-						$destination_user_email_id = $roSoOicOfficerData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($ho_data['role']) == 'Head Office') {
+
+							$email_id = base64_decode($ho_data['email']); //for email encoding
+							$mobile_no = base64_decode($ho_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -410,26 +425,29 @@
 					
 				}
 			
+
 				// SO Officer
 				if ($getUserId == 113) { 
 
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
+					$so_data = $DmiUsers->getUserDetailsById($userCode);
+
+					if (!empty($so_data)) {
 						
-					if (!empty($sampleDetailsData)) {
-						
-						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
-						$destination_user_email_id = $roSoOicOfficerData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
+						if (trim($so_data['role']) == 'Head Office') {
+
+							$email_id = base64_decode($so_data['email']); //for email encoding
+							$mobile_no = base64_decode($so_data['phone']); //for mobile encoding
+
+							//This is addded on 27-04-2021 for base64decoding by AKASH
+							$destination_mob_nos[$m] = '91'.$mobile_no; 
+							$log_dest_mob_nos[$m] = '91'.$mobile_no;
+							$destination_email_ids[$e] = $email_id;
+						}
+
 					} else {
 						
 						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
+						$log_dest_mob_nos[$m] = null;
 						$destination_email_ids[$e] = null;
 					}
 
@@ -437,37 +455,8 @@
 					$e=$e+1;
 					
 				}
-			
-				// Sr Chemist
-				if ($getUserId == 114) { 
-
-					$sampleDetailsData = $Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sample_code)))->first();
-						
-					if (!empty($sampleDetailsData)) {
-						
-						$roSoOicOfficerData = $DmiUsers->find('all',array('conditions'=>array('id IS'=>$userCode)))->first();
-						$destination_user_mobile_no = $roSoOicOfficerData['phone'];
-						$destination_user_email_id = $roSoOicOfficerData['email'];
-						
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.base64_decode($destination_user_mobile_no);
-						$log_dest_mob_nos[$m] = '91'.$destination_user_mobile_no;
-						$destination_email_ids[$e] = base64_decode($destination_user_email_id);
-					
-					} else {
-						
-						$destination_mob_nos[$m] = null;
-						$log_dest_mob_nos[$m] = null;		   
-						$destination_email_ids[$e] = null;
-					}
-
-					$m=$m+1;
-					$e=$e+1;
-					
-				}
-			
 				
-				
+			
 				$sms_message = $find_message_record['sms_message']; 
 				$destination_mob_nos_values = implode(',',$destination_mob_nos);
 				$log_dest_mob_nos_values = implode(',',$log_dest_mob_nos);
@@ -487,6 +476,8 @@
 				print_r($destination_mob_nos_values);
 				print_r("</br>");
 				print_r($destination_email_ids_values);
+				print_r("</br>");
+				print_r($email_message);
 				exit;
 
 				//To send SMS on list of mobile nos.
@@ -695,8 +686,12 @@
 			$MSampleType = TableRegistry::getTableLocator()->get('MSampleType');
 			//Get the Source User and their role from sample 
 
-			$workflowData = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code])->order('id')->first();
-		
+			$workflowData = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code])->order('id desc')->first();
+			
+			if(trim($workflowData['stage_smpl_flag']) == 'AS'){
+				$workflowData = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'OF'])->first();
+			}
+
 			$sampleDetails = $SampleInward->getSampleDetailsByCode($workflowData['org_sample_code']);
 			
 			$sample_type = $MSampleType->getSampleType($sampleDetails['sample_type_code']);
@@ -834,7 +829,7 @@
 
 			if ($role == 'Jr Chemist') { $dest_id = 103; }
 
-			if ($role == 'chief_chemist') { $dest_id = 104; }
+			if ($role == 'Sr Chemist') { $dest_id = 104; }
 
 			if ($role == 'Lab Incharge') { $dest_id = 105; }
 
@@ -854,7 +849,6 @@
 
 			if ($role == 'SO Officer') { $dest_id = 113; }
 
-			if ($role == 'Sr Chemist') { $dest_id = 114; }
 
 			return $dest_id;
 		}

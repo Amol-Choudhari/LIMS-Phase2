@@ -273,10 +273,10 @@ use Cake\View;
 						$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Success');
 
 						$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $stage_smpl_cd])->order('id desc')->first();
-
+					
 						//Sample Allocate SMS/EMAIL
-						$this->DmiSmsEmailTemplates->sendMessage(133,$frd_usr_cd['src_usr_cd'],$sample_code); #allocating user
-						#$this->DmiSmsEmailTemplates->sendMessage(134,$frd_usr_cd['src_usr_cd'],$sample_code); #aloocated/chemist user
+						#$this->DmiSmsEmailTemplates->sendMessage(97,$frd_usr_cd['src_usr_cd'],$stage_smpl_cd); #allocating user
+						$this->DmiSmsEmailTemplates->sendMessage(98,$frd_usr_cd['dst_usr_cd'],$stage_smpl_cd); #aloocated/chemist user
 
 						$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';
 						$message_theme = 'success';
@@ -408,10 +408,13 @@ use Cake\View;
 
 					$conn->execute("UPDATE sample_inward SET status_flag='IF' WHERE org_sample_code='$ogrsample'");
 
-					//Call To the Common SMS/Email Sending Method
-					$this->loadModel('DmiSmsEmailTemplates');
-					//$this->DmiSmsEmailTemplates->sendMessage(2029,$stage_smpl_cd,$_SESSION["user_code"]);
+					// Sample Forward to Lab Incharge SMS/EMAIL
+					$this->DmiSmsEmailTemplates->sendMessage(2029,$stage_smpl_cd,$_SESSION["user_code"]);
 					//$this->DmiSmsEmailTemplates->sendMessage(2032,$stage_smpl_cd,$alloc_to_user_code);
+
+					// For Maintaining Action Log by Akash (28-07-2022)
+					$this->LimsUserActionLogs->saveActionLog('Sample Forwarded to Lab Incharge','Success');
+					
 					$message = 'The Sample is Forwarded to Lab Incharge with '.$stage_smpl_cd.' code!';
 					$message_theme = 'success';
 					$redirect_to = 'available_to_allocate';
