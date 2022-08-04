@@ -117,7 +117,8 @@ class InwardController extends AppController{
 									 GROUP BY ur.user_flag,o.id,o.ro_office 
 									 ORDER BY o.ro_office ASC");
 		
-		} elseif ($_SESSION['user_flag']=='HO') {
+		} 
+		elseif ($_SESSION['user_flag']=='HO') {
 
 			$query = $conn->execute("SELECT ur.user_flag,o.id,o.ro_office FROM dmi_users AS u
 									 INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id

@@ -1,4 +1,5 @@
 <?php ?>
+
 <div class="content-header">
 	<div class="container-fluid">
 		<div class="row mb-2">
@@ -17,49 +18,60 @@
 					<div class="col-md-12">
 						<?php echo $this->Form->create(); ?>
 							<div class="card card-lims">
-								<div class="card-header"><h3 class="card-title-new">ILC Finalized  Z-Score</h3></div>
-									<div class="form-horizontal">
-										<table id="finalized_samples_list" class="table table-striped table-bordered table-hover">
-											<thead class="tablehead">
-												<tr>
-													<th>Sr No</th>
-													<th>Finalized Sample Code</th>
-													<th>Finalized Date</th>
-													<th>Category</th>
-													<th>Commodity</th>
-													<th>Sample Type</th>
-													<th>Action</th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php										
-													if (isset($ilc_sample_reports)) {	
+							
+								<div class="card-header"><h3 class="card-title-new">List of Finalized Result Submited by Z-score</h3></div>
+								  
+								<!-- <P class="p-2 text-center"><b> Org Sample Code : </b><?php echo $getresult['org_sample_code']; ?> <b> Category : </b><?php echo $getresult['category_name']; ?>  <b> Commodity :</b> <?php echo $getresult['category_name']; ?> <b> Sample Type : </b><?php echo $getresult['sample_type_desc']; ?> <?php echo $getresult['org_sample_code']; ?></p>  -->
+								
+								<div class="form-horizontal">
 
-														$i = 1;										
-														
-														foreach ($ilc_sample_reports as $res2) { ?>
+									<table id="finalized_samples_list" class="table table-striped table-bordered table-hover">
+										<thead class="tablehead">
+										<tr>
+											<th>Sr No</th>
+											<th>Finalized Sample Code</th>
+											<th>Commodity</th>
+											<th>Office</th>
+											<th>Sample Type</th>
+											<th>Finalized Date</th>
+											<th>Action</th>
+										</tr>
+										</thead>
+										<tbody>
+											<?php										
+											if (isset($result)) {	
 
-														<tr>
-														
-															<td class="text-center"><?php echo $i; ?></td>                                        
-															<td class="text-center"><?php echo $res2['stage_smpl_cd']; ?></td>
-															<td class="text-center"><?php echo $res2['tran_date']; ?></td>
-															<td class="text-center"><?php echo $res2['category_name']; ?></td>
-															<td class="text-center"><?php echo $res2['commodity_name']; ?></td>										
-															<td class="text-center"><?php echo $res2['sample_type_desc'] ?></td>
-															<td class="text-center"><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'ilc_available_sample_zscore', trim($res2['stage_smpl_cd'])),array('class'=>'glyphicon glyphicon-share','title'=>'finalized result submited by RAL/CAL')); ?></td>
+												$i=1;		
+											
+												foreach ($result as $res2) { ?>
+												
+												<?php echo $this->Form->create(); ?>
 
-														</tr>
-												<?php $i=$i+1; }} ?>				
-											</tbody>
-										</table>
-									</div>
-								</div>
-					<?php echo $this->Form->end(); ?>
+													<tr class="text-center">
+													
+														<td><?php echo $i; ?></td>                                     
+														<td><?php echo $res2['org_sample_code']; ?></td>
+														<td class="text-center"><?php echo $res2['commodity_name']; ?></td>	
+														<td class="text-center"><?php echo $res2['ro_office']; ?></td>									
+														<td class="text-center"><?php echo $res2['sample_type_desc'] ?></td>
+														<td class="text-center"><?php echo $res2['tran_date']; ?></td>
+														<td><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'redirect_to_non_grade_zscore', $res2['org_sample_code']),array('class'=>'glyphicon glyphicon-share','title'=>'Finalized Zscore')); ?></td>
+														<!-- ilc_non_grading_by_oic -->
+														<div class="clearfix"></div>
+													</tr>
+												<?php echo $this->Form->end(); ?>	
+													
+											<?php $i=$i+1;}} ?>
+										</tbody>
+									</table>
+								</div>	
+							</div>
+						<?php echo $this->Form->end(); ?>
+					</div>
 				</div>
 			</div>
-		</div>
-	</section>
+		</section>
+	</div>
 </div>
-
-<?php echo $this->Html->Script('finalGrading/finalized_sample_list'); ?>
+<?php echo $this->Html->script("sampleAllocate/allocated_list"); ?>
+<!-- <?php echo $this->Html->Script('finalGrading/finalized_sample_list'); ?> -->

@@ -385,7 +385,7 @@ $(document).ready(function(){
 					success : function(data){
 						//alert(data);
 						  $("#dst_loc_id").empty();			
-//$("#dst_loc_id").append("<option>-----Select-----</option>");						  
+							//$("#dst_loc_id").append("<option>-----Select-----</option>");						  
 						   $("#dst_loc_id").append(data);
 						   $("#dst_usr_cd").empty();
 						    $("#dst_usr_cd").append("<option >-----Select-----</option>");

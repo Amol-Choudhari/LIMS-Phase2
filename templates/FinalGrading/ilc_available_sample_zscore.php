@@ -19,9 +19,9 @@
 						<?php echo $this->Form->create(); ?>
 							<div class="card card-lims">
 							
-								<div class="card-header"><h3 class="card-title-new">List of Finalized Result Submited By RAL's/CAL's for sample code </h3></div>
-<!-- 								  
-									<P class="p-2 text-center"><b> Org Sample Code : </b><?php echo $getcommodity['org_sample_code']; ?> <b> Category : </b><?php echo $getcommodity['category_name']; ?>  <b> Commodity :</b> <?php echo $getcommodity['category_name']; ?> <b> Sample Type : </b><?php echo $getcommodity['sample_type_desc']; ?>  <?php echo $getcommodity['org_sample_code']; ?></p> -->
+								<div class="card-header"><h3 class="card-title-new">List of Finalized Result Submited By RAL's/CAL's for sample code <?php echo $getcommodity['org_sample_code']; ?></h3></div>
+								  
+									<P class="p-2 text-center"><b> Org Sample Code : </b><?php echo $getcommodity['org_sample_code']; ?> <b> Category : </b><?php echo $getcommodity['category_name']; ?>  <b> Commodity :</b> <?php echo $getcommodity['category_name']; ?> <b> Sample Type : </b><?php echo $getcommodity['sample_type_desc']; ?> </p> 
 								
 									<div class="form-horizontal">
 
@@ -35,13 +35,11 @@
 													<th>Finalized On(FG)</th>
 													<th>View Report</th>
 													<th>Calculated Z-score</th>
-													<th>Put Finalized Z-score</th>
-													<th colspan="2">Action</th>
 												</tr>
 											</thead>
 											<tbody>
 
-											<?php										
+												<?php										
 													if (isset($result)) {	
 
 														$i=1;		
@@ -58,31 +56,30 @@
 																<td><?php echo $res2['tran_date']; ?></td>
 																<td><?php echo $final_reports[$i]; ?></td> 
 																<td><a href="<?php echo $res2['report_pdf']; ?>" target='_blank' class="btn btn-outline-info">View</a></td>
-
-																<td>2</td>
-																
-																<td><input type="text"  class="form-control text-center" id="zscore" name="zscore" value="<?php echo $res2['zscore']; ?>" required></td>
-															
-																<td><a href="<?php echo $res2['ilc_org_sample_cd']; ?>"><button type="submit" class="btn btn-outline-success" name="save_zscore"  id="save_zscore">Save</button></a></td>
-																<td><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'ilc_gnrt_ltr_pdf', $res2['ilc_org_sample_cd']),array('class'=>'glyphicon glyphicon-share','title'=>'Generate Letter for Single Sample')); ?></td>
+																<td><a href="#getmodal" target='_blank' name="get_zscore"  id="get_zscore" data-toggle="modal" data-target="#getmodal" class="btn btn-outline-danger get_zscore" required >get zscore</a></td>
+																<!-- <?php echo $res2['ilc_org_sample_cd']; ?> -->
 																<div class="clearfix"></div>
 															</tr>
 
-															
-
 														<?php echo $this->Form->end(); ?>	
 															
-														
-														
-												<?php $i=$i+1;}} ?>
-
-																
+												<?php $i=$i+1;}} ?>				
 											</tbody>
 										</table>
 									</div>
-									
+									<div class="row p-3">
+										<div class="col-md-6"></div>
+										<div class="col-md-6">
+											<label>Remark</label>
+											<?php echo $this->Form->control('remark', array('type'=>'textarea', 'id'=>'remark','label'=>false,'class'=>'form-control','required'=>true,)); ?>
+										
+										</div>
+									</div>
+									<div class="col-md-12 p-2">
+											<button type="submit" class="btn btn-success" name="frd_to_oic" id="frd_to_oic" value="Save">Forward To OIC</button>
+									</div>
 								</div>
-								<button type="submit" class="btn btn-success" id="frdoic">Forward To OIC</button>
+								
 					<?php echo $this->Form->end(); ?>
 				</div>
 			</div>
@@ -90,4 +87,13 @@
 	</section>
 </div>
 
+
+
+<!-- added for get zscore model on 03/08/2022 by shreeya -->
+
+<?php echo $this->element('ilc_zscore_modal_element');?>
+
+
+
 <?php echo $this->Html->Script('finalGrading/finalized_sample_list'); ?>
+<?php echo $this->Html->Script('finalGrading/ilc_grading_by_inward'); ?>

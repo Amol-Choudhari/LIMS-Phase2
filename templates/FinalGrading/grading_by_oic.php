@@ -80,7 +80,7 @@
 															</div>
 														<div class="col-md-9 col-md-offset-1 margin_top">
 															<div class="fsStyle1 dnone">
-																<div class="table-responsive"    >
+																<div class="table-responsive">
 																	<table  class="table dnone" id="d1">
 																		<thead>
 																			<tr id="first">

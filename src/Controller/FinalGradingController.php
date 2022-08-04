@@ -44,7 +44,9 @@ class FinalGradingController extends AppController
 		$this->authenticateUser();
 
 		$result = $this->getSampleToGradeByInward();
-		$this->set('sample_codes',$result);
+		$this->set('sample_codes',$result[0]);//add array for showing result[0] regular flow 01-08-2022
+		$this->set('sample_codes1',$result[1]);//add array for showing result[1] ilc flow 01-08-2022
+
 	}
 
 /********************************************************************************************************************************************************************************/
@@ -60,15 +62,15 @@ class FinalGradingController extends AppController
 
         //Why : To show the finalized test sample to inward officer if sample forward by Lab incharge officer, Done by pravin bhakare 16-08-2019 */
 
-		 $query = $conn->execute("SELECT ft.sample_code,ft.sample_code FROM Final_Test_Result AS ft
+		$query = $conn->execute("SELECT ft.sample_code,ft.sample_code FROM Final_Test_Result AS ft
 								  INNER JOIN workflow AS w ON ft.org_sample_code = w.org_sample_code
 								  INNER JOIN m_sample_allocate sa ON ft.org_sample_code = sa.org_sample_code
 								  INNER JOIN sample_inward AS si ON ft.org_sample_code = si.org_sample_code
-								  WHERE ft.display ='Y' AND si.status_flag ='FR' AND w.stage_smpl_flag IN ('AR','FR') AND w.dst_usr_cd='$user_code'
+								  WHERE si.sample_type_code != 9 AND ft.display ='Y' AND si.status_flag ='FR' AND w.stage_smpl_flag IN ('AR','FR') AND w.dst_usr_cd='$user_code'
 								  GROUP BY ft.sample_code ");
 
 		$final_result_details = $query->fetchAll('assoc');
-		//print_r($final_result_details); exit;
+		
 
 		//Conditions to check wheather stage sample code is final graded or not.
 		$final_result = array();
@@ -113,7 +115,64 @@ class FinalGradingController extends AppController
 
 		$result = $query->fetchAll('assoc');
 
-		return $result;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		$query1 = $conn->execute("SELECT ft.sample_code,ft.sample_code FROM Final_Test_Result AS ft
+								  INNER JOIN workflow AS w ON ft.org_sample_code = w.org_sample_code
+								  INNER JOIN m_sample_allocate sa ON ft.org_sample_code = sa.org_sample_code
+								  INNER JOIN sample_inward AS si ON ft.org_sample_code = si.org_sample_code
+								  WHERE si.sample_type_code = 9 AND ft.display ='Y' AND si.status_flag ='FR' AND w.stage_smpl_flag IN ('AR','FR') AND w.dst_usr_cd='$user_code'
+								  GROUP BY ft.sample_code ");
+
+		$final_result_details1 = $query1->fetchAll('assoc');
+		
+
+		//Conditions to check wheather stage sample code is final graded or not.
+		$final_result1 = array();
+
+		if (!empty($final_result_details1)) {
+
+			foreach ($final_result_details1 as $stage_sample_code) {
+
+				$final_grading1 = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_flag'=>'FG','stage_smpl_cd IS'=>$stage_sample_code['sample_code'],'src_usr_cd'=>$user_code)))->first();
+
+				if (empty($final_grading1)) {
+
+					$final_result1[]= $stage_sample_code;
+				}
+			}
+		}
+
+		//to be used in below core query format, that's why
+		$arr = "IN(";
+		foreach ($final_result1 as $each) {
+			$arr .= "'";
+			$arr .= $each['sample_code'];
+			$arr .= "',";
+		}
+
+		$arr .= "'00')";//00 is intensionally given to put last value in string.
+
+		$query2 = $conn->execute("SELECT w.stage_smpl_cd,
+										si.received_date,
+										st.sample_type_desc,
+										mcc.category_name,
+										mc.commodity_name,
+										ml.ro_office,
+										w.modified AS submitted_on
+										FROM sample_inward AS si
+								 INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+								 INNER JOIN m_commodity_category AS mcc ON si.category_code=mcc.category_code
+								 INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
+								 INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
+								 WHERE w.stage_smpl_cd ".$arr." and w.stage_smpl_flag = 'AR' ORDER BY w.modified desc");
+
+		$result1 = $query2->fetchAll('assoc');
+
+
+		$newResult = array($result,$result1);		
+		return $newResult;
 
 	}
 
@@ -148,7 +207,7 @@ class FinalGradingController extends AppController
 		$conn = ConnectionManager::get('default');
 
 		$verify_sample_code = $this->Session->read('verify_sample_code');
-
+		
 		if (!empty($verify_sample_code)) {
 
 			$this->set('samples_list',array($verify_sample_code=>$verify_sample_code));
@@ -156,13 +215,14 @@ class FinalGradingController extends AppController
 
 			$grades_strd=$this->MGradeStandard->find('list',array('keyField'=>'grd_standrd','valueField'=>'grade_strd_desc','order' => array('grade_strd_desc' => 'ASC')))->toArray();
 			$this->set('grades_strd',$grades_strd);
-
+			
 			$grades=$this->MGradeDesc->find('list',array('keyField'=>'grade_code','valueField'=>'grade_desc','order' => array('grade_desc' => 'ASC'),'conditions' => array('display' => 'Y')))->toArray();
 			$this->set('grades',$grades);
 
 			if ($this->request->is('post')) {
 
 				$postdata = $this->request->getData();
+				
 				//html encode the each post inputs
 				foreach($postdata as $key => $value){
 
@@ -173,8 +233,9 @@ class FinalGradingController extends AppController
 				if ($this->request->getData('button')=='add') {
 					// Add new filed to add subgrading value
 					$subGradeChecked = $this->request->getData('subgrade');
-
+					
 					$sample_code=$this->request->getData('sample_code');
+				
 					$category_code=$this->request->getData('category_code');
 					$commodity_code=$this->request->getData('commodity_code');
 					$remark=$this->request->getData('remark');
@@ -289,7 +350,9 @@ class FinalGradingController extends AppController
 
 						exit;
 
-					} else {
+					} 
+					else 
+					{
 
 						$dst_loc =$_SESSION["posted_ro_office"];
 
@@ -537,6 +600,7 @@ class FinalGradingController extends AppController
 		}		
 	}
 }
+
 
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>--------<Get Final Result>-------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
@@ -951,6 +1015,13 @@ class FinalGradingController extends AppController
 
 		$this->Session->write('grading_sample_code',$grading_sample_code);
 		$this->redirect(array('controller'=>'FinalGrading','action'=>'ilc_grading_by_oic'));
+	}
+
+	//added for non grade zscore view on 29-07-2022 by shreeya
+	public function redirectToNonGradeZscore($sample_code){
+
+		$this->Session->write('sample_code',$sample_code);
+		$this->redirect(array('controller'=>'FinalGrading','action'=>'ilc_non_grading_by_oic'));
 	}
 
 	
@@ -1564,7 +1635,13 @@ class FinalGradingController extends AppController
 		$this->set('final_reports',$arraylist);
 	}
 
+	// public function IlcfrdToOicZscore($sample_code){
 
+	// 	$list = $this->ilcFrdToOicSampleZscore($sample_code);
+	// 	$this->set('final_score',$list);
+	// }
+
+	
 /******************************************************************************************************************************************************************************************************/
 
 
@@ -1670,13 +1747,19 @@ class FinalGradingController extends AppController
 		
 
 	// final result submited Zscore & report list 14-07-2022
-	public function ilcAvailableSampleZscore($sample_code){
+	public function ilcAvailableSampleZscore($sample_code)
+	
+	{
 		
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->loadModel('SampleInward');
 		$this->loadModel('Workflow');
 		$this->loadModel('IlcOrgSmplcdMaps');
-	
+		$this->loadModel('ActualTestData');
+		$this->loadmodel('IlcCalculateZscore');
+
+		$user_flag = $_SESSION['user_flag'];
+
 		$conn = ConnectionManager::get('default');
 	
 		//fetch commodity , category_code ,org sample code $ sample_type done 19-07-2022 by shreeya
@@ -1695,7 +1778,7 @@ class FinalGradingController extends AppController
 
 		
 		// above query added for fetch 'OF' list for ilc sample done 18-07-2022 by shreeya
-		$query1 = $conn->execute("SELECT sm.ilc_org_sample_cd,w.stage_smpl_cd,w.tran_date,ro.ro_office,si.report_pdf,sm.zscore
+		$query1 = $conn->execute("SELECT sm.ilc_org_sample_cd,w.stage_smpl_cd,w.tran_date,ro.ro_office,si.report_pdf,sm.final_zscore,sm.calculate_zscore
 								FROM ilc_org_smplcd_maps AS sm
 					 			INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
 					 			INNER JOIN dmi_ro_offices AS ro ON ro.id=w.dst_loc_id
@@ -1704,39 +1787,332 @@ class FinalGradingController extends AppController
 
 		$result = $query1->fetchAll('assoc');
 
-		// if (count($result)>0) {
+		$this->set('result',$result);
+		
+		$i=1;		
+		$arraylist= array();		
+		foreach ($result as $each) {
 
-			$this->set('result',$result);
+			//fetch date according to FG flag date's
+			$getList = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd'=>$each['stage_smpl_cd'],'stage_smpl_flag IS'=>'FG')))->first();
+			$arraylist[$i] = $getList['tran_date'];
 			
-			$i=1;		
-			$arraylist= array();		
-			foreach ($result as $each) {
-
-				//fetch date according to FG flag date's
-				$getList = $this->Workflow->find('all',array('con+ditions'=>array('stage_smpl_cd'=>$each['stage_smpl_cd'],'stage_smpl_flag IS'=>'FG')))->first();
-				$arraylist[$i]= $getList['tran_date'];
-				
-				
+			
 			$i++;	
+		}
+
+		$this->set('final_reports',$arraylist);
+		
+		//Save the calculate Zscore on 04-08-2022 by Shreeya 
+		// $this->Ilc->SaveCalculateZscore($sample_code);
+
+			$postData = $this->request->getData();
+
+				$getSavedList = $this->IlcOrgSmplcdMaps->find('all')->select()->where(['status IS' => '1','org_sample_code IS'=>$sample_code])->toArray();
+				
+				
+
+				// $org_sample_code  	= $postData['org_sample_code'];
+				// $sample_code	  	= $postData['sample_code'];
+				// $lab_name 		  	= $postData['lab_name'];
+				// $test_code 		  	= $postData['test_data'];
+				// $commodity_code   	= $postData['commodity_code'];
+				// $calculate_zscore 	= $postData['calculate_zscore'];
+				// $put_final_zscore 	= $postData['put_final_zscore'];
+				$date 			  	= date('Y-m-d H:i:s');
+
+				$zscore= array(
+
+					'org_sample_code' 	=> $sample_code,
+					'sample_code'     	=> 258965,
+					'lab_name'		  	=> 'kolkata',
+					'test_code'		  	=> 1,
+					'commodity_code'  	=> 4,
+					'calculate_zscore'	=> 2,
+					'put_final_zscore'	=> 2,
+					'created'			=> $date,
+					'modified'			=> $date	
+					
+				);
+
+			$ZscorEntity = $this->IlcCalculateZscore->newEntity($zscore);
+						
+			$this->IlcCalculateZscore->save($ZscorEntity);
+			
+
+
+		//added for text code on 02-08-2022 by shreeya 
+		$test = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('sample_code IS' => '5147737', 'display' => 'Y')))->toArray();
+		
+		$test_string=array();
+
+		$i=0;
+
+			foreach ($test as $each) {
+
+				$test_string[$i]=$each['test_code'];
+
+				$i++;
 			}
 			
-			//Save the Zscore on 21-07-2022 by Shreeya 
-			if ($this->request->is('post')) {
-
-				if (null !==($this->request->getData('save_zscore'))) {
-				
-					$zscore = $_POST['zscore'];
-					$ilc_org_sample_cd = $_POST['ilc_org_sample_cd'];
-					$getZscore = $this->IlcOrgSmplcdMaps->updateAll(array('zscore' => "$zscore"),array('ilc_org_sample_cd IS'=>$ilc_org_sample_cd,'status IS'=>1));
-				
-				}
-			}
-
-			$this->set('final_reports',$arraylist);
+			$this->set('teststring',$test_string);
 			
-		// }
-	}
+			
+		//added for fetch test name & method on 02-08-2022 by shreeya 
+		$result3 = array();
+		$i=0;
+		foreach($test_string as $row1) {
+
+			$query3 = $conn->execute("SELECT t.test_name
+					FROM actual_test_data AS td
+					INNER JOIN m_test AS t ON t.test_code = td.test_code
+					WHERE td.sample_code= '5147737' AND td.test_code ='$row1' AND td.display = 'Y'
+					ORDER BY t.test_name ASC ");
+				
+			$result3[$i] = $query3->fetchAll('assoc');	
+		$i++;
+		}
+
+		$this->set('result3',$result3);
+		
+
+		
+		//added for final zscore forwarded to oic on 27-07-2022 by shreeya
+		if ($this->request->is('post')) {
+			
+			if (null !==($this->request->getData('frd_to_oic'))) {
+
+					$samplelist= $this->SampleInward->find('all', array('conditions'=> array('stage_sample_code IS' => $sample_code)))->first();
+					$category_code=$samplelist['category_code'];
+					$commodity_code=$samplelist['commodity_code'];
+
+					$remark=$this->request->getData('remark');
+
+					if (null !== ($this->request->getData('result_flg'))) {
+						$result_flg	= $this->request->getData('result_flg');
+					}
+					else {
+						$result_flg="";
+					}
+				
+					$flagArr = array("P", "F", "M","R");
+
+					// $tran_date=$this->request->getData("tran_date");
+					$ogrsample1= $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $sample_code)))->first();
+					$ogrsample=$ogrsample1['org_sample_code'];
+					$tran_date=$ogrsample1['tran_date'];
+				
+					$src_usr_cd = $conn->execute("SELECT src_usr_cd FROM workflow 
+										WHERE org_sample_code='$ogrsample' AND stage_smpl_flag='TA' ");
+																// $ogrsample
+						
+					$src_usr_cd = $src_usr_cd->fetchAll('assoc');
+					$abc = $src_usr_cd[0]['src_usr_cd'];
+				
+					$dst_loc =$_SESSION["posted_ro_office"];
+				
+					if ($_SESSION['user_flag']=='RAL') {
+
+						$data = $this->DmiUsers->find('all', array('conditions'=> array('role' =>'RAL/CAL OIC','posted_ro_office IS' => $dst_loc,'status !='=>'disactive')))->first();
+						$dst_usr = $data['id'];
+						
+					} else {
+
+						/* Change the conditions for to find destination user id, after test result approved by lab inward officer the application send to RAL/CAL OIC officer */
+						$data = $this->DmiUsers->find('all', array('conditions'=> array('role' =>'RAL/CAL OIC','posted_ro_office IS' => $dst_loc,'status !='=>'disactive')))->first();
+						$dst_usr = $data['id'];
+					}
 	
+					if ($_SESSION['user_flag']=='RAL') {
+	
+						if (trim($result_flg)=='F') {
+	
+							$workflow_data = array(
+
+								"org_sample_code"	=>	$ogrsample,
+								"src_loc_id"		=>	$_SESSION["posted_ro_office"],
+								"src_usr_cd"		=>	$_SESSION["user_code"],
+								"dst_loc_id"		=>	$_SESSION["posted_ro_office"],
+								"dst_usr_cd"		=>	$dst_usr,
+								"stage_smpl_flag"	=>	"FS",
+								"tran_date"			=>	$tran_date,
+								"user_code"			=>	$_SESSION["user_code"],
+								"stage_smpl_cd"		=>	$sample_code,
+								"stage"				=>	"8");
+						} else 
+						{
+	
+							// Change the stage_smpl_flag value FG to FGIO to genreate the sample report after grading by OIC,
+							$workflow_data = array(
+
+							"org_sample_code"	=>	$ogrsample,
+							"src_loc_id"		=>	$_SESSION["posted_ro_office"],
+							"src_usr_cd"		=>	$_SESSION["user_code"],
+							"dst_loc_id"		=>	$_SESSION["posted_ro_office"],
+							"dst_usr_cd"		=>	$dst_usr,
+							"stage_smpl_flag"	=>	"FGIO",
+							"tran_date"			=>	$tran_date,
+							"user_code"			=>	$_SESSION["user_code"],
+							"stage_smpl_cd"		=>	$sample_code,
+							"stage"				=>	"8");
+
+						}
+	
+					} 
+					elseif ($_SESSION['user_flag']=='CAL')
+						
+					{
+	
+						if (trim($result_flg)=='F') {
+
+							$workflow_data =  array(
+
+							"org_sample_code"		=>	$ogrsample,
+							"src_loc_id"			=>	$_SESSION["posted_ro_office"],
+							"src_usr_cd"			=>	$_SESSION["user_code"],
+							"dst_loc_id"			=>	$_SESSION["posted_ro_office"],
+							"dst_usr_cd"			=>	$dst_usr,
+							"stage_smpl_flag"		=>	"FC",
+							"tran_date"				=>	$tran_date,
+							"user_code"				=>	$_SESSION["user_code"],
+							"stage_smpl_cd"			=>	$sample_code,
+							"stage"					=>	"7");
+
+						} else {
+
+							$workflow_data =  array(
+
+							"org_sample_code"		=>	$ogrsample,
+							"src_loc_id"			=>	$_SESSION["posted_ro_office"],
+							"src_usr_cd"			=>	$_SESSION["user_code"],
+							"dst_loc_id"			=>	$_SESSION["posted_ro_office"],
+							"dst_usr_cd"			=>	$dst_usr,
+							"stage_smpl_flag"		=>	"VS",
+							"tran_date"				=>	$tran_date,
+							"user_code"				=>	$_SESSION["user_code"],
+							"stage_smpl_cd"			=>	$sample_code,
+							"stage"					=>	"7");
+						}
+					}
+	
+					$workflowEntity = $this->Workflow->newEntity($workflow_data);
+
+					$this->Workflow->save($workflowEntity);
+
+					$_SESSION["loc_id"] = $_SESSION["posted_ro_office"];
+					
+					$_SESSION["loc_user_id"] = $_SESSION["user_code"];
+
+					$date = date("Y/m/d");
+					
+					// $sample_code = trim($this->request->getData('sample_code'));
+					
+							
+					$query = $conn->execute("SELECT si.org_sample_code
+												FROM sample_inward AS si
+												INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
+												WHERE w.stage_smpl_cd = '$sample_code'");
+					
+					$ogrsample3 = $query->fetchAll('assoc');
+	
+					$ogrsample_code = $ogrsample3[0]['org_sample_code'];
+
+					if ($_SESSION['user_flag']=='RAL') {
+
+						if (trim($result_flg)=='F') {
+
+							// Add two new fileds to add subgrading value and inward grading date
+							$conn->execute("UPDATE sample_inward SET status_flag='FS',
+												remark ='$remark',
+												grade_user_cd=".$_SESSION['user_code'].",
+												grade_user_flag='".$_SESSION['user_flag']."',
+												grade_user_loc_id='".$_SESSION['posted_ro_office']."',
+												ral_anltc_rslt_rcpt_dt='$tran_date',
+												WHERE category_code= '$category_code',
+												AND commodity_code = '$commodity_code',
+												AND org_sample_code = '$ogrsample_code',
+												AND display = 'Y' ");
+
+						} 
+						else 
+						{
+	
+							// Add two new fileds to add subgrading value and inward grading date
+							$conn->execute("UPDATE sample_inward SET status_flag='FG',
+													remark ='$remark',
+													grade_user_cd=".$_SESSION['user_code'].",
+													grade_user_flag='".$_SESSION['user_flag']."',
+													grade_user_loc_id='".$_SESSION['posted_ro_office']."',
+													ral_anltc_rslt_rcpt_dt='$tran_date',
+													WHERE category_code= '$category_code',
+													AND commodity_code = '$commodity_code',
+													AND org_sample_code = '$ogrsample_code',
+													AND display = 'Y' ");
+						}
+	
+					} 
+					elseif ($_SESSION['user_flag']=='CAL') 
+					{
+	
+						if ($result_flg=='F') {
+
+							// Add two new fileds to add subgrading value and inward grading date
+							$conn->execute("UPDATE sample_inward SET status_flag='FC',
+													remark ='$remark',
+													grade_user_cd=".$_SESSION['user_code'].",
+													grade_user_flag='".$_SESSION['user_flag']."',
+													grade_user_loc_id='".$_SESSION['posted_ro_office']."',
+													ral_anltc_rslt_rcpt_dt='$tran_date',
+													WHERE category_code= '$category_code',
+													AND commodity_code = '$commodity_code',
+													AND org_sample_code = '$ogrsample_code',
+													AND display = 'Y' ");
+
+						} 
+						else 
+						{
+	
+							// Add two new fileds to add subgrading value and inward grading date
+							$conn->execute("UPDATE sample_inward SET status_flag='VS',
+													remark ='$remark',
+													grade_user_cd='".$_SESSION['user_code']."',
+													grade_user_flag='".$_SESSION['user_flag']."',
+													grade_user_loc_id='".$_SESSION['posted_ro_office']."',
+													cal_anltc_rslt_rcpt_dt='$tran_date',
+													WHERE category_code= '$category_code',
+													AND commodity_code = '$commodity_code',
+													AND org_sample_code = '$ogrsample_code',
+													AND display = 'Y' ");
+						}
+					}
+	
+					//call to the common SMS/Email sending method
+					$this->loadModel('DmiSmsEmailTemplates');
+					//$this->DmiSmsEmailTemplates->sendMessage(2017,$sample_code);
+
+					/* Change forward to RAL officer flash message,*/
+	
+					if ($_SESSION['user_flag']=='RAL') {
+
+						echo '#The results have been finalized and forwarded to RAL,Office Incharge#';
+						exit;
+
+					} elseif ($_SESSION['user_flag']=='CAL') {
+
+						echo '#The results have been finalized and forwarded to CAL,Office Incharge#';
+						/* To disaply the message, after save the grading by inward officer.*/
+						exit;
+
+					} else {
+						echo '#Record Save Sucessfully!#';
+						exit;
+					}
+			}
+			
+		}
+			
+	}	
+			
 	//FORWARD LETTER PDF VIEW
 	public function ilcGnrtLtrPdf($sample_code) {
 
@@ -1751,16 +2127,75 @@ class FinalGradingController extends AppController
 	}
 	
 
-
+	//added for show the finalized  list of ilc zscore on 25/07/2022 by Shreeya
 	public function ilcFinalizedZscore(){
 
+			$this->viewBuilder()->setLayout('admin_dashboard');
+			$this->loadModel('SampleInward');
+			$this->loadModel('Workflow');
+			$this->loadModel('IlcOrgSmplcdMaps');
+
+			$conn = ConnectionManager::get('default');
+
+			$query2 = $conn->execute("SELECT si.org_sample_code, w.stage_smpl_cd,mc.commodity_name, st.sample_type_desc, w.tran_date,w.stage_smpl_flag,si.status_flag,ml.ro_office
+					FROM sample_inward AS si
+					INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+					INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
+					INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+					INNER JOIN workflow AS w ON w.org_sample_code=si.org_sample_code
+					WHERE  w.stage_smpl_flag='FGIO' AND si.status_flag='FG' AND si.sample_type_code=9 AND si.entry_type IS NULL ");
+					
+			$result = $query2->fetchAll('assoc');
+			$this->set('result',$result);
+			
+	}
+
+
+	//29-07-2022
+	public function ilcNonGradingByOic()
+    {
+
+		$this->authenticateUser();
 		$this->viewBuilder()->setLayout('admin_dashboard');
+		$str1		  = "";
+		$this->loadModel('MCommodityCategory');
+		$this->loadModel('DmiUsers');
+		$this->loadModel('FinalTestResult');
+	
+		$this->loadModel('MTestMethod');
 		$this->loadModel('SampleInward');
 		$this->loadModel('Workflow');
-		$this->loadModel('IlcOrgSmplcdMaps');
+		$this->loadModel('MSampleAllocate');
+		$this->loadModel('MCommodity');
+	
+		$conn = ConnectionManager::get('default');
+
+		$sample_code = $this->Session->read('sample_code');
+		
+
+		if(!empty($sample_code)){
+
+			$this->set('samples_list',array($sample_code=>$sample_code));
+			$this->set('stage_sample_code',$sample_code);//for hidden field, to use common script
+			
+			
+			//get org samle code
+			$ogrsample1= $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $sample_code)))->first();
+			$ogrsample = $ogrsample1['org_sample_code'];
+			
+			//to get commodity code for report pdf
+			$getcommoditycd = $this->SampleInward->find('all',array('fields'=>'commodity_code','conditions'=>array('org_sample_code IS'=>$ogrsample),'order'=>'inward_id desc'))->first();
+			$smple_commdity_code = $getcommoditycd['commodity_code'];
+			$this->set('smple_commdity_code',$smple_commdity_code);
+
+			
+
+		}
 
 		
-	}
+
+    }
+
 
 /******************************************************************************************************************************************************************************************************/
 

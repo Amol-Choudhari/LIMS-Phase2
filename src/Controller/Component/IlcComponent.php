@@ -493,6 +493,59 @@
 		}	
 		
 
+		//added for save calculate zscore on 04-08-2022 by shreeya 
+
+		// public function SaveCalculateZscore (){
+
+
+		// 	$sample_code = $this->Session->read('org_sample_code');
+			
+		// 	$IlcOrgSmplcdMaps = TableRegistry::getTableLocator()->get('IlcOrgSmplcdMaps');
+		
+		// 	$date = date('Y-m-d H:i:s');
+
+		// 	// $postData = $this->request->getData();
+
+			
+		// 		// $get = $this->IlcOrgSmplcdMaps->find('all',array('fields'=>'ilc_org_sample_cd'))->toArray();
+		// 		// $sample_code = $get['ilc_org_sample_cd'];
+
+		// 		$getSavedList = $IlcOrgSmplcdMaps->find('all')->select()->where(['status IS' => '1','org_sample_code IS'=>$sample_code])->toArray();
+				
+				
+
+		// 		// $org_sample_code  	= $postData['org_sample_code'];
+		// 		// $sample_code	  	= $postData['sample_code'];
+		// 		// $lab_name 		  	= $postData['lab_name'];
+		// 		// $test_code 		  	= $postData['test_data'];
+		// 		// $commodity_code   	= $postData['commodity_code'];
+		// 		// $calculate_zscore 	= $postData['calculate_zscore'];
+		// 		// $put_final_zscore 	= $postData['put_final_zscore'];
+		// 		$date 			  	= date('Y-m-d H:i:s');
+
+		// 		$zscore= array(
+
+		// 			'org_sample_code' 	=> $sample_code,
+		// 			'sample_code'     	=> 258521,
+		// 			'lab_name'		  	=> 'kolkata',
+		// 			'test_code'		  	=> 1,
+		// 			'commodity_code'  	=> 4,
+		// 			'calculate_zscore'	=> 2,
+		// 			'put_final_zscore'	=> 2,
+		// 			'created'			=> $date,
+		// 			'modified'			=> $date	
+					
+		// 		);
+
+		// 		$ZscorEntity = $IlcCalculateZscore->newEntity($zscore);
+		// 		$IlcCalculateZscore->save($ZscorEntity);
+
+
+		// }
+
+		
+
+
     }
 
 

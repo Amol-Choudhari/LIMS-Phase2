@@ -23,6 +23,28 @@ class FinalGradingController extends AppController
 
 /********************************************************************************************************************************************************************************/
 
+	public function ilcFinalizedZscore(){
+		
+		// $this->viewBuilder()->setLayout('admin_dashboard');
+		// $this->loadModel('SampleInward');
+		// $this->loadModel('Workflow');
+		// $this->loadModel('IlcOrgSmplcdMaps');
+
+		// $conn = ConnectionManager::get('default');
+
+		// $query2 = $conn->execute("SELECT si.org_sample_code, w.stage_smpl_cd,mcc.category_name,mc.commodity_name, st.sample_type_desc, w.tran_date,w.stage_smpl_flag,si.status_flag
+		// 		FROM sample_inward AS si
+		// 		INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+		// 		INNER JOIN m_commodity_category AS mcc ON mcc.category_code = si.category_code
+		// 		INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+		// 		INNER JOIN workflow AS w ON w.org_sample_code=si.org_sample_code
+		// 		WHERE  w.stage_smpl_flag='OF' AND si.status_flag='F' AND si.sample_type_code=9 AND si.entry_type IS NULL ");
+				
+		// $result = $query2->fetchAll('assoc');
+		// $this->set('result',$result);
+	}
+
+
 	//to validate login user
 	public function authenticateUser() {
 
@@ -537,6 +559,7 @@ class FinalGradingController extends AppController
 		}		
 	}
 }
+
 
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>--------<Get Final Result>-------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
