@@ -57,11 +57,12 @@ class ApproveReadingController extends AppController
 
 
         $query = $conn->execute("SELECT c.sample_code
-									FROM workflow AS w
-									INNER JOIN code_decode AS c ON w.org_sample_code=c.org_sample_code
-									INNER JOIN m_sample_allocate AS sa ON w.org_sample_code=sa.org_sample_code
-									INNER JOIN sample_inward AS si ON w.org_sample_code=si.org_sample_code
-									WHERE c.status_flag='C' AND c.display='Y'AND w.dst_usr_cd='".$_SESSION['user_code']."' AND w.stage_smpl_flag='FT' AND si.status_flag!='SR' GROUP BY c.sample_code");
+								 FROM workflow AS w
+								 INNER JOIN code_decode AS c ON w.org_sample_code=c.org_sample_code
+								 INNER JOIN m_sample_allocate AS sa ON w.org_sample_code=sa.org_sample_code
+								 INNER JOIN sample_inward AS si ON w.org_sample_code=si.org_sample_code
+								 WHERE c.status_flag='C' AND c.display='Y'
+								 AND w.dst_usr_cd='".$_SESSION['user_code']."' AND w.stage_smpl_flag='FT' AND si.status_flag!='SR' GROUP BY c.sample_code");
 
 		$sample_codes = $query->fetchAll('assoc');
 
@@ -76,13 +77,13 @@ class ApproveReadingController extends AppController
 
 		//Updated Below query by Akash 13/07/2021
 		$query = $conn->execute("SELECT DISTINCT ON (w.stage_smpl_cd) si.inward_id, w.stage_smpl_cd, si.received_date, st.sample_type_desc, mcc.category_name, mc.commodity_name, ml.ro_office, w.modified AS submitted_on
-									FROM sample_inward AS si
-									INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
-									INNER JOIN m_commodity_category AS mcc ON si.category_code=mcc.category_code
-									INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
-									INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
-									INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
-									WHERE w.stage_smpl_cd ".$arr." order by w.stage_smpl_cd desc");
+								 FROM sample_inward AS si
+								 INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+								 INNER JOIN m_commodity_category AS mcc ON si.category_code=mcc.category_code
+								 INNER JOIN dmi_ro_offices AS ml ON ml.id=si.loc_id
+								 INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
+								 WHERE w.stage_smpl_cd ".$arr." order by w.stage_smpl_cd desc");
 
 		$result = $query->fetchAll('assoc');
 
@@ -150,7 +151,6 @@ class ApproveReadingController extends AppController
 						if ( count($cnt)>0) {
 
 							$this->FinalTestResult->updateAll(array('display' => 'Y'),array('sample_code' => $sample_code,'test_code'=>$tests));
-
 						}
 
 						$ogrsample1	= $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $sample_code)))->first();
@@ -167,9 +167,9 @@ class ApproveReadingController extends AppController
 						} else {
 
 							$test_name	= $conn->execute("SELECT DISTINCT test_name
-															FROM final_test_result AS f
-															INNER JOIN m_test AS t ON f.test_code=t.test_code
-															WHERE sample_code='$sample_code' AND f.test_code='$tests' AND f.display='Y'");
+														  FROM final_test_result AS f
+														  INNER JOIN m_test AS t ON f.test_code=t.test_code
+														  WHERE sample_code='$sample_code' AND f.test_code='$tests' AND f.display='Y'");
 
 							$test_name = $test_name->fetchAll('assoc');
 
@@ -183,7 +183,6 @@ class ApproveReadingController extends AppController
 						if (count($cnt)>0) {
 
 							$this->FinalTestResult->updateAll(array('display' => 'N'),array('sample_code' => $sample_code,'test_code'=>$tests));
-
 						}
 
 						$ogrsample1	= $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $sample_code)))->first();
@@ -199,9 +198,9 @@ class ApproveReadingController extends AppController
 						} else {
 
 							$test_name	= $conn->execute("SELECT test_name
-															FROM final_test_result AS f
-															INNER JOIN m_test AS t ON f.test_code=t.test_code
-															WHERE sample_code='$sample_code' AND f.test_code='$tests' AND f.display='Y'");
+														  FROM final_test_result AS f
+														  INNER JOIN m_test AS t ON f.test_code=t.test_code
+														  WHERE sample_code='$sample_code' AND f.test_code='$tests' AND f.display='Y'");
 
 							$test_name = $test_name->fetchAll('assoc');
 
@@ -209,9 +208,7 @@ class ApproveReadingController extends AppController
 
 							echo  '#'.json_encode($test_name).'#';
 						}
-
 					}
-
 				}
 
 				exit;
@@ -234,9 +231,9 @@ class ApproveReadingController extends AppController
 		}
 
 		$res_duplicate = $conn->execute("SELECT DISTINCT result_dupl_flag
-											FROM sample_inward AS si
-											INNER JOIN actual_test_data AS a ON si.org_sample_code=a.org_Sample_code
-											WHERE a.sample_code='$sample_code'");
+										 FROM sample_inward AS si
+										 INNER JOIN actual_test_data AS a ON si.org_sample_code=a.org_Sample_code
+										 WHERE a.sample_code='$sample_code'");
 
 		$res_duplicate = $res_duplicate->fetchAll('assoc');
 
@@ -244,12 +241,13 @@ class ApproveReadingController extends AppController
 		if ($res_duplicate[0]['result_dupl_flag']=='D ') {
 
 			$res = $conn->execute("SELECT t.test_code,t.test_name,b.test_type_name
-									FROM actual_test_data AS a
-									INNER JOIN m_test AS t ON a.test_code = t.test_code
-									INNER JOIN m_test_type AS b ON t.test_type_code = b.test_type_code
-									INNER JOIN m_sample_allocate AS s ON a.chemist_code=s.chemist_code
-									WHERE a.sample_code='$sample_code' AND a.display='Y' AND s.acptnce_flag!='NABC' AND a.status_flag NOT IN('A')
-									GROUP BY t.test_code,t.test_name,b.test_type_name");
+								   FROM actual_test_data AS a
+								   INNER JOIN m_test AS t ON a.test_code = t.test_code
+								   INNER JOIN m_test_type AS b ON t.test_type_code = b.test_type_code
+								   INNER JOIN m_sample_allocate AS s ON a.chemist_code=s.chemist_code
+								   WHERE a.sample_code='$sample_code' AND a.display='Y' 
+								   AND s.acptnce_flag!='NABC' AND a.status_flag NOT IN('A')
+								   GROUP BY t.test_code,t.test_name,b.test_type_name");
 
 			$res = $res->fetchAll('assoc');
 
@@ -260,7 +258,9 @@ class ApproveReadingController extends AppController
 
 			$res = $conn->execute("SELECT count(*)
 								   FROM actual_test_data AS a
-								   INNER JOIN m_sample_allocate AS sa ON sa.chemist_code=a.chemist_code AND a.sample_code='$sample_code' AND a.display='Y' AND a.status_flag NOT IN('A') AND sa.acptnce_flag!='NABC'");
+								   INNER JOIN m_sample_allocate AS sa ON sa.chemist_code=a.chemist_code 
+								   AND a.sample_code='$sample_code' AND a.display='Y' 
+								   AND a.status_flag NOT IN('A') AND sa.acptnce_flag!='NABC'");
 
 			$res = $res->fetchAll('assoc');
 
@@ -387,14 +387,6 @@ class ApproveReadingController extends AppController
 		}
 
 		$sample_code = trim($this->request->getData('sample_code'));
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///*$ogrsample3= $this->Sample_Inward->find('first',array('joins' => array(array('table' => 'workflow','alias' => 'w','type' => 'INNER',    //
-		//											'conditions' => array('w.org_sample_code = Sample_Inward.org_sample_code'))),				   //
-		//											'fields' => array('Sample_Inward.org_sample_code','Sample_Inward.org_sample_code'),			  //
-		//											'conditions'=> array('w.stage_smpl_cd' => $sample_code)));*/								 //
-		//																																		//
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		$query = $conn->execute("SELECT si.org_sample_code FROM sample_inward AS si
 								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
@@ -535,14 +527,14 @@ class ApproveReadingController extends AppController
 
 	public function getfinalResult(){
 
-		 $this->loadModel('FinalTestResult');
+		$this->loadModel('FinalTestResult');
 
-		 $sample_code=trim($_POST['sample_code']);
-		 $test_code=trim($_POST['test_code']);
-		 $duplicate_flag=trim($_POST['duplicate_flag']);
+		$sample_code=trim($_POST['sample_code']);
+		$test_code=trim($_POST['test_code']);
+		$duplicate_flag=trim($_POST['duplicate_flag']);
 
 
-		 if (!isset($sample_code) || !is_numeric($sample_code)) {
+		if (!isset($sample_code) || !is_numeric($sample_code)) {
 			echo "#[error]~Invalid code#";
 			exit;
 		}
@@ -552,24 +544,23 @@ class ApproveReadingController extends AppController
 			exit;
 		}
 
-		 	if ($duplicate_flag=="D") {
+		if ($duplicate_flag=="D") {
 
-			  $final_result=$this->FinalTestResult->find('list', array(
-					'keyField'=>'final_result','valueField'=>'final_result',
-					'conditions'=>array('sample_code IS'=>$sample_code,'test_code IS'=>$test_code,'duplicate_flg'=>'D' )))->toArray();
-			} else {
+			$final_result=$this->FinalTestResult->find('list', array(
+				'keyField'=>'final_result','valueField'=>'final_result',
+				'conditions'=>array('sample_code IS'=>$sample_code,'test_code IS'=>$test_code,'duplicate_flg'=>'D' )))->toArray();
+		} else {
 
-			 $final_result=$this->FinalTestResult->find('list', array(
-					'keyField'=>'final_result','valueField'=>'final_result',
-					'conditions'=>array('sample_code IS'=>$sample_code,'test_code IS'=>$test_code,'display'=>'Y')))->toArray();
-		   }
+			$final_result=$this->FinalTestResult->find('list', array(
+				'keyField'=>'final_result','valueField'=>'final_result',
+				'conditions'=>array('sample_code IS'=>$sample_code,'test_code IS'=>$test_code,'display'=>'Y')))->toArray();
+		}
 
-			if (count($final_result)>0) {
-
-				echo '#'.json_encode($final_result).'#';
-			} else {
-				echo  '#1#';
-			}
+		if (count($final_result)>0) {
+			echo '#'.json_encode($final_result).'#';
+		} else {
+			echo  '#1#';
+		}
 
 		exit;
 	}
@@ -617,19 +608,16 @@ class ApproveReadingController extends AppController
 
 
 		if (!isset($category_code) || !is_numeric($sample_code)) {
-
 			echo "#[error]~Invalid Sample code#";
 			exit;
 		}
 
 		if (!is_numeric($commodity_code) || !isset($commodity_code)) {
-
 			echo '#[error]~Invaild commodity code!#';
 			exit;
 		}
 
 		if (!is_numeric($category_code) || !isset($category_code)) {
-
 			echo '#[error]~Invaild category code!#';
 			exit;
 		}
@@ -639,7 +627,6 @@ class ApproveReadingController extends AppController
 				WHERE a.display='Y' AND a.commodity_code='$commodity_code' AND a.category_code='$category_code'";
 
 		if ($_POST['sample_code']) {
-
 			$qry .=	"and a.sample_code='$sample_code' ";
 		}
 
@@ -651,7 +638,7 @@ class ApproveReadingController extends AppController
 		echo '#'.json_encode($res).'#';
 		exit;
 
-	 }
+	}
 
 
 /*******************************************************************************************************************************************************************************************************************************************/
@@ -721,16 +708,6 @@ class ApproveReadingController extends AppController
 
 		$sample_code = trim($this->request->getData('sample_code'));
 
-	  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	  //																																			     //
-	  //	/*$ogrsample3= $this->Sample_Inward->find('first', array('joins' => array(array('table' => 'workflow','alias' => 'w','type' => 'INNER',     //
-	  //											  'conditions' => array('w.org_sample_code = Sample_Inward.org_sample_code'))),					   //
-	  //											  'fields' => array('Sample_Inward.org_sample_code','Sample_Inward.org_sample_code'),			  //
-	  //											  'conditions'=> array('w.stage_smpl_cd' => $sample_code)));*/									 //
-	  //																																			//
-	  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 		$query = $conn->execute("SELECT si.org_sample_code FROM sample_inward AS si
 								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
 								 WHERE w.stage_smpl_cd = '$sample_code'");
@@ -772,7 +749,7 @@ class ApproveReadingController extends AppController
 
 		exit;
 
-  }
+  	}
 
 
 /*******************************************************************************************************************************************************************************************************************************************/
@@ -826,15 +803,6 @@ class ApproveReadingController extends AppController
 		$this->Workflow->save($workflowEntity);
 
 		$sample_code=trim($this->request->getData('sample_code'));
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//																																			 ///
-		//	/*$ogrsample3= $this->Sample_Inward->find('first', array('joins' => array(array('table' => 'workflow','alias' => 'w','type' => 'INNER',	 ///
-		//											'conditions' => array('w.org_sample_code = Sample_Inward.org_sample_code'))),					 ///
-		//											'fields' => array('Sample_Inward.org_sample_code','Sample_Inward.org_sample_code'),				 ///
-		//											'conditions'=> array('w.stage_smpl_cd' => $sample_code)));*/									 ///
-		//																																			 ///
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		$query = $conn->execute("SELECT si.org_sample_code FROM sam AS si
 								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
@@ -909,7 +877,7 @@ class ApproveReadingController extends AppController
 
 
 
-	 public function finalizedSample(){
+	public function finalizedSample(){
 
 		$this->loadModel('Workflow');
 		$this->loadModel('ActualTestData');
@@ -966,15 +934,6 @@ class ApproveReadingController extends AppController
 
 		$sample_code=trim($this->request->getData('sample_code'));
 
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//																																			//
-		//	/*$ogrsample3= $this->Sample_Inward->find('first', array('joins' => array(array('table' => 'workflow','alias' => 'w','type' => 'INNER',	//
-		//										  'conditions' => array('w.org_sample_code = Sample_Inward.org_sample_code'))),						//
-		//										  'fields' => array('Sample_Inward.org_sample_code','Sample_Inward.org_sample_code'),				//
-		//										  'conditions'=> array('w.stage_smpl_cd' => $sample_code)));*/										//
-		//																																			//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		$query = $conn->execute("SELECT si.org_sample_code FROM sample_inward AS si
 								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
 								 WHERE w.stage_smpl_cd = '$sample_code'");
@@ -1000,9 +959,9 @@ class ApproveReadingController extends AppController
 
 		echo  '#'.json_encode($org_sample_code).'#';
 
-	 exit;
+	 	exit;
 
-  }
+  	}
 
 /*******************************************************************************************************************************************************************************************************************************************/
 
@@ -1034,20 +993,10 @@ class ApproveReadingController extends AppController
 		$this->autoRender=false;
 		 $conn = ConnectionManager::get('default');
 
-		 $this->loadModel('FinalTestResult');
-		 $this->loadModel('MTest');
+		$this->loadModel('FinalTestResult');
+		$this->loadModel('MTest');
 
-			$sample_code = ($_POST['stage_sample_modal_view']);
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//																																											//
-		//	/*	$temp1 = $this->Final_Test_Result->find('all',array('joins'=>array(																									//
-		//											array('table'=>'m_test','alias' => 'mt','type' => 'INNER',																		//
-		//											'conditions' => array( "mt.test_code = Final_Test_Result.test_code"))),															//
-		//											'fields'=>array('Final_Test_Result.sample_code','Final_Test_Result.final_result','mt.test_name'),								//
-		//											'conditions'=>array('Final_Test_Result.sample_code'=>$sample_code,'Final_Test_Result.display'=>'Y','mt.display'=>'Y')));		//
-		//	*/																																										//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		$sample_code = ($_POST['stage_sample_modal_view']);
 
 		$query = $conn->execute("SELECT ftr.sample_code,ftr.final_result,mt.test_name FROM final_test_result AS ftr
 								 INNER JOIN m_test AS mt ON mt.test_code = ftr.test_code
@@ -1069,19 +1018,8 @@ class ApproveReadingController extends AppController
 
 		$conn = ConnectionManager::get('default');
 
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//																																									//
-		//	/*$showapprovedresult = $this->Workflow1->find('all',array('joins'=>array(																						//
-		//					array('table'=>'sample_inward','alias' => 'si','type' => 'INNER','conditions' => array( 'si.org_sample_code = Workflow1.org_sample_code')),		//
-		//					array('table'=>'m_sample_type','alias' => 'mst','type' => 'INNER','conditions' => array( 'mst.sample_type_code = si.sample_type_code')),		//
-		//					array('table' => 'm_commodity_category','alias' => 'mcc','type' => 'INNER','conditions' => array( 'mcc.category_code = si.category_code')),		//
-		//					array('table' => 'm_commodity','alias' => 'mc','type' => 'INNER','conditions' => array( 'mc.commodity_code = si.commodity_code'))),				//
-		//						'fields'=>array('stage_smpl_cd','mcc.category_name','mc.commodity_name','mst.sample_type_desc'),											//
-		//						'conditions'=>array('Workflow1.src_usr_cd'=>$_SESSION['user_code'],'Workflow1.stage_smpl_flag'=>'AR')));*/									//
-		//																																									//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		$query = $conn->execute("SELECT w.stage_smpl_cd,mcc.category_name,mc.commodity_name,mst.sample_type_desc FROM workflow AS w
+		$query = $conn->execute("SELECT w.stage_smpl_cd,mcc.category_name,mc.commodity_name,mst.sample_type_desc 
+								 FROM workflow AS w
 								 INNER JOIN sample_inward AS si ON si.org_sample_code = w.org_sample_code
 								 INNER JOIN m_sample_type AS mst ON mst.sample_type_code = si.sample_type_code
 								 INNER JOIN m_commodity_category AS mcc ON mcc.category_code = si.category_code
@@ -1089,9 +1027,13 @@ class ApproveReadingController extends AppController
 								 WHERE w.src_usr_cd=".$_SESSION['user_code']." and w.stage_smpl_flag='AR'");
 
 		$showapprovedresult = $query ->fetchAll('assoc');
+
 		$this->set('showapprovedresult',$showapprovedresult);
 	}
 
 
 }
+
+
+
 ?>

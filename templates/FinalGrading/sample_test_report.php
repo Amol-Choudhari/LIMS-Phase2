@@ -17,56 +17,47 @@
 		font-size: 9pt;
 		font-family: times;
 	}
-
-				
 </style>
 	
-	
 	<table width="100%" border="1">
-		<tr>				
+		<tr>
 			<td width="12%" align="center">
 				<img width="35" src="img/logos/emblem.png">
 			</td>
 			<td width="76%" align="center">
 				<h4>Government of India <br> Ministry of Agriculture and Farmers Welfare<br>
-				Department of Agriculture & Farmers Welfare<br>
-				Directorate of Marketing & Inspection<br>
-				</h4>				
+					Department of Agriculture & Farmers Welfare<br>
+					Directorate of Marketing & Inspection<br>
+				</h4>
 			</td>
 			<td width="12%" align="center">
 				<img src="img/logos/agmarklogo.png">
-			</td>				
+			</td>
 		</tr>
 	</table>
 	
 	<table width="100%" border="1">
-		<tr>				
-		<?php if($showNablLogo=='yes'){ ?>
-			<td width="79%" align="center">
-		<?php }else{ ?>	
-			<td align="center">
-		<?php } ?>
+		<tr>
+			<?php if($showNablLogo=='yes'){ ?>
+				<td width="79%" align="center">
+			<?php }else{ ?>	
+				<td align="center">
+			<?php } ?>
 			
-				<?php 
-					if($test_report[0]['grade_user_flag']=="CAL" ){ ?>
-						
-						<h5><span style="font-family: krutidev010;">dsanzh; ,xekdZ ç;ksx“kkyk</span> / Central Agmark Laboratory<br />
-						<span style="font-family: krutidev010;">mŸkj vEck>jh ekxZ</span> / North Ambazari Road Nagpur 440010<br />											
-						Phone:0712-2561748,Fax: 0712-2540952 T-2315 mail:cal@nic.in</h5>
+			<?php if($test_report[0]['grade_user_flag']=="CAL" ){ ?>
+					<h5><span style="font-family: krutidev010;">dsanzh; ,xekdZ ç;ksx“kkyk</span> / Central Agmark Laboratory<br />
+					<span style="font-family: krutidev010;">mŸkj vEck>jh ekxZ</span> / North Ambazari Road Nagpur 440010<br />
+					Phone:0712-2561748,Fax: 0712-2540952 T-2315 mail:cal@nic.in</h5>
+			<?php } ?>
 				
-				<?php } ?>
-				
-				<?php 
-					if($test_report[0]['grade_user_flag']=="RAL" ){ ?>
-						
-						<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $_SESSION['ro_office'];?></h5>
-				
-				<?php }elseif(isset($test_report[0]['ro_office']) && isset($ral_lab_name) && $ral_lab_name=='RAL'){ ?>
-				
-						<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $test_report[0]['ro_office'];?></h5>
-				<?php } ?>	
+			<?php if($test_report[0]['grade_user_flag']=="RAL" ){ ?>
+				<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $_SESSION['ro_office'];?></h5>
+			<?php }elseif(isset($test_report[0]['ro_office']) && isset($ral_lab_name) && $ral_lab_name=='RAL'){ ?>
+				<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $test_report[0]['ro_office'];?></h5>
+			<?php } ?>
 			
 			</td>
+
 			<?php if($showNablLogo=='yes'){ ?>
 				<td width="21%" align="center">
 					<img width="45" src="img/logos/nabl-logo.png">
@@ -76,13 +67,10 @@
 		</tr>
 	</table>
 	
-	<table width="100%" border="1">				
+	<table width="100%" border="1">
 		<tr><td align="right">Date: <?php echo $sample_final_date; ?></td></tr>
-		
 		<tr><td align="center"><h5>Test Report For <?php if(isset($test_report)) {echo $test_report[0]['commodity_name']."(".$test_report[0]['category_name'].")"; } ?></h5></td></tr>
-			
 	</table>
-	
 	
 	<table width="100%" border="1">
 		<tr>
@@ -112,7 +100,6 @@
 		<tr>
 			<td><span style="font-family: krutidev010; font-size:10px;">iSdst dh voLFkk</span> / State of Package</td>
 			<td><?php if(isset($test_report)) { echo $test_report[0]['par_condition_desc'];} ?></td>
-			
 		</tr>
 		<tr>
 			<td><span style="font-family: krutidev010; font-size:10px;">uewus dh çkIr ek=k</span> / Quantum of Sample Received</td>
@@ -122,23 +109,20 @@
 			<td><span style="font-family: krutidev010; font-size:10px;">ç;ksx'kkyk esa uewuk dh çkfIr dh frfFk</span> / Date of receipt of sample in the laboratory</td>
 			<td><?php if(isset($test_report)) { echo $test_report[0]['phy_accept_sample_date']; } ?></td>
 		</tr>
-										
-		<?php 	
-			if(isset($method_homo)){  ?>
-				<tr>
-					<td class="td1" ><span style="font-family: krutidev010; font-size:10px;">uewuk buls eqä Fkk vFkok ugha</span> / Whether the sample was free from</td>
-				
-					<td class="td1" colspan="3">
-						<?php foreach($method_homo as $method){
-								if($method['m_sample_obs_code']!=1 && $method['m_sample_obs_code']!=2){ ?>															
-								
-									<?php echo $method['m_sample_obs_desc']; ?> : <?php echo  $method['m_sample_obs_type_value']; ?><br />
-									
-								<?php }
-							} 
-						?>
-					</td>
-				</tr>
+		
+		<?php if(isset($method_homo)){ ?>
+			<tr>
+				<td class="td1" ><span style="font-family: krutidev010; font-size:10px;">uewuk buls eqä Fkk vFkok ugha</span> / Whether the sample was free from</td>
+			
+				<td class="td1" colspan="3">
+					<?php foreach($method_homo as $method){
+							if($method['m_sample_obs_code']!=1 && $method['m_sample_obs_code']!=2){ ?>
+								<?php echo $method['m_sample_obs_desc']; ?> : <?php echo  $method['m_sample_obs_type_value']; ?><br/>
+							<?php }
+						} 
+					?>
+				</td>
+			</tr>
 		<?php } ?>
 
 		<tr>
@@ -176,74 +160,86 @@
 		</tr>
 	</table>
 
-	<br pagebreak="true" />	
-	<?php
-	//this if part is for "Food Safety Samples" report
-	//02-06-2022 by Shreeya
-		$sampleTypeCode =  $getSampleType['sample_type_code'];
-		if($sampleTypeCode==8){  ?>
-                
-            <table width="100%" border="1">
-				<tr>
-					<td width="10%"><b>S.No. <span style="font-family: krutidev010; font-size:10px;">Ø-la</span></b></td>											
-					<td width="30%"><b><span style="font-family: krutidev010; font-size:10px;">iSjkehVj  dk  uke </span>/ Name Of Parameter</b></td>
-					
-					<td><b><span style="font-family: krutidev010; font-size:10px;">çkIr eku</span>/ Value Obtained (Mg/Kg)</b></td>
-					<td><b><span style="font-family: krutidev010; font-size:10px;">vf/kdre  lhek </span>/ Maximum value (Mg/Kg)</b></td>
-					<td><b><span style="font-family: krutidev010; font-size:10px;">viukbZ x;h i)fr</span>/ Method Followed</b></td>
-				</tr>
-				<?php if(isset($table_str)){ echo $table_str; }?>
-			</table>
-            
-    <?php }
+	<br pagebreak="true" />
 
-	//this else part is for regular report as before
-	//02-06-2022 by Shreeya
-	else { ?>
-
+	<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">xzkgd fooj.k</span> / Customer Details : </h5>
 	<table width="100%" border="1">
 		<tr>
-			<td rowspan="2" width="5%"><b>S.No. <span style="font-family: krutidev010; font-size:10px;">Ø-la</span></b></td>											
-			<td rowspan="2" width="20%"><b><span style="font-family: krutidev010; font-size:10px;">fof'k"V fo'ks"krk,</span>/Special Characteristics</b></td>
-			<td  colspan="<?php if(isset($commo_grade)){echo count($commo_grade); }?>" ><b><span style="font-family: krutidev010; font-size:10px;">fofunsZ'kks dh jsat</span>/Range of Specification</b></td>											
-			
-			<?php if($count_test_result>0){
-						
-						for($i=1;$i<=$count_test_result;$i++){ ?>
-						
-							<td  colspan="1"rowspan="2"><br><br><b>Chemist <?php echo $i; ?></b></td>												
-					<?php } ?>
-					
-					<td  colspan="1"rowspan="2"><br><br><b>Approved Result</b></td>
-					
-			<?php }else { ?>
-				
-						<td  rowspan="2"><br><br><b><span style="font-family: krutidev010; font-size:10px;">çkIr eku</span>/ Value Obtained</b></td>
-						
-			<?php 	} ?>
-			
-			<td  rowspan="2"><b><span style="font-family: krutidev010; font-size:10px;">viukbZ x;h i)fr</span>/ Method Followed</b></td>
+			<td>1. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk uke</span> / Customer's Name</td>
+			<td><?php if($customer_details != null) { echo $customer_details['customer_name']; } else { echo "N/A"; }  ?></td>
 		</tr>
-		
 		<tr>
-			<?php 	if(isset($commo_grade)){ 
-			
-						foreach($commo_grade as $row){ ?>
-						
-							<td align="center"><?php echo $row['grade_desc']; ?></td>
-							
-						<?php }
-					}
-			?>
+			<td>2. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk bZesy</span> / Customer's Email</td>
+			<td><?php if($customer_details != null) { echo $customer_details['customer_email_id']; } else { echo "N/A"; }  ?></td>
 		</tr>
-		
-		
-		<?php if(isset($table_str)){ echo $table_str; }?>
-		
-		
+		<tr>
+			<td>3. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk eksckby</span> / Customer's Mobile</td>
+			<td><?php if($customer_details != null) { echo $customer_details['customer_mobile_no']; } else { echo "N/A"; }  ?></td>
+		</tr>
+		<tr>
+			<td>4. <span style="font-family: krutidev010; font-size:10px;">xzkgd QSDl uacj</span> Customer's Fax</td>
+			<td><?php if($customer_details != null) { echo $customer_details['customer_fax_no']; } else { echo "N/A"; }  ?></td>
+		</tr>
+		<tr>
+			<td>5. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk irk</span> / Address</td>
+			<td><?php if($customer_details != null) { echo $customer_details['customer_fax_no']; } else { echo "N/A"; }  ?></td>
+		</tr>
 	</table>
+
+	<br pagebreak="true" />
+
+	<?php #this if part is for "Food Safety Samples" report 02-06-2022 by Shreeya
+		
+	$sampleTypeCode =  $getSampleType['sample_type_code'];
+	if($sampleTypeCode==8){  ?>
+			
+		<table width="100%" border="1">
+			<tr>
+				<td width="10%"><b>S.No. <span style="font-family: krutidev010; font-size:10px;">Ø-la</span></b></td>
+				<td width="30%"><b><span style="font-family: krutidev010; font-size:10px;">iSjkehVj  dk  uke </span>/ Name Of Parameter</b></td>
+				<td><b><span style="font-family: krutidev010; font-size:10px;">çkIr eku</span>/ Value Obtained (Mg/Kg)</b></td>
+				<td><b><span style="font-family: krutidev010; font-size:10px;">vf/kdre  lhek </span>/ Maximum value (Mg/Kg)</b></td>
+				<td><b><span style="font-family: krutidev010; font-size:10px;">viukbZ x;h i)fr</span>/ Method Followed</b></td>
+			</tr>
+			<?php if(isset($table_str)){ echo $table_str; }?>
+		</table>
 	
-	<?php 	} ?>
+	<?php } else { ?>
+
+		<table width="100%" border="1">
+			<tr>
+				<td rowspan="2" width="5%"><b>S.No. <span style="font-family: krutidev010; font-size:10px;">Ø-la</span></b></td>
+				<td rowspan="2" width="20%"><b><span style="font-family: krutidev010; font-size:10px;">fof'k"V fo'ks"krk,</span>/Special Characteristics</b></td>
+				<td  colspan="<?php if(isset($commo_grade)){echo count($commo_grade); }?>" ><b><span style="font-family: krutidev010; font-size:10px;">fofunsZ'kks dh jsat</span>/Range of Specification</b></td>
+				
+				<?php if($count_test_result>0){
+
+						for($i=1;$i<=$count_test_result;$i++){ ?>
+							<td  colspan="1"rowspan="2"><br><br><b>Chemist <?php echo $i; ?></b></td>
+						<?php } ?>
+						
+						<td colspan="1"rowspan="2"><br><br><b>Approved Result</b></td>
+		
+				<?php }else { ?>
+						<td  rowspan="2"><br><br><b><span style="font-family: krutidev010; font-size:10px;">çkIr eku</span>/ Value Obtained</b></td>
+				<?php 	} ?>
+				
+				<td  rowspan="2"><b><span style="font-family: krutidev010; font-size:10px;">viukbZ x;h i)fr</span>/ Method Followed</b></td>
+			</tr>
+			
+			<tr>
+				<?php if(isset($commo_grade)){ 
+							foreach($commo_grade as $row){ ?>
+								<td align="center"><?php echo $row['grade_desc']; ?></td>
+				<?php } } ?>
+			</tr>
+
+			<?php if(isset($table_str)){ echo $table_str; }?>
+			
+		</table>
+
+	<?php } ?>
+
 	<table border="1" width="100%">
 	  <tr>
 		<td><b>Grade</b></td>

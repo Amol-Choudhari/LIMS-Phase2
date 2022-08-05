@@ -1391,8 +1391,20 @@ class FinalGradingController extends AppController
 	//to generate report pdf for preview and store on server
 	public function sampleTestReportCode($sample_code,$sample_test_mc){
 
+		$conn = ConnectionManager::get('default');
+
 		$this->Session->write('sample_test_code',$sample_code);
 		$this->Session->write('sample_test_mc',$sample_test_mc);
+
+		$sd = $conn->execute("SELECT org_sample_code FROM workflow WHERE stage_smpl_cd = '$sample_code'")->fetch('assoc');
+		$code2 = $sd['org_sample_code'];
+
+		$grade = $conn->execute("SELECT gd.grade_desc
+								 FROM sample_inward AS si
+								 INNER JOIN m_grade_desc AS gd ON gd.grade_code = si.grade
+								 WHERE si.org_sample_code = '$code2'")->fetchAll('assoc'); 
+
+		$this->Session->write('gradeDescFinalReport',$grade[0]['grade_desc']);
 		$this->redirect(array('controller'=>'FinalGrading','action'=>'sample_test_report'));
 	}
 
@@ -1411,22 +1423,24 @@ class FinalGradingController extends AppController
 		$this->loadModel('CommGrade');
 		$this->loadModel('MSampleAllocate');
 		$this->loadModel('Workflow');
-		$this->loadModel('CommGrade');						
+		$this->loadModel('CommGrade');
 		$conn = ConnectionManager::get('default');
 
 		$commodity_code=$this->Session->read('sample_test_mc');
 		$sample_code1=$this->Session->read('sample_test_code');
 	
 		$str1="SELECT org_sample_code FROM workflow WHERE display='Y' ";
-
+		
 		if ($sample_code1!='') {
 
 			$str1.=" AND stage_smpl_cd='$sample_code1' GROUP BY org_sample_code"; /* remove trim fun on 01/05/2022 */
+
 		}
 
 		$sample_code2 = $conn->execute($str1);
+		//pr($str1); exit;
 		$sample_code2 = $sample_code2->fetchAll('assoc');
-
+		
 		$Sample_code = $sample_code2[0]['org_sample_code'];
 
 		$str2="SELECT stage_smpl_cd FROM workflow WHERE display='Y' ";
@@ -1445,11 +1459,11 @@ class FinalGradingController extends AppController
 
 		$this->loadModel('MSampleRegObs');
 
-			$query2 = "SELECT msr.m_sample_reg_obs_code, mso.m_sample_obs_code, mso.m_sample_obs_desc, mst.m_sample_obs_type_code,mst.m_sample_obs_type_value
-					   FROM m_sample_reg_obs AS msr
-					   INNER JOIN m_sample_obs_type AS mst ON mst.m_sample_obs_type_code=msr.m_sample_obs_type_code
-					   INNER JOIN m_sample_obs AS mso ON mso.m_sample_obs_code=mst.m_sample_obs_code AND stage_sample_code='$Sample_code_as'
-					   GROUP BY msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value";
+		$query2 = "SELECT msr.m_sample_reg_obs_code, mso.m_sample_obs_code, mso.m_sample_obs_desc, mst.m_sample_obs_type_code,mst.m_sample_obs_type_value
+					FROM m_sample_reg_obs AS msr
+					INNER JOIN m_sample_obs_type AS mst ON mst.m_sample_obs_type_code=msr.m_sample_obs_type_code
+					INNER JOIN m_sample_obs AS mso ON mso.m_sample_obs_code=mst.m_sample_obs_code AND stage_sample_code='$Sample_code_as'
+					GROUP BY msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value";
 
 		$method_homo = $conn->execute($query2);
 		$method_homo = $method_homo->fetchAll('assoc');
@@ -1486,95 +1500,93 @@ class FinalGradingController extends AppController
 
 		$i=0;
 
-			foreach ($test as $each) {
+		foreach ($test as $each) {
 
-				$test_string[$i]=$each['test_code'];
-				$i++;
+			$test_string[$i]=$each['test_code'];
+			$i++;
+		}
+
+		foreach($test_string as $row1) {
+
+			$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
+										FROM comm_grade AS cg
+										INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
+										WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
+
+			$commo_grade = $query->fetchAll('assoc');
+			$str="";
+
+			$this->set('commo_grade',$commo_grade);
+		}
+
+		$j=1;
+
+		foreach ($test_string as $row) {
+
+			$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
+									 FROM comm_grade AS cg
+									 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+									 INNER JOIN m_test AS t ON t.test_code = cg.test_code
+									 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+									 ORDER BY cg.grade_code ASC");
+
+			$data = $query->fetchAll('assoc');
+
+
+			$query = $conn->execute("SELECT t.test_name,tm.method_name
+									 FROM comm_grade AS cg
+									 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+									 INNER JOIN m_test AS t ON t.test_code = cg.test_code
+									 INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
+									 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+									 ORDER BY t.test_name ASC");
+
+			$data1 = $query->fetchAll('assoc');
+
+			if (!empty($data1)) {
+
+				$data_method_name = $data1[0]['method_name'];
+				$data_test_name = $data1[0]['test_name'];
+
+			} else {
+
+				$data_method_name = '';
+				$data_test_name = '';
 			}
 
-			foreach($test_string as $row1) {
+			$qry1 = "SELECT count(chemist_code)
+					 FROM final_test_result AS ftr
+					 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code 
+					 AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
+					 GROUP BY chemist_code ";
 
-				$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
-										 FROM comm_grade AS cg
-										 INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
+			$res2 = $conn->execute($qry1);
+			$res2 = $res2->fetchAll('assoc');
 
-				$commo_grade = $query->fetchAll('assoc');
-				$str="";
-
-				$this->set('commo_grade',$commo_grade );
+			//get sample type code from sample sample inward table, to check if sample type is "Challenged"
+			//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
+			//applied on 27-10-2011 by Amol
+			$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
+			$sampleTypeCode = $getSampleType['sample_type_code'];
+			if($sampleTypeCode==4){
+				$res2=array();//this will create report for selected final results, if this res set to blank
 			}
 
-			$j=1;
+			$count_chemist = '';
+			$all_chemist_code = array();
 
-			foreach ($test_string as $row) {
+			//get al allocated chemist if sample is for duplicate analysis
+			if (isset($res2[0]['count'])>0) {
 
-				$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
-										 FROM comm_grade AS cg
-										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										 ORDER BY cg.grade_code ASC");
+				$all_chemist_code = $conn->execute("SELECT ftr.chemist_code
+													FROM m_sample_allocate AS ftr
+													INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code 
+													AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
 
+				$all_chemist_code= $all_chemist_code->fetchAll('assoc');
 
-							$data = $query->fetchAll('assoc');
-
-
-				$query = $conn->execute("SELECT t.test_name,tm.method_name
-										 FROM comm_grade AS cg
-										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										 INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										 ORDER BY t.test_name ASC");
-
-							$data1 = $query->fetchAll('assoc');
-
-				if (!empty($data1)) {
-
-					$data_method_name = $data1[0]['method_name'];
-					$data_test_name = $data1[0]['test_name'];
-
-				} else {
-
-					$data_method_name = '';
-					$data_test_name = '';
-				}
-
-
-				$qry1 = "SELECT count(chemist_code)
-						 FROM final_test_result AS ftr
-						 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
-						 GROUP BY chemist_code ";
-
-				$res2	= $conn->execute($qry1);
-				$res2 = $res2->fetchAll('assoc');
-
-				//get sample type code from sample sample inward table, to check if sample type is "Challenged"
-				//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
-				//applied on 27-10-2011 by Amol
-				$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
-				$sampleTypeCode = $getSampleType['sample_type_code'];
-				if($sampleTypeCode==4){
-					$res2=array();//this will create report for selected final results, if this res set to blank
-				}
-
-				$count_chemist = '';
-				$all_chemist_code = array();
-
-
-			//get al  allocated chemist if sample is for duplicate analysis
-				if (isset($res2[0]['count'])>0) {
-
-					 $all_chemist_code = $conn->execute("SELECT ftr.chemist_code
-					 									 FROM m_sample_allocate AS ftr
-														 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
-
-				   $all_chemist_code= $all_chemist_code->fetchAll('assoc');
-
-					$count_chemist = count($all_chemist_code);
-
-				}
+				$count_chemist = count($all_chemist_code);
+			}
 
 			//to get approved final result by Inward officer test wise
 			$test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
@@ -1598,7 +1610,6 @@ class FinalGradingController extends AppController
 					$result[$i] = $get_results['result'];
 
 					$i=$i+1;
-
 				}
 
 
@@ -1609,11 +1620,10 @@ class FinalGradingController extends AppController
 				if (count($test_result)>0) {
 
 					foreach ($test_result as $key=>$val) {
-
 						$result = $val;
 					}
-				} else {
 
+				} else {
 					$result="";
 				}
 			}
@@ -1625,6 +1635,7 @@ class FinalGradingController extends AppController
 				foreach ($test_result as $key=>$val) {
 					$result_D= $val;
 				}
+
 			} else {
 				$result_D="";
 			}
@@ -1633,7 +1644,6 @@ class FinalGradingController extends AppController
 			$this->set('comm_date',$commencement_date[0]['commencement_date']);
 
 			if (!empty($count_chemist)) {
-
 				$count_chemist1 =  $count_chemist;
 			} else {
 				$count_chemist1 = '';
@@ -1658,13 +1668,11 @@ class FinalGradingController extends AppController
 
 						if (trim($data4['min_max'])=='Min') {
 							$minMaxValue = "<br>(".$data4['min_max'].")";
-						}
-						elseif (trim($data4['min_max'])=='Max') {
+						} elseif (trim($data4['min_max'])=='Max') {
 							$minMaxValue = "<br>(".$data4['min_max'].")";
 						}
 					}
 				}
-
 			}
 
 			$str.="<tr><td>".$j."</td><td>".$data_test_name.$minMaxValue."</td>";
@@ -1701,7 +1709,6 @@ class FinalGradingController extends AppController
 							} elseif (trim($data4['min_max'])=='-1') {
 
 								$str.="<td>".$data4['grade_value']."</td>";
-
 							}
 						}
 					}
@@ -1709,9 +1716,7 @@ class FinalGradingController extends AppController
 					if ($grade_code_match == 'no') {
 						$str.="<td>---</td>";
 					}
-
 				}
-
 			}
 			//for duplicate analysis chemist wise results
 			if ($count_chemist1>0) {
@@ -1731,8 +1736,9 @@ class FinalGradingController extends AppController
 					$max_val = $data[0]['max_grade_value'];
 					$str.="<td>".$max_val."</td>";
 				}
-			    // end 01/06/2022			   
+			    // end 01/06/2022
 			}
+
 			$this->set('getSampleType',$getSampleType );
 
 			$str.="<td>".$data_method_name."</td></tr>";
@@ -1744,7 +1750,7 @@ class FinalGradingController extends AppController
 		//new queries and conditions added on 03-02-2022 by Amol
 		//to print NABL logo and ULR no. on final test report
 				
-		$showNablLogo = ''; $urlNo='';		
+		$showNablLogo = ''; $urlNo='';
 		//get NABL commosity and test details if exist
 		$this->loadModel('LimsLabNablCommTestDetails');
 		$NablTests = $this->LimsLabNablCommTestDetails->find('all',array('fields'=>'tests','conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office'],'commodity IS'=>$commodity_code),'order'=>'id desc'))->first();		
@@ -1787,8 +1793,8 @@ class FinalGradingController extends AppController
 
 				$urlNo = $certNo.'/'.$curYear.'/'.$labNo.'/'.$NoOfReport.'/'.$F_or_P;
 			}
-
 		}
+		
 		$this->set(compact('showNablLogo','urlNo'));
 
 
@@ -1809,7 +1815,7 @@ class FinalGradingController extends AppController
 								INNER JOIN m_grade_desc AS gd ON gd.grade_code = si.grade
 								WHERE si.org_sample_code = '$Sample_code'");
 
-		$test_report = $query->fetchAll('assoc');
+		$test_report = $query->fetchAll('assoc'); 
 
 		if($test_report){
 
@@ -1826,10 +1832,20 @@ class FinalGradingController extends AppController
 			$sample_final_date = $this->Workflow->find('all',array('fields'=>'tran_date','conditions'=>array('stage_smpl_flag'=>'FG','org_sample_code IS'=>$Sample_code)))->first();
 			$sample_final_date['tran_date'] = date('d/m/Y');//taking current date bcoz creating pdf before grading for preview.
 
-
+			//Customer Details on 05-08-2022
+			$this->loadModel('LimsCustomerDetails');
+			$customerDetails = $this->LimsCustomerDetails->find('all')->where(['org_sample_code IS' => $Sample_code])->first();
+			if (!empty($customerDetails)) {
+				$customer_details = $customerDetails;
+			} else {
+				$customer_details = null;
+			}
+			
 			$this->set('sample_final_date',$sample_final_date['tran_date']);
 			$this->set('sample_forwarded_office',$sample_forwarded_office);
 			$this->set('test_report',$test_report);
+			$this->set('customer_details',$customer_details);
+
 			// Call to function for generate pdf file,
 			// change generate pdf file name,
 			$current_date = date('d-m-Y');
@@ -1849,10 +1865,8 @@ class FinalGradingController extends AppController
 			}else{//on preview link click
 				$this->EsigncallTcpdf($this->render(),'I',$test_report_name);//to preview
 			}
-
-
 		}
-
+	
 	}
 
 }
