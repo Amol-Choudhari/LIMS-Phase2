@@ -1480,34 +1480,108 @@ class FinalGradingController extends AppController
 			$ral_lab_name='all';
 		}
 
+
+
+
 		$test = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
 
 		$test_string=array();
+		$test_string_ext=array();
 
 		$i=0;
 
-			foreach ($test as $each) {
+		foreach ($test as $each) {
 
-				$test_string[$i]=$each['test_code'];
-				$i++;
+			$test_string[$i]=$each['test_code'];
+			$i++;
+		}
+
+		//new queries and conditions added on 03-02-2022 by Amol
+		//to print NABL logo and ULR no. on final test report
+				
+		$showNablLogo = ''; $urlNo='';		
+		//get NABL commosity and test details if exist
+		$this->loadModel('LimsLabNablCommTestDetails');
+		$NablTests = $this->LimsLabNablCommTestDetails->find('all',array('fields'=>'tests','conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office'],'commodity IS'=>$commodity_code),'order'=>'id desc'))->first();		
+	
+		if(!empty($NablTests)){
+			//get NABL certifcate details
+			$this->loadModel('LimsLabNablDetails');
+			$NablDetails = $this->LimsLabNablDetails->find('all',array('fields'=>array('accreditation_cert_no','valid_upto_date'), 'conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office']),'order'=>'id desc'))->first();
+			//check validity
+			$validUpto = strtotime($NablDetails['valid_upto_date']);
+			$curDate = strtotime(date('d-m-Y'));
+			
+			if($validUpto > $curDate){
+				
+				$showNablLogo = 'yes';
+				$certNo = $NablDetails['accreditation_cert_no'];
+				$curYear = date('y');
+				//Custom array for Lab no. 
+				$labNoArr = array('55'=>'0','56'=>'1','45'=>'2','46'=>'3','47'=>'4','48'=>'5','49'=>'6','50'=>'7','51'=>'8','52'=>'9','53'=>'10','54'=>'11');
+				$labNo = $labNoArr[$_SESSION['posted_ro_office']];
+				
+				//get total report for respective lab for current year
+				$newDate = '01-01-'.date('Y');
+				$getReportsCounts = $this->Workflow->find('all',array('fields'=>'id','conditions'=>array('src_loc_id'=>$_SESSION['posted_ro_office'],'stage_smpl_flag'=>'FG','date(tran_date) >=' =>$newDate,)))->toArray();
+				$NoOfReport = '';
+				for($i=0;$i<(8-(strlen(count($getReportsCounts))));$i++){
+					$NoOfReport .= '0'; 
+				}
+				if(count($getReportsCounts)==0){
+					$NoOfReport .= '1';
+				}else{
+					$NoOfReport .= count($getReportsCounts)+1;
+				}
+				
+				
+				$NablTests = explode(',',$NablTests['tests']);
+				//compare tests arrays
+				$result=array_diff($test_string,$NablTests);
+				if(!empty($result)){$F_or_P = 'P';}else{$F_or_P = 'F';}
+
+			//	$urlNo = 'ULR-'.$certNo.'/'.$curYear.'/'.$labNo.'/'.$NoOfReport.'/'.$F_or_P;
+				$urlNo = 'ULR-'.$certNo.$curYear.$labNo.$NoOfReport.$F_or_P;
+
+				//to get tests with accreditation
+				$accreditatedtest = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'test_code IN'=>$NablTests, 'display' => 'Y')))->toArray();
+				$test_string=array();
+				$i=0;
+				foreach ($accreditatedtest as $each) {
+
+					$test_string[$i]=$each['test_code'];
+					$i++;
+				}
+
+				//to get tests without accreditation
+				$nonAccreditatedtest = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'test_code NOT IN'=>$NablTests, 'display' => 'Y')))->toArray();
+				$i=0;
+				foreach ($nonAccreditatedtest as $each) {
+
+					$test_string_ext[$i]=$each['test_code'];
+					$i++;
+				}
 			}
 
-			foreach($test_string as $row1) {
+		}
+		$this->set(compact('showNablLogo','urlNo'));
 
-				$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
-										 FROM comm_grade AS cg
-										 INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
+		foreach($test_string as $row1) {
 
-				$commo_grade = $query->fetchAll('assoc');
-				$str="";
+			$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
+										FROM comm_grade AS cg
+										INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
+										WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
 
-				$this->set('commo_grade',$commo_grade );
-			}
+			$commo_grade = $query->fetchAll('assoc');
+			$str="";
 
-			$j=1;
+			$this->set('commo_grade',$commo_grade );
+		}
 
-			foreach ($test_string as $row) {
+		$j=1;
+
+		foreach ($test_string as $row) {
 
 				$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
 										 FROM comm_grade AS cg
@@ -1741,56 +1815,268 @@ class FinalGradingController extends AppController
 
 		$this->set('table_str',$str );
 		
-		//new queries and conditions added on 03-02-2022 by Amol
-		//to print NABL logo and ULR no. on final test report
-				
-		$showNablLogo = ''; $urlNo='';		
-		//get NABL commosity and test details if exist
-		$this->loadModel('LimsLabNablCommTestDetails');
-		$NablTests = $this->LimsLabNablCommTestDetails->find('all',array('fields'=>'tests','conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office'],'commodity IS'=>$commodity_code),'order'=>'id desc'))->first();		
-	
-		if(!empty($NablTests)){
-			//get NABL certifcate details
-			$this->loadModel('LimsLabNablDetails');
-			$NablDetails = $this->LimsLabNablDetails->find('all',array('fields'=>array('accreditation_cert_no','valid_upto_date'), 'conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office']),'order'=>'id desc'))->first();
-			//check validity
-			$validUpto = strtotime($NablDetails['valid_upto_date']);
-			$curDate = strtotime(date('d-m-Y'));
-			
-			if($validUpto > $curDate){
-				
-				$showNablLogo = 'yes';
-				$certNo = $NablDetails['accreditation_cert_no'];
-				$curYear = date('y');
-				//Custom array for Lab no. 
-				$labNoArr = array('55'=>'0','56'=>'1','45'=>'2','46'=>'3','47'=>'4','48'=>'5','49'=>'6','50'=>'7','51'=>'8','52'=>'9','53'=>'10','54'=>'11');
-				$labNo = $labNoArr[$_SESSION['posted_ro_office']];
-				
-				//get total report for respective lab for current year
-				$newDate = '01-01-'.date('Y');
-				$getReportsCounts = $this->Workflow->find('all',array('fields'=>'id','conditions'=>array('src_loc_id'=>$_SESSION['posted_ro_office'],'stage_smpl_flag'=>'FG','date(tran_date) >=' =>$newDate,)))->toArray();
-				$NoOfReport = '';
-				for($i=0;$i<(8-(strlen(count($getReportsCounts))));$i++){
-					$NoOfReport .= '0'; 
-				}
-				if(count($getReportsCounts)==0){
-					$NoOfReport .= '1';
-				}else{
-					$NoOfReport .= count($getReportsCounts)+1;
-				}
-				
-				
-				$NablTests = explode(',',$NablTests['tests']);
-				//compare tests arrays
-				$result=array_diff($test_string,$NablTests);
-				if(!empty($result)){$F_or_P = 'P';}else{$F_or_P = 'F';}
+		
+		/* 
+		Starts here
+		to bifurcate accredited and non accredited test parameters on report
+		The conditional non accredited tests logic starts here for NABL non accredited test results.
+		The code is repitition of the logic from above code.
+		on 09-08-2022 by Amol
+		*/
+		foreach($test_string_ext as $row1) {
 
-				$urlNo = $certNo.'/'.$curYear.'/'.$labNo.'/'.$NoOfReport.'/'.$F_or_P;
+			$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
+										FROM comm_grade AS cg
+										INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
+										WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
+
+			$commo_grade = $query->fetchAll('assoc');
+			$str2="";
+
+			$this->set('commo_grade',$commo_grade );
+		}
+
+		$j=1;
+
+		foreach ($test_string_ext as $row) {
+
+				$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
+										 FROM comm_grade AS cg
+										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
+										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+										 ORDER BY cg.grade_code ASC");
+
+
+							$data = $query->fetchAll('assoc');
+
+
+				$query = $conn->execute("SELECT t.test_name,tm.method_name
+										 FROM comm_grade AS cg
+										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
+										 INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
+										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+										 ORDER BY t.test_name ASC");
+
+							$data1 = $query->fetchAll('assoc');
+
+				if (!empty($data1)) {
+
+					$data_method_name = $data1[0]['method_name'];
+					$data_test_name = $data1[0]['test_name'];
+
+				} else {
+
+					$data_method_name = '';
+					$data_test_name = '';
+				}
+
+
+				$qry1 = "SELECT count(chemist_code)
+						 FROM final_test_result AS ftr
+						 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
+						 GROUP BY chemist_code ";
+
+				$res2	= $conn->execute($qry1);
+				$res2 = $res2->fetchAll('assoc');
+
+				//get sample type code from sample sample inward table, to check if sample type is "Challenged"
+				//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
+				//applied on 27-10-2011 by Amol
+				$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
+				$sampleTypeCode = $getSampleType['sample_type_code'];
+				if($sampleTypeCode==4){
+					$res2=array();//this will create report for selected final results, if this res set to blank
+				}
+
+				$count_chemist = '';
+				$all_chemist_code = array();
+
+
+			//get al  allocated chemist if sample is for duplicate analysis
+				if (isset($res2[0]['count'])>0) {
+
+					 $all_chemist_code = $conn->execute("SELECT ftr.chemist_code
+					 									 FROM m_sample_allocate AS ftr
+														 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
+
+				   $all_chemist_code= $all_chemist_code->fetchAll('assoc');
+
+					$count_chemist = count($all_chemist_code);
+
+				}
+
+			//to get approved final result by Inward officer test wise
+			$test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
+
+			//if sample is for duplicate analysis
+			//so get result chmeist wise
+			$result_D = '';
+			$result = array();
+
+			if (isset($res2[0]['count'])>0) {
+
+				$i=0;
+
+				foreach ($all_chemist_code as $each) {
+
+					$chemist_code = $each['chemist_code'];
+
+					//get result for each chemist_code
+					$get_results = $this->ActualTestData->find('all',array('fields'=>array('result'),'conditions'=>array('org_sample_code IS' => $Sample_code,'chemist_code IS'=>$chemist_code,'test_code IS'=>$row,'display'=>'Y')))->first();
+
+					$result[$i] = $get_results['result'];
+
+					$i=$i+1;
+
+				}
+
+
+				//else get result from final test rsult
+				//for single anaylsis this is fianl approved result array
+			} else {
+
+				if (count($test_result)>0) {
+
+					foreach ($test_result as $key=>$val) {
+
+						$result = $val;
+					}
+				} else {
+
+					$result="";
+				}
 			}
 
-		}
-		$this->set(compact('showNablLogo','urlNo'));
 
+			//for duplicate anaylsis this is final approved result array
+			if (count($test_result)>0) {
+
+				foreach ($test_result as $key=>$val) {
+					$result_D= $val;
+				}
+			} else {
+				$result_D="";
+			}
+
+			$commencement_date= $this->MSampleAllocate->find('all',array('order' => array('commencement_date' => 'asc'),'fields' => array('commencement_date'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
+			$this->set('comm_date',$commencement_date[0]['commencement_date']);
+
+			if (!empty($count_chemist)) {
+
+				$count_chemist1 =  $count_chemist;
+			} else {
+				$count_chemist1 = '';
+			}
+
+			$this->set('count_test_result',$count_chemist1);
+
+
+			$minMaxValue = '';
+
+			foreach ($commo_grade as $key=>$val) {
+
+				$key = $val['grade_code'];
+
+				foreach ($data as $data4) {
+
+					$data_grade_code = $data4['grade_code'];
+
+					if ($data_grade_code == $key) {
+
+						$grade_code_match = 'yes';
+
+						if (trim($data4['min_max'])=='Min') {
+							$minMaxValue = "<br>(".$data4['min_max'].")";
+						}
+						elseif (trim($data4['min_max'])=='Max') {
+							$minMaxValue = "<br>(".$data4['min_max'].")";
+						}
+					}
+				}
+
+			}
+
+			$str2.="<tr><td>".$j."</td><td>".$data_test_name.$minMaxValue."</td>";
+			$sampleTypeCode = $getSampleType['sample_type_code'];/*  check the count of max value added on 01/06/2022 */
+			if($sampleTypeCode!=8){/* if sample type food safety parameter added on 01/06/2022  by shreeya */
+
+				// Draw tested test reading values,
+				foreach ($commo_grade as $key=>$val) {
+
+					$key = $val['grade_code'];
+
+					$grade_code_match = 'no';
+
+					foreach ($data as $data4) {
+
+						$data_grade_code = $data4['grade_code'];
+
+						if ($data_grade_code == $key) {
+
+							$grade_code_match = 'yes';
+
+							if (trim($data4['min_max'])=='Range') {
+
+								$str2.="<td>".$data4['grade_value']."-".$data4['max_grade_value']."</td>";
+
+							} elseif (trim($data4['min_max'])=='Min') {
+
+								$str2.="<td>".$data4['grade_value']."</td>";
+
+							} elseif (trim($data4['min_max'])=='Max') {
+
+								$str2.="<td>".$data4['max_grade_value']."</td>";
+
+							} elseif (trim($data4['min_max'])=='-1') {
+
+								$str2.="<td>".$data4['grade_value']."</td>";
+
+							}
+						}
+					}
+
+					if ($grade_code_match == 'no') {
+						$str2.="<td>---</td>";
+					}
+
+				}
+
+			}
+			//for duplicate analysis chemist wise results
+			if ($count_chemist1>0) {
+
+				for ($g=0;$g<$count_chemist;$g++) {
+					$str2.="<td align='center'>".$result[$g]."</td>";
+				}
+
+				//for final result column
+				$str2.="<td align='center'>".$result_D."</td>";
+
+			//for single analysis final results
+			} else {
+				// start for max val according to food sefety parameter added on 01/06/2022 by shreeya
+				$str2.="<td>".$result."</td>";
+				if($sampleTypeCode==8){
+					$max_val = $data[0]['max_grade_value'];
+					$str2.="<td>".$max_val."</td>";
+				}
+			    // end 01/06/2022			   
+			}
+			$this->set('getSampleType',$getSampleType );
+
+			$str2.="<td>".$data_method_name."</td></tr>";
+			$j++;
+		}
+
+		$this->set('table_str2',$str2 );
+		/* 
+		Ends here
+		The conditional non accredited tests logic ends here for NABL non accredited test results.
+		The code is repitition of the logic from above code.
+		on 09-08-2022 by Amol
+		*/
 
 		$query = $conn->execute("SELECT si.*,mc.commodity_name, mcc.category_name, st.sample_type_desc, ct.container_desc, pc.par_condition_desc, uw.unit_weight, rf.ro_office, sa.sample_code, ur.user_flag, gd.grade_desc, u1.f_name, u1.l_name, rf2.ro_office
 								FROM sample_inward AS si

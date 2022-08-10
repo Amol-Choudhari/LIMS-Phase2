@@ -177,6 +177,7 @@
 	</table>
 
 	<br pagebreak="true" />	
+	
 	<?php
 	//this if part is for "Food Safety Samples" report
 	//02-06-2022 by Shreeya
@@ -192,7 +193,20 @@
 					<td><b><span style="font-family: krutidev010; font-size:10px;">vf/kdre  lhek </span>/ Maximum value (Mg/Kg)</b></td>
 					<td><b><span style="font-family: krutidev010; font-size:10px;">viukbZ x;h i)fr</span>/ Method Followed</b></td>
 				</tr>
+				
+				<!-- below condition/code applied on 09-08-2022 by Amol-->
+				<?php if ($showNablLogo=='yes') { ?>
+					<tr><td></td><td><h5><span style="font-size:10px;">NABL Accredited : </span></h5></td></tr>
+				<?php } ?>				
 				<?php if(isset($table_str)){ echo $table_str; }?>
+
+				<!-- below condition/code applied on 09-08-2022 by Amol-->
+				<?php if ($showNablLogo=='yes') { ?>
+					<tr><td></td></tr>
+					<tr><td></td><td><h5><span style="font-size:10px;">NABL Non Accredited : </span></h5></td></tr>
+					<?php if(isset($table_str2)){ echo $table_str2; }?>
+				<?php } ?>			
+				
 			</table>
             
     <?php }
@@ -204,7 +218,7 @@
 	<table width="100%" border="1">
 		<tr>
 			<td rowspan="2" width="5%"><b>S.No. <span style="font-family: krutidev010; font-size:10px;">Ø-la</span></b></td>											
-			<td rowspan="2" width="20%"><b><span style="font-family: krutidev010; font-size:10px;">fof'k"V fo'ks"krk,</span>/Special Characteristics</b></td>
+			<td rowspan="2" width="23%"><b><span style="font-family: krutidev010; font-size:10px;">fof'k"V fo'ks"krk,</span>/Special Characteristics</b></td>
 			<td  colspan="<?php if(isset($commo_grade)){echo count($commo_grade); }?>" ><b><span style="font-family: krutidev010; font-size:10px;">fofunsZ'kks dh jsat</span>/Range of Specification</b></td>											
 			
 			<?php if($count_test_result>0){
@@ -237,8 +251,19 @@
 			?>
 		</tr>
 		
-		
+		<!-- below condition/code applied on 09-08-2022 by Amol-->
+		<?php if ($showNablLogo=='yes') { ?>
+			<tr><td></td><td><h5><span style="font-size:10px;">NABL Accredited : </span></h5></td></tr>
+		<?php } ?>		
 		<?php if(isset($table_str)){ echo $table_str; }?>
+
+		<!-- below condition/code applied on 09-08-2022 by Amol-->
+		<?php if ($showNablLogo=='yes') { ?>
+			<tr><td></td></tr>
+			<tr><td></td><td><h5><span style="font-size:10px;">NABL Non Accredited : </span></h5></td></tr>
+			<?php if(isset($table_str2)){ echo $table_str2; }?>
+		<?php } ?>	
+		
 		
 		
 	</table>
