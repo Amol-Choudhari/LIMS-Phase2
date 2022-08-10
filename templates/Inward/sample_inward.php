@@ -329,5 +329,6 @@
 <input type="hidden" id="org_sample_code" value="<?php echo $org_sample_code; ?> ">
 <input type="hidden" id="sample_status" value="<?php echo trim($sample_inward_data['status_flag']); ?>">
 <input type="hidden" id="receivedfrom" value="<?php echo $receivedfrom; ?>">
+<input type="hidden" id="user_flag_new" value="<?php echo $_SESSION['user_flag']; ?>">
 <?php echo $this->Html->Script('inward/sample_inward'); ?>
 <?php echo $this->Html->Script('sample_reg_form'); ?>

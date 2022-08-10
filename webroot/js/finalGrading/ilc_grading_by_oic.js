@@ -45,6 +45,7 @@ $(document).ready(function(){
 		e.preventDefault();
 		$("#array").val(' ');
 		$("#array").val(arr);
+		//alert('he');
 		var category_code=$("#category_code").val();
 		var commodity_code=$("#commodity_code").val();
 		var sample_code=$("#sample_code").val();

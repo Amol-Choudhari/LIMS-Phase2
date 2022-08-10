@@ -30,29 +30,40 @@
 				<table class="table table-bordered">
 					<thead>
 						<tr>
-						<th scope="col">Sr.No</th>
-						<th scope="col">Test</th>
-						<th scope="col">Z-score</th>
-						<th scope="col">Put Z-score Outlier Value</th>
+							<th scope="col">Sr.No</th>
+							<th scope="col">Test</th>
+							<?php
+							foreach($result as $eachoff){ ?>
+								<th scope="col"><?php echo $eachoff['ro_office']; ?></th>
+							<?php
+							}
+							
+							?>
+
 						</tr>
 					</thead>
 					<tbody>
 					<?php		
 
-						if (isset($result3)) {	
+						if (isset($testarr)) {	
 
 							$j=1;		
 							$i=0;	
-							foreach ($result3 as $res) { ?>
+							foreach ($testarr as $eachtest) { ?>
 							
 							<tr>
 								<td><?php echo $j; ?></td>   
-								<td><?php echo $res[0]['test_name']; ?> </td>	
-								<td>2</td> 
-								<td><input type="text"  class="form-control" id="zscore" name="zscore" value="2"></td> 
-							</tr>
+								<td><?php echo $testnames[$i]; ?> </td>
+								<?php
+									$l=0;
+									foreach($smplList as $eachoff){
+									?>
+									<td><?php echo $zscorearr[$i][$l]; ?> </td>
+								<?php $l++;	} ?>
 
-						<?php $j++; $i++; }}?>
+							</tr>
+						<?php $i++; $j++; } } ?>
+							
 					</tbody>
 				</table>		
 			</div>

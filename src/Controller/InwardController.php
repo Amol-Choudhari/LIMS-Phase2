@@ -131,6 +131,7 @@ class InwardController extends AppController{
 		$query_result = $query ->fetchAll('assoc');
 
 
+		
 		//create loop wise array to display cust users list
 		$users=array();
 

@@ -1,89 +1,127 @@
 $(document).ready(function(){
 
-	
-	$("#frd_to_oic").click(function (e) {
-		
-	   e.preventDefault();
-	   var get_zscore=$("#get_zscore").val();
-	   var remark=$("#remark").val();
-	  
 
-	   if(get_zscore==''){
-		var msg="Please calculate zscore!!";
-		$.alert(msg);
-		return;
+	$("#stage_sample_code").change();
+
+	// To check sub grading value is checked or not
+	$('#subgradelist').hide();
+	$("#first").hide();
+	var duplicate_flag="";
+
+
+	$("#allGradeListChecked").change(function() {
+
+		if($(this).prop('checked') == true) {
+
+			$('#subgradelist').show()
+			$('#grade_code').prop('disabled', true);
+			$("#grade_code").val('');
+		} else {
+			$('#subgradelist').hide();
+			$("#fullGradelist").val('');
+			$('#grade_code').prop('disabled', false);
 		}
-	   else if(remark==''){
-		   var msg="Please enter remark!!";
-		   $.alert(msg);
-		   return;
-	   }
-
-	   
-
-
-   });
-
-	//added for click to show modal for zscore
-	// $('#get_zscore').on('show.bs.modal', function(e) {
-	// 	var id = $(e.relatedTarget).data('id');
-	// 	$(e.currentTarget).find('button[id="save"]').onclick = function() { alert(id); };
-	// });
-
-	$("#get_zscore").click(function() {
-		alert(this.id);
-	  });
-
-	
-	
-	$.ajax({
-
-		type:'POST',
-		url:'../FinalGrading/ilc-available-sample-zscore',
-		data:{id:id},
-		async:true,
-		cache:false,
-		beforeSend: function (xhr) {
-		xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
-		},
-		success: function (data) {
-		alert('Successfully Added'); 
-		},
-		
-		
 	});
-  
-  
 
 
-	//03-08-2022//
-   // jQuery button click event to remove a row
-	// $('#tbody').on('click', '.get_zscore', function () {
-	
-	// 	// Getting all the rows next to the 
-	// 	// row containing the clicked button
-	// 	var child = $(this).closest('tr').nextAll();
-	
-	// 	// Iterating across all the rows 
-	// 	// obtained to change the index
-	// 	child.each(function () {
-			
-	// 		// Getting <tr> id.
-	// 		var id = $(this).attr('id');
+	 $("#save").click(function (e) {
 
-	// 	});
-	
-	// 	// Removing the current row.
-	// 	// $(this).closest('tr').remove();
-	
-	// 	// Decreasing the total number of rows by 1.
-	// 	// rowIdx--;
-	// });
+		e.preventDefault();
+		$("#button").val('add');
+		var button=$("#button").val();
+		$("#array").val(' ');
+		$("#array").val(arr);
 
-  
+		var category_code=$("#category_code").val();
+		var commodity_code=$("#commodity_code").val();
+		var sample_code=$("#sample_code").val();
+		var grd_standrd= $("#grd_standrd").val();
+		var remark=$("#remark").val();
+		var tran_date=$("#tran_date").val();
+		var result_flg= $('input[name=result_flg]:checked', '#frm_final_grading').val();
+		var login_timestamp=$("#login_timestamp").val();
+		var arraygrade= null;
+		var grade_code = null;
+		var subgrade =null;
+
+		// To check sub grading value is checked or not ,
+		if ($('#allGradeListChecked').is(":checked"))
+		{
+			grade_code=$("#fullGradelist").val();
+			subgrade = 'checked';
+
+		}else{
+
+			grade_code=$("#grade_code").val();
+			subgrade = '';
+		}
+
+		if(commodity_code==''){
+			var msg="Please Select Sample Commodity!!";
+			$.alert(msg);
+			return;
+		}
+		else if(sample_code==''){
+			var msg="Please Select Sample !!";
+			$.alert(msg);
+			return;
+		}
+		else if(grd_standrd==''){
+			var msg="Please Select Grade Standard !!";
+			$.alert(msg);
+		}/* Apply empty grade_code validation*/
+		else if(grade_code==''){
+
+			var msg=" Please Select Grading Result !!";
+			$.alert(msg);
+			return;
+		}
+
+		else if(remark==''){
+			var msg="Please enter remark!!";
+			$.alert(msg);
+			return;
+		}
+
+		if(result_flg == 'F' || result_flg == 'R' || result_flg == 'N'){
+
+		}else{
+			var msg="Please Check one of the action from given!!";
+			$.alert(msg);
+			return;
+		}
+
+		// Add one new filed "subgrade" to add subgrading value in data array */
+		$.ajax({
+
+			type: 'POST',
+			url: 'ilc-grading-by-inward',
+			data: {result_flg:result_flg,remark:remark,login_timestamp:login_timestamp,
+				   button:button,grd_standrd:grd_standrd,category_code:category_code,subgrade:subgrade,
+				   commodity_code:commodity_code,sample_code:sample_code,arraygrade:arraygrade,
+				   tran_date:tran_date,grade_code:grade_code},
+			beforeSend: function (xhr) { // Add this line
+					xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+			},
+			success: function (data) {
+
+				var resArray = data.match(/#([^']+)#/)[1];//getting data bitween ## from response
+
+				if(resArray.indexOf('[error]') !== -1){
+					var msg =resArray.split('~');
+					alert(msg[1]);
+					$("#sample_code").val('');
+					return;
+
+				}else{
+					//alert(resArray);
+					window.location = 'available_for_grading_to_inward';
+				}
+
+			}
+		});
+
+
+	});
 
 });
-
-
-
-

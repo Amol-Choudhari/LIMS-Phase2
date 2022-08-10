@@ -60,7 +60,7 @@
 													<div class="col-md-12">
 														<div class="row pt-3">
 															<div class="col-md-3">
-															<div class="col-md-3 d-inline"><a target="blank" id="clickpreview" href="../FinalGrading/sampleTestReportCode/<?php echo $stage_sample_code.'/'.$smple_commdity_code; ?>" >Preview Report</a></div>
+															<div class="col-md-3 d-inline"><a target="blank" id="clickpreview" href="../FinalGrading/sampleTestReportCode/<?php echo trim($stage_sample_code).'/'.$smple_commdity_code; ?>" >Preview Report</a></div>
 															</div>
 															<div class="col-md-5">
 															<?php echo $this->Form->control('gradeListChecked', array('type'=>'checkbox', 'id'=>'reportlink', 'label'=>'I have previewed the report & agree to proceed')); ?>

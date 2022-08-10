@@ -21,10 +21,9 @@
 							
 								<div class="card-header"><h3 class="card-title-new">List of Finalized Result Submited By RAL's/CAL's for sample code <?php echo $getcommodity['org_sample_code']; ?></h3></div>
 								  
-									<P class="p-2 text-center"><b> Org Sample Code : </b><?php echo $getcommodity['org_sample_code']; ?> <b> Category : </b><?php echo $getcommodity['category_name']; ?>  <b> Commodity :</b> <?php echo $getcommodity['category_name']; ?> <b> Sample Type : </b><?php echo $getcommodity['sample_type_desc']; ?> </p> 
+									<P class="p-2"><b> Org Sample Code : </b><?php echo $getcommodity['org_sample_code']; ?> <b> Category : </b><?php echo $getcommodity['category_name']; ?>  <b> Commodity :</b> <?php echo $getcommodity['category_name']; ?> <b> Sample Type : </b><?php echo $getcommodity['sample_type_desc']; ?>  &nbsp; &nbsp; &nbsp;<a href="#getmodal" target='_blank' name="get_zscore"  id="get_zscore" data-toggle="modal" data-target="#getmodal" class="btn btn-outline-danger get_zscore" required>get zscore</a></p> 
 								
 									<div class="form-horizontal">
-
 										<table id="finalized_samples_list" class="table table-striped table-bordered table-hover">
 											<thead class="tablehead">
 												<tr>
@@ -34,7 +33,7 @@
 													<th>Forwarded On(OF)</th>
 													<th>Finalized On(FG)</th>
 													<th>View Report</th>
-													<th>Calculated Z-score</th>
+						
 												</tr>
 											</thead>
 											<tbody>
@@ -56,7 +55,7 @@
 																<td><?php echo $res2['tran_date']; ?></td>
 																<td><?php echo $final_reports[$i]; ?></td> 
 																<td><a href="<?php echo $res2['report_pdf']; ?>" target='_blank' class="btn btn-outline-info">View</a></td>
-																<td><a href="#getmodal" target='_blank' name="get_zscore"  id="get_zscore" data-toggle="modal" data-target="#getmodal" class="btn btn-outline-danger get_zscore" required >get zscore</a></td>
+																<!-- <td><a href="#getmodal" target='_blank' name="get_zscore"  id="get_zscore" data-toggle="modal" data-target="#getmodal" class="btn btn-outline-danger get_zscore" required >get zscore</a></td> -->
 																<!-- <?php echo $res2['ilc_org_sample_cd']; ?> -->
 																<div class="clearfix"></div>
 															</tr>
@@ -66,6 +65,7 @@
 												<?php $i=$i+1;}} ?>				
 											</tbody>
 										</table>
+
 									</div>
 									<div class="row p-3">
 										<div class="col-md-6"></div>

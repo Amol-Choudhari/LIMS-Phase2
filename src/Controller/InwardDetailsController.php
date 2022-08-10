@@ -84,7 +84,7 @@ class InwardDetailsController extends AppController {
 		$this->set('res',$res);*/
 
 		$user_flag = $_SESSION['user_flag'];
-
+		
 		//To Show List of Sample Type From Database
 		$this->loadModel('MSampleType');
 		$sam_type = $this->MSampleType->find('list',array('keyField'=>'sample_type_code','valueField'=>'sample_type_desc','order' => array('sample_type_desc' => 'ASC'),'conditions' => array('display' => 'Y')))->toArray();

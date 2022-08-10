@@ -86,7 +86,7 @@
 																		<td><?php echo $each['sample_type_desc']; ?></td>
 																		<td><?php echo $each['ro_office']; ?></td>
 																		<td><?php echo $each['submitted_on']; ?></td>
-																		<td><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'redirect_to_verify', $each['stage_smpl_cd']),array('class'=>'glyphicon glyphicon-share-alt','title'=>'To Verify Sample')); ?></td>
+																		<td><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'ilc_redirect_to_verify', $each['stage_smpl_cd']),array('class'=>'glyphicon glyphicon-share-alt','title'=>'To Verify Sample')); ?></td>
 																	</tr>
 															<?php $sr_no++; } } ?>
 														</tbody>
