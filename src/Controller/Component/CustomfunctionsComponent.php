@@ -618,7 +618,6 @@
 
 					echo"Sorry.. Something wrong happened. ";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login again</a><?php
 					exit;
-
 				}
 
 			} else {
@@ -644,10 +643,8 @@
 		$duplicate_code = $SampleInward->find('all',array('fields'=>array('org_sample_code'),'conditions'=>array('org_sample_code IS'=>$sample_code)))->first();
 		
 		if (empty($duplicate_code)) {
-
 			return $sample_code;
 		} else {
-
 			$this->createSampleCode();
 		}
 	}
@@ -815,209 +812,30 @@
 	}
 
 
-/***************************************************************************************************************************************************************************************************/		
-
-
-	public function getSampleRegisterOffice($sample_code){
-
-		if(empty($sample_code)){
-			$sample_code = $this->Session->read('org_sample_code');
-		}
-		
-		//to use this function in model also
-		$Workflow = TableRegistry::getTableLocator()->get('Workflow');
-		$LimsOfficeToDistrict = TableRegistry::getTableLocator()->get('LimsOfficeToDistrict');
-		
-		//get district id
-		$get_dist_id = $Workflow->find('all',array('conditions'=>array('org_sample_code IS'=>$sample_code)))->first();
-		$dist_id = $get_dist_id['dst_loc_id'];
-
-		$district_details = $LimsOfficeToDistrict->find()->where(['ro_office_id' => $dist_id])->first();
-	
-		$ro_office_id = $district_details['ro_office_id']; 
-
-		return $ro_office_id;
-		
-	}
-
-/***************************************************************************************************************************************************************************************************/
-	
-	public function getPaoDetails($ro_office_id) {
-
-		//Load Models
-		$DmiPaoDetails = TableRegistry::getTableLocator()->get('DmiPaoDetails');
-		$LimsOfficeToDistrict = TableRegistry::getTableLocator()->get('LimsOfficeToDistrict');
-		$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
-		
-		//Find the Pao Details
-		if (!empty($ro_office_id)) {
-			
-			$get_pao_details_id = $LimsOfficeToDistrict->find()->where(['ro_office_id' => $ro_office_id])->first();
-			
-			$pao_details = $DmiPaoDetails->find()->where(['id IS' => $get_pao_details_id['pao_id']])->first();
-			
-		}
-		return $pao_details['id'];
-	}
-
-
 /***************************************************************************************************************************************************************************************************/
 
-	public function sampleTypeInformation($org_sample_code) {
+	// get_sms_id
+	// Author : Akash Thakre
+	// Description : This will return the SMS ID for sending the message.
+	// Date : 25-07-2022
 
-		//Load Models
-		$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
-		$SampleInwardDetails = TableRegistry::getTableLocator()->get('SampleInwardDetails');
+	public function getSmsId($sms_action){
 
-		//Current Sample Details
-		$SampleDetails = $SampleInward->find()->where(['org_sample_code IS' => $org_sample_code])->first();
+		$user_role = $_SESSION['role'];
 
-		return $SampleDetails;
-	}
-	
+		if ($sms_action=='inward') {
+			$from_id = 75;
+			$to_id = 76;
+		}
 
-	public function samplePaymentCharges($sample_code){
-
-		$LimsSampleCharges = TableRegistry::getTableLocator()->get('LimsSampleCharges');
-		$MSampleType = TableRegistry::getTableLocator()->get('MSampleType');
-		$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
-		
-		$get_sample_type = $SampleInward->find()->select(['sample_type_code','category_code'])->where(['stage_sample_code IS' => $sample_code])->first();
-		$sample_type = $MSampleType->find()->where(['sample_type_code' => $get_sample_type['sample_type_code']])->first();
-		$charges = $LimsSampleCharges->find()->where(['sample_type' => $sample_type['sample_type_desc']])->first();
-
-		$totalCharges = $charges['charges'];
-	
-		return $totalCharges;
-	}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	public function saveSamplePaymentDetails($data){
-		
-		//Load Session Values
-		$sample_code = $this->Session->read('org_sample_code');
-		
-		//Load Models
 		$Workflow = TableRegistry::getTableLocator()->get('Workflow');
-		$DmiSmsEmailTemplates = TableRegistry::getTableLocator()->get('DmiSmsEmailTemplates');
-		$LimsSamplePaymentDetails = TableRegistry::getTableLocator()->get('LimsSamplePaymentDetails');
-		$DmiPaoDetails = TableRegistry::getTableLocator()->get('DmiPaoDetails');
-		$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
+		$sample_code = $_SESSION['org_sample_code'];
+		$sendingTo = $_SESSION['user_code'];
+		$getDetails = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code])->order('id desc')->first();
+		$receiver = $getDetails['dst_usr_cd'];
 		
-		//Set Variables to blank
-		$payment_conirmation_status = '';
-		$payment_receipt_docs = '';
-		
-		$lims_payment_id = $LimsSamplePaymentDetails->find('list', array('fields'=>'id','conditions'=>array('sample_code IS'=>$sample_code)))->toArray();
-		
-		if(!empty($lims_payment_id)){	
-		
-			$payment_confirmation_query = $LimsSamplePaymentDetails->find('all', array('conditions'=>array('id'=>max($lims_payment_id))))->first();
-			$payment_conirmation_status = $LimsSamplePaymentDetails['payment_confirmation'];
-			$payment_receipt_docs = $payment_confirmation_query['payment_receipt_docs'];
-		}
-		
-		$sample_details = $Workflow->find('all',array('conditions'=>array('org_sample_code IS'=>$sample_code)))->toArray();
-		$sample_details_fields = $sample_details[0];
-	
-		$district_id = $sample_details[0]['dst_loc_id'];
-		$pao_id = $this->getPaoDetails($district_id); 
-		
-		if (empty($data['payment_amount']) && empty($data['payment_transaction_id']) && empty($data['bharatkosh_payment_done']) && empty($data['payment_trasaction_date'])) {
-		
-				return false;
-		}
-		
-		if (empty($payment_receipt_docs)) {
-
-			if (empty($data['payment_receipt_document']->getClientFilename())) {
-
-				return false;
-			}
-		}
-		
-		$payment_amount = htmlentities($data['payment_amount'], ENT_QUOTES);
-		$payment_transaction_id = htmlentities($data['payment_transaction_id'], ENT_QUOTES);
-
-		$post_input_request = $data['bharatkosh_payment_done'];
-		$bharatkosh_payment_done = $this->radioButtonInputCheck($post_input_request);
-		
-		if ($bharatkosh_payment_done == null) { 
-				return false;
-		}
-
-
-		if(!empty($data['payment_receipt_document']->getClientFilename())) {
-			
-			$file_name = $data['payment_receipt_document']->getClientFilename();
-			$file_size = $data['payment_receipt_document']->getSize();
-			$file_type = $data['payment_receipt_document']->getClientMediaType();
-			$file_local_path = $data['payment_receipt_document']->getStream()->getMetadata('uri');
-			// calling file uploading function
-			$payment_receipt_docs = $this->fileUploadLib($file_name,$file_size,$file_type,$file_local_path); 
-		}
-		
-		$payment_trasaction_date = $this->changeDateFormat($data['payment_trasaction_date']);
-		
-		if($payment_conirmation_status == 'not_confirmed'){
-			
-			//find PAO email id
-			$pao = $LimsSamplePaymentDetails->find('all', array('fields'=>'pao_id', 'conditions'=>array('org_sample_code IS'=>$sample_code)))->first();
-			$pao_user_id = $DmiPaoDetails->find('all',array('fields'=>'pao_user_id', 'conditions'=>array('id IS'=>$pao['pao_id'])))->first();
-			$pao_user_email_id = $DmiUsers->find('all',array('fields'=>'email', 'conditions'=>array('id IS'=>$pao_user_id['pao_user_id'])))->first();
-		
-			$lims_sample_payment_detailsEntity = $LimsSamplePaymentDetails->newEntity(array(
-					'sample_code'=>$sample_code,
-					'amount_paid'=>$payment_amount,
-					'transaction_id'=>$payment_transaction_id,
-					'transaction_date'=>$payment_trasaction_date,
-					'payment_receipt_docs'=>$payment_receipt_docs,
-					'bharatkosh_payment_done'=>$bharatkosh_payment_done,
-					'reason_option_comment'=>$payment_confirmation_query['reason_option_comment'],
-					'reason_comment'=>$payment_confirmation_query['reason_comment'],
-					'district_id'=>$district_id,
-					'payment_confirmation'=>'replied',
-					'pao_id'=>$pao_id,
-					'created'=>date('Y-m-d H:i:s'),
-					'modified'=>date('Y-m-d H:i:s')
-				));
-						
-			if($LimsSamplePaymentDetails->save($lims_sample_payment_detailsEntity)){
-					
-					$user_email_id = $pao_user_email_id['email'];
-					$current_level = 'pao';
-					$DmiSmsEmailTemplates->sendMessage(2056,$sample_code);
-			
-					return true;	
-			}
-		}else{
-			$lims_sample_payment_detailsEntity = $LimsSamplePaymentDetails->newEntity(array(
-					'sample_code'=>$sample_code,
-					'amount_paid'=>$payment_amount,
-					'transaction_id'=>$payment_transaction_id,
-					'transaction_date'=>$payment_trasaction_date,
-					'payment_receipt_docs'=>$payment_receipt_docs,
-					'bharatkosh_payment_done'=>$bharatkosh_payment_done,
-					'payment_confirmation'=>'saved',
-					'district_id'=>$district_id, 
-					'pao_id'=>$pao_id,
-					'created'=>date('Y-m-d H:i:s'),
-					'modified'=>date('Y-m-d H:i:s')
-				));
-
-			if($LimsSamplePaymentDetails->save($lims_sample_payment_detailsEntity)){
-				
-					return true;	
-			}
-			
-		}
-		
+		return array('from_user'=>$sendingTo,'from_sms_id'=>$from_id,'to_user'=>$receiver,'to_sms_id'=>$to_id);
 	}
-
-
 
 
 }

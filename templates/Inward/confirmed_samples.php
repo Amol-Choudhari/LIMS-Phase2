@@ -43,17 +43,17 @@
 													<td><?php echo $each['received_date'];  ?></td>
 													<td><?php echo $each['sample_type_desc']; ?></td>
 													<td><?php echo $each['ro_office']; ?></td>
-													<td><?php echo $each['commodity_name']; ?></td>
+													<td><?php echo "<span class='badge'>".$each['commodity_name']."</span>"; ?></td>
 													<td><?php if(trim($each['acc_rej_flg'])=='A'){ 
-																echo "Accepted";
+																echo "<span class='badge badge-success'>Accepted</span>";
 															}elseif(trim($each['acc_rej_flg'])=='P'){ 
-																echo "Pending";
+																echo "<span class='badge badge-warning'>Pending</span>";
 															}elseif(trim($each['acc_rej_flg'])=='PS'){
-																echo "Payment is Saved & Pending with DDO";
+																echo "<span class='badge badge-info'>Payment is Saved & Pending with DDO</span>";
 															}elseif(trim($each['acc_rej_flg'])=='PR'){
-																echo "Payment is Referred Back";
+																echo "<span class='badge badge-warning'>Payment is Referred Back</span>";
 															}else{
-																echo "Rejected";
+																echo "<span class='badge badge-danger'>Rejected</span>";
 															} ?>
 													</td>
 													<td>

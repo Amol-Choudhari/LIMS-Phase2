@@ -2,7 +2,7 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4 ovfl">
 
   	<!-- Brand Logo / Profile Photo -->
-	<a href="index3.html" class="brand-link">
+	<a href="../dashboard/home" class="brand-link">
 		<?php echo $this->Html->image('AdminLTELogo.png', array('alt'=>'AQCMS Logo', 'class'=>'brand-image img-circle elevation-3 op8')); ?>
 		<span class="brand-text">LIMS</span>
 	</a>
@@ -13,7 +13,7 @@
 			echo $this->Html->image('../../'.$profile_pic, array("alt"=>"User Image", "width"=>"200", "class"=>"img-circle")); ?>
 
 		<div class="info">
-			<a href="#" class="d-block"><?php echo $_SESSION["f_name"];?> <?php echo $_SESSION["l_name"];?></a>
+			<a href="../users/user_profile" class="d-block"><?php echo $_SESSION["f_name"];?> <?php echo $_SESSION["l_name"];?></a>
 			<span class="right badge badge-light"><?php echo base64_decode($_SESSION["username"]);/*for email encoding*/ ?></span>
 		</div>
 	</div>

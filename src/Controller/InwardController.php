@@ -24,6 +24,8 @@ class InwardController extends AppController{
 		$this->loadModel('DmiRoOffices');
 		$this->loadModel('DmiUsers');
 		$this->loadModel('DmiSmsEmailTemplates');
+		$this->loadModel('LimsCustomerDetails');
+		$this->loadModel('DmiDistricts');
 	}
 
 /****************************************************************************************************************************************************************************************************************************************************************/
@@ -88,11 +90,12 @@ class InwardController extends AppController{
 		$this->loadModel('DmiUserRoles');
 		$this->loadModel('MCommodity');
 		$this->loadModel('UserRole');
+		$this->loadModel('DmiStates');
 		$conn = ConnectionManager::get('default');
 
 		// set variables to show popup messages from view file
 		$message = '';
-		$message_theme = ''; 
+		$message_theme = '';
 		$redirect_to = '';
 
 		$role_code = $this->Session->read('role_code');
@@ -100,14 +103,14 @@ class InwardController extends AppController{
 
 		
 		//check user role
-		if ($_SESSION['user_flag']=='RO' || $_SESSION['user_flag']=='SO') { 
+		if ($_SESSION['user_flag']=='RO' || $_SESSION['user_flag']=='SO') {
 
 			$query = $conn->execute("SELECT ur.user_flag,o.id,o.ro_office
 									 FROM dmi_users AS u
 									 INNER JOIN dmi_user_roles AS ur ON u.email=ur.user_email_id
 									 INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id AND u.id=".$_SESSION['user_code']."group by ur.user_flag,o.id,o.ro_office order by o.ro_office asc");
 
-		} elseif ($_SESSION['user_flag']=='RAL') {	
+		} elseif ($_SESSION['user_flag']=='RAL') {
 
 			$query = $conn->execute("SELECT dmi_user_roles.user_flag,dmi_ro_offices.id,dmi_ro_offices.ro_office FROM dmi_users
 									 INNER JOIN dmi_user_roles ON dmi_users.email = dmi_user_roles.user_email_id
@@ -209,6 +212,12 @@ class InwardController extends AppController{
 		$monthArray = array('1'=>'January','2'=>'February','3'=>'March','4'=>'April','5'=>'May','6'=>'June','7'=>'July','8'=>'August','9'=>'September','10'=>'October','11'=>'November','12'=>'December');
 		$this->set('monthArray',$monthArray);
 
+		// To display the states on the inward section for the customer details added below query on the 10-08-2022 By Akash
+		$states = $this->DmiStates->find('list', array('valueField'=>'state_name','conditions'=>array('OR'=>array('delete_status IS NULL','delete_status'=>'no')),'order'=>array('state_name')))->toArray();
+		$this->set('states',$states);
+
+	
+
 		//to fetch record data to show in update/view mode
 		$sample_inward_data=array();
 		//for progress bar
@@ -218,10 +227,7 @@ class InwardController extends AppController{
 
 		//payment progress
 		if (isset($_SESSION['sample'])) {
-		
-			if ($_SESSION['sample'] == 3) {
-				$_SESSION['is_payment_applicable'] = 'yes';
-			}
+			if ($_SESSION['sample'] == 3) { $_SESSION['is_payment_applicable'] = 'yes'; }
 		}
     
 		//moved the query inside due to condition on null and fetching random record.
@@ -229,6 +235,7 @@ class InwardController extends AppController{
 		//on 23-03-2021 by Akash
 		$org_samp_sess_var = $this->Session->read('org_sample_code');
 		$sample_inward_data = $this->SampleInward->find('all',array('conditions'=>array('org_sample_code IS'=>$org_samp_sess_var),'order'=>'inward_id desc'))->first();
+		$customer_details = $this->LimsCustomerDetails->find('all')->where(['org_sample_code IS' => $org_samp_sess_var])->order('id desc')->first(); # This added for the customer data fetch on the 10-08-2022 by Akash
 		
 		if (!empty($org_samp_sess_var) && !empty($sample_inward_data)) {
 			
@@ -239,18 +246,29 @@ class InwardController extends AppController{
 				//for progress bar
 				$sample_inward_form_status='saved';
 				
-				if($sample_inward_data['sample_type_code'] == 3){
-					$_SESSION['is_payment_applicable'] = 'yes';
-				}
+				if ($sample_inward_data['sample_type_code'] == 3) { $_SESSION['is_payment_applicable'] = 'yes'; }
 				
 				$_SESSION['sample'] = $sample_inward_data['sample_type_code'];
-
 			}
 			
 			//get selected commdity from category id
 			$this->loadModel('MCommodity');
-			
 			$commodity_list = $this->MCommodity->find('list',array('keyField'=>'commodity_code','valueField'=>'commodity_name','conditions'=>array('category_code IS'=>$sample_inward_data['category_code'])))->toArray();
+			$district_list = $this->DmiDistricts->find('list',array('valueField'=>array('district_name'),'keyField'=>array('id'),'conditions'=>array('delete_status IS NULL'),'order'=>array('id')))->toArray();
+			
+			if (empty($customer_details)) {
+				
+				// Below added for the customer details empty array by Akash on 22-07-2022
+				$customer_details['customer_name'] = '';
+				$customer_details['customer_email_id'] = '';
+				$customer_details['street_address'] = '';
+				$customer_details['state'] = '';
+				$customer_details['district'] = '';
+				$customer_details['postal_code'] = '';
+				$customer_details['customer_mobile_no'] = '';
+				$customer_details['customer_fax_no'] = '';
+			}
+		
 
 		} else {
 
@@ -282,30 +300,45 @@ class InwardController extends AppController{
 			$sample_inward_data['rej_reason']='';
 			$sample_inward_data['status_flag']='';
 
+			// Below added for the customer details empty array by Akash on 22-07-2022
+			$customer_details['customer_name'] = '';
+			$customer_details['customer_email_id'] = '';
+			$customer_details['street_address'] = '';
+			$customer_details['state'] = '';
+			$customer_details['district'] = '';
+			$customer_details['postal_code'] = '';
+			$customer_details['customer_mobile_no'] = '';
+			$customer_details['customer_fax_no'] = '';
 
 			$commodity_list = array();
+			$district_list = array(); # This empty array added on 22-07-2022 by Akash
 		}
 
 
 		$this->set('commodity_list',$commodity_list);
 		$this->set('sample_inward_data',$sample_inward_data);
 		$this->set('sample_inward_form_status',$sample_inward_form_status);
+		$this->set('customer_details',$customer_details); # This array added for customer details on 22-07-2022 by Akash
+		$this->set('district_list',$district_list); # This array added for district on 22-07-2022 by Akash
 
 		//for sample details progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
 			$sample_details_form_status = 'saved';
+			$details_section = 'Y'; # For the new field in the Sample Inward Details table to store the status of inward section saved or not on 22-07-2022 by Akash
 		} else {
 			$sample_details_form_status = '';
+			$details_section = ''; # For the new field in the Sample Inward Details table to store the status of inward section saved or not on 22-07-2022 by Akash
 		}
 
-		//for paymnet progress bar
+		//for payment progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
 			
 			$payment_details = $this->LimsSamplePaymentDetails->find('all')->select('payment_confirmation')->where(['sample_code IS'=>$this->Session->read('org_sample_code')])->order(['id desc'])->first();
 			$payment_details_form_status = trim($payment_details['payment_confirmation']);
-
+			$payment_section = 'Y'; # For the new field in the LimsSamplePaymentDetails table to store the status of inward section saved or not on 22-07-2022 by Akash
 		} else {
 			$payment_details_form_status = '';
+			$payment_section = ''; # For the new field in the LimsSamplePaymentDetails table to store the status of inward section saved or not on 22-07-2022 by Akash
 		}
 		
 		$this->set('sample_details_form_status',$sample_details_form_status);
@@ -479,6 +512,7 @@ class InwardController extends AppController{
 				//data array to be saved in sample inward table
 
 				$dataArray = array(
+
 					'inward_id'				=>	$inward_id,//this
 					'loc_id'				=>	$postData['loc_id'],//this
 					'stage_sample_code'		=>	$org_sample_code,//this
@@ -512,6 +546,9 @@ class InwardController extends AppController{
 					'address'				=>	$postData['address'],
                     'is_payment_applicable' =>  $isPaymentApplicable,
 					'created'				=>	date('Y-m-d H:i:s'),
+					'inward_section'		=> 	'Y', # New Field - To Store Status - Akash - 10-08-2022
+					'details_section'		=>	$details_section, # New Field - To Store Status - Akash - 10-08-2022
+					'payment_section'		=>	$payment_section # New Field - To Store Status - Akash - 10-08-2022
 
 				);
 
@@ -524,7 +561,7 @@ class InwardController extends AppController{
 					$inward_id = $inward['inward_id'];
 
 					//store in session to use in edit mode
-					$_SESSION["org_sample_code"] =$inward['org_sample_code'];
+					$_SESSION["org_sample_code"] = $inward['org_sample_code'];
 
 					if ($postData["acc_rej_flg"] == "A") {
 
@@ -535,8 +572,13 @@ class InwardController extends AppController{
 						$_SESSION['stage_sample_code'] ="";
 					}
 					
-					//$this->Customfunctions->getSampleRegisterOffice($org_sample_code);
-					$this->Customfunctions->sampleTypeInformation($org_sample_code);
+					//To save the status of Details Section  save flag on the Sample Details Table : Akash : 25-07-2022
+					$this->loadModel('SampleInwardDetails');
+					$this->SampleInwardDetails->updateAll(array('details_section'=>'Y'),array('org_sample_code'=>$org_sample_code));
+
+					//To Save the customer details on the inward section - by Akash [10-08-2022]
+					$this->LimsCustomerDetails->saveCustomerDetails($org_sample_code,$postData);
+
 					// For Maintaining Action Log by Akash (26-04-2022)
 					$this->LimsUserActionLogs->saveActionLog('New Sample Saved','Success');
 					$message = 'You have successfully saved Sample Inward. Please note Sample Code is '.$org_sample_code;
@@ -589,39 +631,41 @@ class InwardController extends AppController{
 
 					//data array to be saved in sample inward table
 					$dataArray = array(
-						'inward_id'          =>  $inward_id,//this
-						'loc_id'             =>  $loc_id,//this
-						'stage_sample_code'  =>  $stage_sample_code,//this
-						'sample_type_code'   =>  $sample_type_code,//this
-						'fin_year'           =>  $fin_year,//this
-						'org_sample_code'    =>  $org_sample_code,//this
-						'designation'        =>  $postData['designation'],
-						'letr_ref_no' 		 =>  $postData['letr_ref_no'],
-						'users' 			 =>  $postData['users'],
-						'user_code' 		 =>  $postData['user_code'],
-						'tran_date' 		 =>  $postData['tran_date'],
-						'reject_date' 		 =>  $postData['reject_date'],
-						'letr_date' 		 =>  $letr_date,
-						'received_date' 	 =>  $received_date,
-						'container_code' 	 =>  $postData['container_code'],
-						'entry_flag' 		 =>  $postData['entry_flag'],
-						'par_condition_code' =>  $postData['par_condition_code'],
-						'sam_condition_code' =>  $postData['sam_condition_code'],
-						'sample_total_qnt' 	 =>  $postData['sample_total_qnt'],
-						'parcel_size' 		 =>  $postData['parcel_size'],
-						'category_code' 	 =>  $postData['category_code'],
-						'commodity_code' 	 =>  $postData['commodity_code'],
-						'ref_src_code' 	 	 =>  $postData['ref_src_code'],
-						'expiry_month' 		 =>  $postData["expiry_month"],
-						'expiry_year' 		 =>  $postData["expiry_year"],
-						'acc_rej_flg' 		 =>  $postData["acc_rej_flg"],
-						'rej_code' 			 =>  $postData["rej_code"],
-						'rej_reason' 		 =>  $postData["rej_reason"],
-						'status_flag' 		 =>  $postData['status_flag'],
-						'name' 				 =>  $postData['name'],
-						'address' 			 =>  $postData['address'],
+
+						'inward_id'          	=>  $inward_id,//this
+						'loc_id'             	=>  $loc_id,//this
+						'stage_sample_code'  	=>  $stage_sample_code,//this
+						'sample_type_code'   	=>  $sample_type_code,//this
+						'fin_year'           	=>  $fin_year,//this
+						'org_sample_code'    	=>  $org_sample_code,//this
+						'designation'        	=>  $postData['designation'],
+						'letr_ref_no' 		 	=>  $postData['letr_ref_no'],
+						'users' 			 	=>  $postData['users'],
+						'user_code' 		 	=>  $postData['user_code'],
+						'tran_date' 		 	=>  $postData['tran_date'],
+						'reject_date' 		 	=>  $postData['reject_date'],
+						'letr_date' 		 	=>  $letr_date,
+						'received_date' 	 	=>  $received_date,
+						'container_code' 	 	=>  $postData['container_code'],
+						'entry_flag' 		 	=>  $postData['entry_flag'],
+						'par_condition_code' 	=>  $postData['par_condition_code'],
+						'sam_condition_code' 	=>  $postData['sam_condition_code'],
+						'sample_total_qnt' 	 	=>  $postData['sample_total_qnt'],
+						'parcel_size' 		 	=>  $postData['parcel_size'],
+						'category_code' 	 	=>  $postData['category_code'],
+						'commodity_code' 	 	=>  $postData['commodity_code'],
+						'ref_src_code' 	 	 	=>  $postData['ref_src_code'],
+						'expiry_month' 		 	=>  $postData['expiry_month'],
+						'expiry_year' 		 	=>  $postData['expiry_year'],
+						'acc_rej_flg' 		 	=>  $postData['acc_rej_flg'],
+						'rej_code' 			 	=>  $postData['rej_code'],
+						'rej_reason' 		 	=>  $postData['rej_reason'],
+						'status_flag' 		 	=>  $postData['status_flag'],
                         'is_payment_applicable' =>  $isPaymentApplicable,
-						'modified' 			 =>  date('Y-m-d H:i:s')
+						'modified' 			 	=>  date('Y-m-d H:i:s'),
+						'inward_section'		=> 	'Y', # New Field - To Store Status - Akash - 10-08-2022
+						'details_section'		=>	$details_section, # New Field - To Store Status - Akash - 10-08-2022
+						'payment_section'		=>	$payment_section # New Field - To Store Status - Akash - 10-08-2022
 
 					);
 
@@ -643,6 +687,9 @@ class InwardController extends AppController{
 						}
 
 						$_SESSION['acc_rej_flg'] = $postData["acc_rej_flg"];
+
+						//Save the Customers Information ny Akash (22-07-2022) 
+						$this->LimsCustomerDetails->saveCustomerDetails($org_sample_code,$postData);
 
 						// For Maintaining Action Log by Akash (26-04-2022)
 						$this->LimsUserActionLogs->saveActionLog('New Sample Update','Success');
@@ -683,7 +730,7 @@ class InwardController extends AppController{
 				
 
 				//get role and office where sample available after confirmed
-				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office
+				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office,w.src_usr_cd
 									     FROM sample_inward AS si
 										 INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
 										 INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
@@ -692,7 +739,7 @@ class InwardController extends AppController{
 
 				$get_info = $query->fetchAll('assoc');
 
-				
+		
 				// For Maintaining Action Log by Akash (26-04-2022)
 				$this->LimsUserActionLogs->saveActionLog('New Sample Confirmed','Success');
 
@@ -723,22 +770,17 @@ class InwardController extends AppController{
 
 				} else {
 
-					//SAMPLE INWARD CONFIRMED
-					//FROM
-					//$this->DmiSmsEmailTemplates->sendMessage(75,$get_info[0]['dst_usr_cd']);
-					//To
-					//$this->DmiSmsEmailTemplates->sendMessage(76,$get_info[1]['dst_usr_cd']);
-
+					//Sample Registration SMS/EMAIL
+					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #source user
+					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #destination user
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				
 				$message_theme = 'success';
 				$redirect_to = 'confirmed_samples';
-
-
 			}
-
 		}
+
 		// set variables to show popup messages from view file
 		$this->set('message',$message);
 		$this->set('message_theme',$message_theme);
@@ -786,39 +828,25 @@ class InwardController extends AppController{
 
 			foreach ($workflowData as $each_sample) {
 
-				
-				
 				//check the sample is not confirmed
 				$this->loadModel('SampleInward');
-				$getInward = $this->SampleInward->find('all',array('fields'=>array('org_sample_code','received_date','inward_id','status_flag'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'inward_id desc'))->first();
+				$getInward = $this->SampleInward->find('all',array('fields'=>array('org_sample_code','received_date','inward_id','status_flag','inward_section','details_section','payment_section','sample_type_code'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'inward_id desc'))->first();
 				
 				//det inward, if saved
-
 				if (!empty($getInward) && trim($getInward['status_flag'])=='D') {
 					
 					$sampleArray[$i]['received_date'] = $getInward['received_date'];
 					$sampleArray[$i]['inward_id'] = $getInward['inward_id'];
 					$sampleArray[$i]['org_sample_code'] = $each_sample['org_sample_code'];
-					
+					$sampleArray[$i]['inward_section'] = $getInward['inward_section'];
+					$sampleArray[$i]['details_section'] = $getInward['details_section'];
+					$sampleArray[$i]['payment_section'] = $getInward['payment_section'];
+					$sampleArray[$i]['sample_type_code'] = $getInward['sample_type_code'];
 				}
-
-
-				//check the sample is not confirmed
-				$this->loadModel('SampleInward');
-				$getInward = $this->SampleInward->find('all',array('fields'=>array('org_sample_code','received_date','inward_id','status_flag'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'inward_id desc'))->first();
-				
-				if (!empty($getInward) && trim($getInward['status_flag'])=='D') {
-					
-					$sampleArray[$i]['received_date'] = $getInward['received_date'];
-					$sampleArray[$i]['inward_id'] = $getInward['inward_id'];
-					$sampleArray[$i]['org_sample_code'] = $each_sample['org_sample_code'];
-					
-				}
-
 
 				//get sample details, if saved
 				$this->loadModel('SampleInwardDetails');
-				$getDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code','smpl_drwl_dt','id'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'id desc'))->first();
+				$getDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code','smpl_drwl_dt','id','inward_section','details_section','payment_section','sample_type_code'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'id desc'))->first();
 
 				if (!empty($getInward)) {
 
@@ -829,7 +857,10 @@ class InwardController extends AppController{
 							$sampleArray[$i]['smpl_drwl_dt'] = $getDetails['smpl_drwl_dt'];
 							$sampleArray[$i]['id'] = $getDetails['id'];
 							$sampleArray[$i]['org_sample_code'] = $each_sample['org_sample_code'];
-							
+							$sampleArray[$i]['inward_section'] = $getDetails['inward_section'];
+							$sampleArray[$i]['details_section'] = $getDetails['details_section'];
+							$sampleArray[$i]['payment_section'] = $getDetails['payment_section'];
+							$sampleArray[$i]['sample_type_code'] = $getDetails['sample_type_code'];
 						}
 					}
 
@@ -840,7 +871,10 @@ class InwardController extends AppController{
 						$sampleArray[$i]['smpl_drwl_dt'] = $getDetails['smpl_drwl_dt'];
 						$sampleArray[$i]['id'] = $getDetails['id'];
 						$sampleArray[$i]['org_sample_code'] = $each_sample['org_sample_code'];
-						
+						$sampleArray[$i]['inward_section'] = $getDetails['inward_section'];
+						$sampleArray[$i]['details_section'] = $getDetails['details_section'];
+						$sampleArray[$i]['payment_section'] = $getDetails['payment_section'];
+						$sampleArray[$i]['sample_type_code'] = $getDetails['sample_type_code'];
 					}
 				}
 
@@ -858,7 +892,8 @@ class InwardController extends AppController{
 											si.letr_date, si.org_sample_code, si.expiry_month, si.expiry_year,
 											st.sample_type_desc, ct.container_desc, pc.par_condition_desc,
 											sc.sam_condition_desc, mcc.category_name, mc.commodity_name,
-											ml.ro_office, si.sample_total_qnt, si.acc_rej_flg, si.rej_reason, si.rej_code, si.users
+											ml.ro_office, si.sample_total_qnt, si.acc_rej_flg, si.rej_reason, si.rej_code, si.users,
+											si.inward_section,si.details_section,si.payment_section
 									FROM sample_inward AS si
 									INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
 									INNER JOIN m_container_type AS ct ON si.container_code=ct.container_code
@@ -872,12 +907,14 @@ class InwardController extends AppController{
 											 si.org_sample_code, si.expiry_month, si.expiry_year, st.sample_type_desc,
 											 ct.container_desc, pc.par_condition_desc, sc.sam_condition_desc,
 											 mcc.category_name, mc.commodity_name, ml.ro_office, si.sample_total_qnt,
-											 si.acc_rej_flg, si.rej_reason, si.rej_code, si.users
+											 si.acc_rej_flg, si.rej_reason, si.rej_code, si.users,
+											 si.inward_section,si.details_section,si.payment_section
 									ORDER BY si.received_date DESC");
 
 			$sampleArray = $query ->fetchAll('assoc');
+	
 		}
-		
+	
 		return $sampleArray;
 	}
 
@@ -956,7 +993,6 @@ class InwardController extends AppController{
 									AND sample_inward.stage_sample_code='$sample_code'");
 
 		$sample_data = $query->fetchAll('assoc');
-
 		//to get designation
 		$designation = $sample_data[0]['designation'];
 		$query = $conn->execute("SELECT role_name FROM user_role WHERE role_code='$designation'");

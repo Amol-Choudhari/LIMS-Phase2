@@ -9,29 +9,33 @@ use Cake\View;
 
 class TestController extends AppController {
 
-		var $name = 'Test';
+	var $name = 'Test';
 
-		public function initialize(): void {
-			parent::initialize();
-			$this->viewBuilder()->setLayout('admin_dashboard');
-			$this->viewBuilder()->setHelpers(['Form','Html']);
-			$this->loadComponent('Customfunctions');
-		}
+	public function initialize(): void {
+		parent::initialize();
+		$this->viewBuilder()->setLayout('admin_dashboard');
+		$this->viewBuilder()->setHelpers(['Form','Html']);
+		$this->loadComponent('Customfunctions');
+		$this->loadModel('DmiSmsEmailTemplates');
+		$this->loadModel('LimsUserActionLogs');
+
+	}
+
 /************************************************************************************************************************************************************************************************************************/
 
-		//to validate login user
-		public function authenticateUser() {
+	//to validate login user
+	public function authenticateUser() {
 
-			$this->loadModel('DmiUserRoles');
-			$user_access = $this->DmiUserRoles->find('all',array('conditions'=>array('user_email_id IS'=>$this->Session->read('username'))))->first();
+		$this->loadModel('DmiUserRoles');
+		$user_access = $this->DmiUserRoles->find('all',array('conditions'=>array('user_email_id IS'=>$this->Session->read('username'))))->first();
 
-			if (!empty($user_access)) {
-				//proceed
-			} else {
-				echo "Sorry.. You don't have permission to view this page";
-				exit();
-			}
+		if (!empty($user_access)) {
+			//proceed
+		} else {
+			echo "Sorry.. You don't have permission to view this page";
+			exit();
 		}
+	}
 
 /************************************************************************************************************************************************************************************************************************/
 
@@ -55,25 +59,25 @@ class TestController extends AppController {
 		$conn = ConnectionManager::get('default');
 
 		$testalloc = $conn->execute("SELECT DISTINCT chemist_code,b.commodity_name,s.* FROM sample_inward AS a
-					INNER JOIN m_sample_allocate as s on a.org_sample_code=s.org_sample_code
-					INNER JOIN m_commodity AS b ON a.commodity_code=b.commodity_code
-					WHERE alloc_cncl_flag='N' AND s.alloc_to_user_code=$alloc_user AND acptnce_flag='N' AND a.display='Y' AND s.display='Y' ");
+									INNER JOIN m_sample_allocate as s on a.org_sample_code=s.org_sample_code
+									INNER JOIN m_commodity AS b ON a.commodity_code=b.commodity_code
+									WHERE alloc_cncl_flag='N' AND s.alloc_to_user_code=$alloc_user AND acptnce_flag='N' AND a.display='Y' AND s.display='Y' ");
 		$testalloc = $testalloc->fetchAll('assoc');
 
 		$testalloc1 = $conn->execute("SELECT DISTINCT b.chemist_code,a.test_name FROM m_sample_allocate AS s
-										INNER JOIN sample_inward AS si ON s.org_sample_code=si.org_sample_code
-										INNER JOIN actual_test_data AS b ON s.org_sample_code=b.org_sample_code
-										INNER JOIN m_test AS a ON b.test_code = a.test_code
-										WHERE alloc_cncl_flag='N' AND acptnce_flag='N' AND si.display='Y' AND s.display='Y' AND s.alloc_to_user_code=$alloc_user
-										ORDER BY a.test_name ASC");
+									INNER JOIN sample_inward AS si ON s.org_sample_code=si.org_sample_code
+									INNER JOIN actual_test_data AS b ON s.org_sample_code=b.org_sample_code
+									INNER JOIN m_test AS a ON b.test_code = a.test_code
+									WHERE alloc_cncl_flag='N' AND acptnce_flag='N' AND si.display='Y' AND s.display='Y' AND s.alloc_to_user_code=$alloc_user
+									ORDER BY a.test_name ASC");
 
-					$testalloc1 = $testalloc1->fetchAll('assoc');
+		$testalloc1 = $testalloc1->fetchAll('assoc');
 
-			if (count($testalloc)>0) {
+		if (count($testalloc)>0) {
 
-				$this->set('testalloc',$testalloc);
-				$this->set('testalloc1',$testalloc1);
-			}
+			$this->set('testalloc',$testalloc);
+			$this->set('testalloc1',$testalloc1);
+		}
 
 		return $testalloc;
 	}
@@ -93,32 +97,36 @@ class TestController extends AppController {
 		$chemist_code = array();
 		$workflow_data = array();
 
-			for ($i=0;$i<count($data);$i++) {
+		for ($i=0;$i<count($data);$i++) {
 
-				$date	= date("Y/m/d");
-				$conn->execute("UPDATE m_sample_allocate SET acptnce_flag='Y',recby_ch_date='$date' WHERE sr_no=".$data[$i]);
+			$date	= date("Y/m/d");
+			$conn->execute("UPDATE m_sample_allocate SET acptnce_flag='Y',recby_ch_date='$date' WHERE sr_no=".$data[$i]);
 
-				$query = $conn->execute("SELECT chemist_code FROM m_sample_allocate  WHERE sr_no=".$data[$i]);
-				$qr_res = $query->fetchAll('assoc');
-				$chemist_code[]=$qr_res[0]['chemist_code'];
+			$query = $conn->execute("SELECT chemist_code FROM m_sample_allocate  WHERE sr_no=".$data[$i]);
+			$qr_res = $query->fetchAll('assoc');
+			$chemist_code[]=$qr_res[0]['chemist_code'];
 
-				$sample	= $conn->execute("SELECT * FROM m_sample_allocate  WHERE sr_no=".$data[$i]);
-				$sample = $sample->fetchAll('assoc');
+			$sample	= $conn->execute("SELECT * FROM m_sample_allocate  WHERE sr_no=".$data[$i]);
+			$sample = $sample->fetchAll('assoc');
 
-				$workflow_data[] = array("org_sample_code"=>$sample[0]['org_sample_code'], "src_loc_id"=>$sample[0]['lab_code'], "src_usr_cd"=>$sample[0]['alloc_by_user_code'],"dst_loc_id"=>$sample[0]['lab_code'],"dst_usr_cd"=>$sample[0]['alloc_to_user_code'],"stage_smpl_cd"=>$sample[0]['sample_code'],"user_code"=>$_SESSION["user_code"],"tran_date"=>$tran_date, "stage"=>$stage,"stage_smpl_flag"=>"TABC");
-				
-				//call to the common SMS/Email sending method
-				$this->loadModel('DmiSmsEmailTemplates');
-				//$this->DmiSmsEmailTemplates->sendMessage(2033,$sample[0]['sample_code'],$sample[0]['alloc_to_user_code']);
-			}
-	
+			$workflow_data[] = array("org_sample_code"=>$sample[0]['org_sample_code'], "src_loc_id"=>$sample[0]['lab_code'], "src_usr_cd"=>$sample[0]['alloc_by_user_code'],"dst_loc_id"=>$sample[0]['lab_code'],"dst_usr_cd"=>$sample[0]['alloc_to_user_code'],"stage_smpl_cd"=>$sample[0]['sample_code'],"user_code"=>$_SESSION["user_code"],"tran_date"=>$tran_date, "stage"=>$stage,"stage_smpl_flag"=>"TABC");
 			
-			$workflowEntity = $this->Workflow->newEntities($workflow_data);
+		}
 
-			foreach($workflowEntity as $each){
+		
+		$workflowEntity = $this->Workflow->newEntities($workflow_data);
 
-				$this->Workflow->save($each);
-			}
+		foreach($workflowEntity as $each){
+
+			$this->Workflow->save($each);
+		}
+
+		// For Maintaining Action Log by Akash (28-07-2022)
+		$this->LimsUserActionLogs->saveActionLog('Test Accept','Success');
+
+		//call to the common SMS/Email sending method
+		$this->loadModel('DmiSmsEmailTemplates');
+		//$this->DmiSmsEmailTemplates->sendMessage(2033,$sample[0]['sample_code'],$sample[0]['alloc_to_user_code']);
 
 		echo '#'.json_encode($chemist_code).'#';
 		exit;
@@ -139,39 +147,42 @@ class TestController extends AppController {
 		$chemist_code  = array();
 		$workflow_data = array();
 
-			for($i=0;$i<count($data);$i++){
+		for($i=0;$i<count($data);$i++){
 
-				$conn->execute("UPDATE m_sample_allocate SET alloc_cncl_flag='C',acptnce_flag='NABC',sendback_remark='$sendback_remark',recby_ch_date='$date'
-				WHERE sr_no=".$data[$i]);
+			$conn->execute("UPDATE m_sample_allocate SET alloc_cncl_flag='C',acptnce_flag='NABC',sendback_remark='$sendback_remark',recby_ch_date='$date'
+			WHERE sr_no=".$data[$i]);
 
-				$query = $conn->execute("SELECT chemist_code FROM m_sample_allocate WHERE sr_no=".$data[$i]);
-				$qr_res = $query->fetchAll('assoc');
-				$chemist_code[]=$qr_res[0]['chemist_code'];
+			$query = $conn->execute("SELECT chemist_code FROM m_sample_allocate WHERE sr_no=".$data[$i]);
+			$qr_res = $query->fetchAll('assoc');
+			$chemist_code[]=$qr_res[0]['chemist_code'];
 
-				$sample = $conn->execute("SELECT * FROM m_sample_allocate  WHERE sr_no=".$data[$i]);
-				$sample = $sample->fetchAll('assoc');
-				$tran_date=date('Y-m-d');
-				$stage=4;
+			$sample = $conn->execute("SELECT * FROM m_sample_allocate  WHERE sr_no=".$data[$i]);
+			$sample = $sample->fetchAll('assoc');
+			$tran_date=date('Y-m-d');
+			$stage=4;
 
-				$conn->execute("DELETE FROM workflow WHERE stage_smpl_cd='".$sample[0]['chemist_code']."' And stage_smpl_flag='TA'");
+			$conn->execute("DELETE FROM workflow WHERE stage_smpl_cd='".$sample[0]['chemist_code']."' And stage_smpl_flag='TA'");
 
-				$workflow_data[] = array("org_sample_code"=>$sample[0]['org_sample_code'], "src_loc_id"=>$sample[0]['lab_code'], "src_usr_cd"=>$_SESSION["user_code"],"dst_loc_id"=>$sample[0]['lab_code'],"dst_usr_cd"=>$sample[0]['alloc_by_user_code'],"stage_smpl_cd"=>$sample[0]['sample_code'],"user_code"=>$_SESSION["user_code"],"tran_date"=>$tran_date, "stage"=>$stage,"stage_smpl_flag"=>"NABC");
+			$workflow_data[] = array("org_sample_code"=>$sample[0]['org_sample_code'], "src_loc_id"=>$sample[0]['lab_code'], "src_usr_cd"=>$_SESSION["user_code"],"dst_loc_id"=>$sample[0]['lab_code'],"dst_usr_cd"=>$sample[0]['alloc_by_user_code'],"stage_smpl_cd"=>$sample[0]['sample_code'],"user_code"=>$_SESSION["user_code"],"tran_date"=>$tran_date, "stage"=>$stage,"stage_smpl_flag"=>"NABC");
 
-				//call to the common SMS/Email sending method
-				$this->loadModel('DmiSmsEmailTemplates');
-				//$this->DmiSmsEmailTemplates->sendMessage(2034,$sample[0]['sample_code'],$sample[0]['alloc_by_user_code']);
+		}
 
-			}
+		$workflowEntity = $this->Workflow->newEntities($workflow_data);
 
-			$workflowEntity = $this->Workflow->newEntities($workflow_data);
+		foreach ($workflowEntity as $each) {
 
-			foreach ($workflowEntity as $each) {
+			$this->Workflow->save($each);
+		}
 
-				$this->Workflow->save($each);
-			}
+		// For Maintaining Action Log by Akash (28-07-2022)
+		$this->LimsUserActionLogs->saveActionLog('Test Sent Back','Success');
 
-			echo '#'.json_encode($chemist_code).'#';
-			exit;
+		//call to the common SMS/Email sending method
+		$this->loadModel('DmiSmsEmailTemplates');
+		//$this->DmiSmsEmailTemplates->sendMessage(2034,$sample[0]['sample_code'],$sample[0]['alloc_by_user_code']);
+
+		echo '#'.json_encode($chemist_code).'#';
+		exit;
 	}
 
 
@@ -269,57 +280,56 @@ class TestController extends AppController {
 			$stage_sample_code = $get_code['sample_code'];
 			$this->set('stage_sample_code',$stage_sample_code);
 
+			if ($this->request->is('post')) {
 
-				if ($this->request->is('post')) {
+				$postdata = $this->request->getData();
+				//html encode the each post inputs
+				foreach($postdata as $key => $value){
 
-					$postdata = $this->request->getData();
-					//html encode the each post inputs
-					foreach($postdata as $key => $value){
-
-						$postdata[$key] = htmlentities($postdata[$key], ENT_QUOTES);
-					}
-
-					$chemist = $this->request->getData('chemist_code');
-					$test_code = $this->request->getData('test_code');
-					$user_code = $this->request->getData('user_code');
-					$remark = $this->request->getData('remark');
-
-					if ($remark==null || $remark=='') {
-
-						$remark="N";
-						$postdata['remark'] = $remark;
-					}
-
-					$test = $this->ActualTestData->find('all', array('conditions' => array('chemist_code IS' => $chemist, 'test_code IS' => $test_code)))->toArray();
-					$sr_no = $test[0]['sr_no'];
-
-					$postdata['sr_no'] = $sr_no;
-					$postdata['user_code'] = $user_code;
-
-					$comncmnt_dt = $this->MSampleAllocate->find('all', array('conditions' => array('chemist_code IS' => $chemist, 'commencement_date IS NULL')))->toArray();
-
-					$actualTestDataEntity = $this->ActualTestData->newEntity($postdata);
-
-					if ($this->ActualTestData->save($actualTestDataEntity)) {
-
-						if	(count($comncmnt_dt)>0) {
-
-							$date = date("Y/m/d");
-							$conn->execute("UPDATE m_sample_allocate SET commencement_date='$date' WHERE chemist_code='$chemist'");
-						}
-
-						$message = 'The Test has been saved!';
-						$message_theme = 'success';
-						$redirect_to = 'enterTestReading';
-
-					} else {
-
-						$message = 'Sorry.. The Test has not been saved properly!.';
-						$message_theme = 'failed';
-						$redirect_to = 'enterTestReading';
-					}
-
+					$postdata[$key] = htmlentities($postdata[$key], ENT_QUOTES);
 				}
+
+				$chemist = $this->request->getData('chemist_code');
+				$test_code = $this->request->getData('test_code');
+				$user_code = $this->request->getData('user_code');
+				$remark = $this->request->getData('remark');
+
+				if ($remark==null || $remark=='') {
+
+					$remark="N";
+					$postdata['remark'] = $remark;
+				}
+
+				$test = $this->ActualTestData->find('all', array('conditions' => array('chemist_code IS' => $chemist, 'test_code IS' => $test_code)))->toArray();
+				$sr_no = $test[0]['sr_no'];
+
+				$postdata['sr_no'] = $sr_no;
+				$postdata['user_code'] = $user_code;
+
+				$comncmnt_dt = $this->MSampleAllocate->find('all', array('conditions' => array('chemist_code IS' => $chemist, 'commencement_date IS NULL')))->toArray();
+
+				$actualTestDataEntity = $this->ActualTestData->newEntity($postdata);
+
+				if ($this->ActualTestData->save($actualTestDataEntity)) {
+
+					if	(count($comncmnt_dt)>0) {
+
+						$date = date("Y/m/d");
+						$conn->execute("UPDATE m_sample_allocate SET commencement_date='$date' WHERE chemist_code='$chemist'");
+					}
+
+					$message = 'The Test has been saved!';
+					$message_theme = 'success';
+					$redirect_to = 'enterTestReading';
+
+				} else {
+
+					$message = 'Sorry.. The Test has not been saved properly!.';
+					$message_theme = 'failed';
+					$redirect_to = 'enterTestReading';
+				}
+
+			}
 
 			// set variables to show popup messages from view file
 			$this->set('message',$message);
@@ -346,10 +356,10 @@ class TestController extends AppController {
 		}
 
 		$query = $conn->execute("SELECT b.test_type_name,a.test_code
-											FROM actual_test_data AS atd
-										INNER JOIN m_test AS a ON a.test_code = atd.test_code
-										INNER JOIN m_test_type AS b ON b.test_type_code = a.test_type_code
-										WHERE atd.test_code = '$test_select'");
+								FROM actual_test_data AS atd
+								INNER JOIN m_test AS a ON a.test_code = atd.test_code
+								INNER JOIN m_test_type AS b ON b.test_type_code = a.test_type_code
+								WHERE atd.test_code = '$test_select'");
 
 		$result = $query->fetchAll('assoc');
 	
@@ -373,17 +383,16 @@ class TestController extends AppController {
 		$test_select = $_POST['test_select'];
 		$today = date("Y-m-d");
 
-			if (!is_numeric($test_select) || $test_select=='') {
+		if (!is_numeric($test_select) || $test_select=='') {
+			echo "#[error]#";
+			exit;
+		}
 
-				echo "#[error]#";
-				exit;
-			}
+		$test = $this->TestFormula->find('list', array('keyField'=>'test_code','valueField'=>'test_formulae','conditions' =>array('test_code IS' => $test_select,'start_date <= NOW()','end_date IS Null')))->toList();
 
-			$test = $this->TestFormula->find('list', array('keyField'=>'test_code','valueField'=>'test_formulae','conditions' =>array('test_code IS' => $test_select,'start_date <= NOW()','end_date IS Null')))->toList();
+		echo '#'.json_encode($test).'#';
 
-			echo '#'.json_encode($test).'#';
 		exit;
-
    	}
 
 /************************************************************************************************************************************************************************************************************************/
@@ -400,8 +409,8 @@ class TestController extends AppController {
 		}
 
 		$query = $conn->execute("SELECT tf.field_value,a.field_name FROM test_fields AS tf
-									INNER JOIN m_fields AS a ON a.field_code = tf.field_code
-									WHERE tf.test_code = '$test_select' AND tf.field_type='D'");
+								INNER JOIN m_fields AS a ON a.field_code = tf.field_code
+								WHERE tf.test_code = '$test_select' AND tf.field_type='D'");
 
 		$result = $query->fetchAll('assoc');
 		$test = array();
@@ -409,7 +418,6 @@ class TestController extends AppController {
 		foreach ($result as $each) {
 
 			$test[$each['field_value']] = $each['field_name'];
-
 		}
 
 		echo '#'.json_encode($test).'#';
@@ -461,9 +469,9 @@ class TestController extends AppController {
 		}
 
 		$query = $conn->execute("SELECT field_value,a.field_name,field_validation,field_unit,test_code
-											FROM test_fields AS tf
-											INNER JOIN m_fields AS a ON a.field_code = tf.field_code
-											WHERE test_code = '$test_select'");
+								FROM test_fields AS tf
+								INNER JOIN m_fields AS a ON a.field_code = tf.field_code
+								WHERE test_code = '$test_select'");
 
 		$test = $query->fetchAll('assoc');
 
@@ -498,10 +506,9 @@ class TestController extends AppController {
 
 		$test = array();
 
-			foreach ($result as $key => $value) {
-
-				$test[$key] = $value;
-			}
+		foreach ($result as $key => $value) {
+			$test[$key] = $value;
+		}
 
 		echo '#'.json_encode($test[0]).'#';
 		exit;
@@ -528,7 +535,6 @@ class TestController extends AppController {
 		$test = array();
 
 		foreach ($result as $each) {
-
 			$test[] = $each['field_name'];
 		}
 
@@ -552,15 +558,17 @@ class TestController extends AppController {
 		}
 
 		$query = $conn->execute("SELECT a.* FROM m_commodity AS a,sample_inward AS b
-									WHERE a.commodity_code=b.commodity_code AND b.stage_sample_code IN(select distinct(org_sample_code)
-									FROM actual_test_data
-									WHERE chemist_code='$sample_code' AND org_sample_code!='')");
+								WHERE a.commodity_code=b.commodity_code AND b.stage_sample_code IN(select distinct(org_sample_code)
+								FROM actual_test_data
+								WHERE chemist_code='$sample_code' AND org_sample_code!='')");
+
 		$sample_code1 = $query->fetchAll('assoc');
 
 		if ($sample_code1) {
 			$str = $sample_code1[0]['commodity_name']."~".$sample_code1[0]['commodity_code'];
 			echo '#'.$str.'#';
 		}
+
 		exit;
 	}
 
@@ -580,7 +588,6 @@ class TestController extends AppController {
 
 		$sample_code = $conn->execute("SELECT DISTINCT(login_timestamp),recby_ch_date,expect_complt FROM m_sample_allocate WHERE  chemist_code='$sample_code'");
 		$sample_code = $sample_code->fetchAll('assoc');
-
 
 		echo '#'.json_encode($sample_code).'#';
 		exit;
@@ -620,40 +627,40 @@ class TestController extends AppController {
 
 			$grading_method = $this->CommGrade->find('all',array('fields'=>array('method_code'=>'DISTINCT(method_code)'),'conditions'=>array('commodity_code IS'=>$commodity_code,'test_code IS'=>$each_test['test_code'],'display'=>'Y')))->toArray();
 
-				foreach ($grading_method as $each_method) {
+			foreach ($grading_method as $each_method) {
 
-					$testname = $this->MTest->find('all',array('fields'=>array('test_name'),'conditions'=>array('test_code IS '=>$each_test['test_code'])))->first();
+				$testname = $this->MTest->find('all',array('fields'=>array('test_name'),'conditions'=>array('test_code IS '=>$each_test['test_code'])))->first();
 
-					$methodname = $this->MTestMethod->find('all',array('fields'=>array('method_name'),'conditions'=>array('method_code IS'=>$each_method['method_code'])))->first();
+				$methodname = $this->MTestMethod->find('all',array('fields'=>array('method_name'),'conditions'=>array('method_code IS'=>$each_method['method_code'])))->first();
 
-					$test_formula_method = $this->TestFormula->find('all',array('fields'=>array('method_code','test_code','unit','test_formula1'),'conditions'=>array('method_code IS'=>$each_method['method_code'],'test_code'=>$each_test['test_code'],'display'=>'Y','end_date IS'=>NULL)))->first();
+				$test_formula_method = $this->TestFormula->find('all',array('fields'=>array('method_code','test_code','unit','test_formula1'),'conditions'=>array('method_code IS'=>$each_method['method_code'],'test_code'=>$each_test['test_code'],'display'=>'Y','end_date IS'=>NULL)))->first();
 
-					if (empty($test_formula_method)) {
+				if (empty($test_formula_method)) {
 
-						$method_name = 'Undefined';
-						$unit =  '--';
+					$method_name = 'Undefined';
+					$unit =  '--';
 
-						$test_formula_method = $this->TestFormula->find('all',array('fields'=>array('test_formula1'),'conditions'=>array('test_code IS'=>$each_test['test_code'],'display'=>'Y','end_date IS'=>NULL)))->first();
+					$test_formula_method = $this->TestFormula->find('all',array('fields'=>array('test_formula1'),'conditions'=>array('test_code IS'=>$each_test['test_code'],'display'=>'Y','end_date IS'=>NULL)))->first();
 
-						$test_formula = $test_formula_method['test_formula1'];
+					$test_formula = $test_formula_method['test_formula1'];
 
-					} else {
+				} else {
 
-						$unit = $test_formula_method['unit'];
-						$method_name = $methodname['method_name'];
-						$test_formula = $test_formula_method['test_formula1'];
-					}
-
-						$results['test_code'] = $each_test['test_code'];
-						$results['test_name'] = $testname['test_name'];
-						$results['method_name'] = $method_name;
-						$results['test_result'] = $each_test['result'];
-						$results['test_unit'] = $unit;
-						$results['test_formula1'] = $test_formula;
-						$results['test_perfm_date'] = $each_test['test_perfm_date'];
-
-						$final_results[] = $results;
+					$unit = $test_formula_method['unit'];
+					$method_name = $methodname['method_name'];
+					$test_formula = $test_formula_method['test_formula1'];
 				}
+
+				$results['test_code'] = $each_test['test_code'];
+				$results['test_name'] = $testname['test_name'];
+				$results['method_name'] = $method_name;
+				$results['test_result'] = $each_test['result'];
+				$results['test_unit'] = $unit;
+				$results['test_formula1'] = $test_formula;
+				$results['test_perfm_date'] = $each_test['test_perfm_date'];
+
+				$final_results[] = $results;
+			}
 		}
 
 		return $final_results;
@@ -683,7 +690,7 @@ class TestController extends AppController {
 
 			if ($test[$i]['result']=="") {
 
-					$flag=true;
+				$flag=true;
 			}
 		}
 
@@ -706,9 +713,9 @@ class TestController extends AppController {
 		$conn = ConnectionManager::get('default');
 
 		$query = $conn->execute("SELECT a.test_code,a.test_name FROM actual_test_data AS atd
-									INNER JOIN m_test AS a ON a.test_code = atd.test_code
-									WHERE chemist_code = '$sample_code' AND alloc_to_user_code = '$user_code'
-									ORDER BY a.test_name DESC");
+								INNER JOIN m_test AS a ON a.test_code = atd.test_code
+								WHERE chemist_code = '$sample_code' AND alloc_to_user_code = '$user_code'
+								ORDER BY a.test_name DESC");
 
 		$result = $query->fetchAll('assoc');
 		$category = array();
@@ -732,41 +739,23 @@ class TestController extends AppController {
 		$conn = ConnectionManager::get('default');
 
 		if (!is_numeric($test_select) || $test_select=='') {
-
 			echo "[error]";
 			exit;
 		}
 
-	
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//																																																					 //
-		//	/*  $test = $this->actual_test_data->find('list', array('joins' => array(																																		 //
-		//																	  array('table' => 'm_test','alias' => 'a','type' => 'INNER','conditions' => array('a.test_code = actual_test_data.test_code')),				 //
-		//																	  array('table' => 'test_formula','alias' => 'b','type' => 'INNER','conditions' => array('b.test_code = actual_test_data.test_code')),			 //
-		//																     array('table' => 'm_test_type','alias' => 'c','type' => 'INNER','conditions' => array('c.test_type_code = a.test_type_code')),					 //
-		//			                                            array('table' => 'test_fields','alias' => 't','type' => 'INNER','conditions' => array('t.test_code = actual_test_data.test_code'))),						 //
-		//														  'group' => array('c.test_type_name,b.test_formulae,b.res_validation_range'),																				 //
-		//														  'fields' => array('c.test_type_name','b.test_formulae','b.res_validation_range'),																			 //
-		//														  'conditions' => array('actual_test_data.test_code' => $test_select,"to_char(b.end_date,'yyyy-mm-dd')<='$to_dt'")											 //
-		//																			 array('actual_test_data.test_code' => $test_select,'b.end_date'=>null)));																 //
-		//	*/																																																				 //
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		$query = $conn->execute("SELECT c.test_type_name,b.test_formulae,b.res_validation_range FROM actual_test_data AS atd
-									INNER JOIN m_test AS a ON a.test_code = atd.test_code
-									INNER JOIN test_formula AS b ON b.test_code = atd.test_code
-									INNER JOIN m_test_type AS c ON c.test_type_code = a.test_type_code
-									INNER JOIN test_fields AS t ON t.test_code = atd.test_code
-									WHERE atd.test_code = '$test_select' AND b.end_date IS NULL
-									GROUP BY c.test_type_name,b.test_formulae,b.res_validation_range");
+								INNER JOIN m_test AS a ON a.test_code = atd.test_code
+								INNER JOIN test_formula AS b ON b.test_code = atd.test_code
+								INNER JOIN m_test_type AS c ON c.test_type_code = a.test_type_code
+								INNER JOIN test_fields AS t ON t.test_code = atd.test_code
+								WHERE atd.test_code = '$test_select' AND b.end_date IS NULL
+								GROUP BY c.test_type_name,b.test_formulae,b.res_validation_range");
 
 		$test = $query->fetchAll('assoc');
 
 		if (count($test)>0) {
-
 			echo '#'.json_encode($test).'#';
 		} else {
-
 			echo "#1#";
 		}
 
@@ -804,22 +793,21 @@ class TestController extends AppController {
 		} elseif ($testname_final = "RI to RI") {
 
 			$testt = $conn->execute("SELECT ri AS ri  FROM referance_table WHERE ri=$valnew");
+
 		} else {
 
 			$testt = $conn->execute("SELECT br AS ri  FROM referance_table WHERE ri=$valnew");
 		}
 
-			$testt = $testt->fetchAll('assoc');
+		$testt = $testt->fetchAll('assoc');
 
-			if (count($testt)>0) {
+		if (count($testt)>0) {
+			echo '#'.json_encode($testt).'#';
+		} else {
+			echo "#1#";
+		}
 
-				echo '#'.json_encode($testt).'#';
-			} else {
-
-				echo "#1#";
-			}
-
-			exit;
+		exit;
 	}
 
 /************************************************************************************************************************************************************************************************************************/
@@ -862,13 +850,11 @@ class TestController extends AppController {
 
 
 		if (preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $sample_code1)) {
-
 			echo "[error]";
 			exit;
 		}
 
 		if (preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $chemist_code)) {
-
 			echo "[error]";
 			exit;
 		}
@@ -1038,16 +1024,15 @@ class TestController extends AppController {
 	
 		$this->set('Sample_code_as',$Sample_code_as);
 		
-			$this->loadModel('MSampleRegObs');
+		$this->loadModel('MSampleRegObs');
 
-			$query2 = "SELECT msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value
-				FROM m_sample_reg_obs AS msr
-				INNER JOIN m_sample_obs_type AS mst ON mst.m_sample_obs_type_code=msr.m_sample_obs_type_code
-				INNER JOIN m_sample_obs AS mso ON mso.m_sample_obs_code=mst.m_sample_obs_code AND stage_sample_code='$Sample_code_as'
-				GROUP BY msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value";
+		$query2 = "SELECT msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value
+					FROM m_sample_reg_obs AS msr
+					INNER JOIN m_sample_obs_type AS mst ON mst.m_sample_obs_type_code=msr.m_sample_obs_type_code
+					INNER JOIN m_sample_obs AS mso ON mso.m_sample_obs_code=mst.m_sample_obs_code AND stage_sample_code='$Sample_code_as'
+					GROUP BY msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value";
+
 			
-	
-	
 		$method_homo = $conn->execute($query2);
 		$method_homo = $method_homo->fetchAll('assoc');
 		
@@ -1078,9 +1063,8 @@ class TestController extends AppController {
 		}
 		
 		
-	// new added code end
+		// new added code end
 
-//print_r($chemist_code);exit;
 		$query = $conn->execute("SELECT wf.stage_smpl_cd,
 										usr.f_name,
 										usr.l_name,
@@ -1102,16 +1086,16 @@ class TestController extends AppController {
 								INNER JOIN dmi_ro_offices AS roo ON roo.id = usr.posted_ro_office
 								WHERE wf.stage_smpl_cd='$chemist_code' AND wf.stage_smpl_flag='FT'");
 
-	
 
 		$sample_details = $query->fetchAll('assoc');
 		$sample_details = $sample_details[0];
 		
-
 		// added for chemist quantity and unit 27/05/2022 shreeya start
 		$get_smpl_qty= $this->MSampleAllocate->find('all',array('fields'=>array('sample_qnt','sample_unit'),'conditions'=>array('chemist_code IS'=>$chemist_code)))->first();
 		$this->loadModel('MUnitWeight');
+
 		$get_smpl_unit= $this->MUnitWeight->find('all',array('fields'=>array('unit_weight'),'conditions'=>array('unit_id IS'=>$get_smpl_qty['sample_unit'])))->first();
+
 		$this->set('smpl_qty',$get_smpl_qty['sample_qnt']);
 		$this->set('smpl_unit',$get_smpl_unit['unit_weight']);
 		
@@ -1126,9 +1110,9 @@ class TestController extends AppController {
 
 	
 			$query = $conn->execute("SELECT tf.field_value,mf.field_name,tf.field_unit,tf.test_code
-										FROM test_fields AS tf
-										INNER JOIN m_fields AS mf ON mf.field_code=tf.field_code
-										WHERE tf.test_code =".$each_test_code['test_code']);
+									FROM test_fields AS tf
+									INNER JOIN m_fields AS mf ON mf.field_code=tf.field_code
+									WHERE tf.test_code =".$each_test_code['test_code']);
 
 			$test_fields[] = $query->fetchAll('assoc');
 			
@@ -1137,113 +1121,104 @@ class TestController extends AppController {
 		}
 
 
-			// NEW CODE ADDED
+		// NEW CODE ADDED
 
 
-			$test = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
+		$test = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
+		
+		$test_string=array();
+
+		$i=0;
+		
+		foreach ($test as $each) {
+
+			$test_string[$i]=$each['test_code'];
+			$i++;
+		}
+
+		foreach($test_string as $row1) {
+		
+			$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
+									FROM comm_grade AS cg
+									INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
+									WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
+
+			$commo_grade = $query->fetchAll('assoc');
+			$str="";
+
+			$this->set('commo_grade',$commo_grade );
 			
-			$test_string=array();
+		}
 
-			$i=0;
+		$j=1;
+
+		foreach ($test_string as $row) {
 			
-			foreach ($test as $each) {
+			$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
+									FROM comm_grade AS cg
+									INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+									INNER JOIN m_test AS t ON t.test_code = cg.test_code
+									WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+									ORDER BY cg.grade_code ASC");
 
-				$test_string[$i]=$each['test_code'];
-				$i++;
+			$data = $query->fetchAll('assoc');
+
+
+			$query = $conn->execute("SELECT t.test_name,tm.method_name
+									FROM comm_grade AS cg
+									INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+									INNER JOIN m_test AS t ON t.test_code = cg.test_code
+									INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
+									WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+									ORDER BY t.test_name ASC");
+
+			$data1 = $query->fetchAll('assoc');
+
+			if (!empty($data1)) {
+				$data_method_name = $data1[0]['method_name'];
+				$data_test_name = $data1[0]['test_name'];
+			} else {
+				$data_method_name = '';
+				$data_test_name = '';
 			}
 
-			foreach($test_string as $row1) {
-			
-				$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
-										 FROM comm_grade AS cg
-										 INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
-
-				$commo_grade = $query->fetchAll('assoc');
-				$str="";
-
-				$this->set('commo_grade',$commo_grade );
+			$qry1 = "SELECT count(chemist_code)
+					FROM final_test_result AS ftr
+					INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
+					GROUP BY chemist_code ";
 				
-			}
-
-			$j=1;
-
-			foreach ($test_string as $row) {
-			
-				$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
-										 FROM comm_grade AS cg
-										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										 ORDER BY cg.grade_code ASC");
-
-
-							$data = $query->fetchAll('assoc');
-
-
-				$query = $conn->execute("SELECT t.test_name,tm.method_name
-										 FROM comm_grade AS cg
-										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										 INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										 ORDER BY t.test_name ASC");
-
-							$data1 = $query->fetchAll('assoc');
-
-				if (!empty($data1)) {
-				
-					$data_method_name = $data1[0]['method_name'];
-					$data_test_name = $data1[0]['test_name'];
-
-				} else {
-
-					$data_method_name = '';
-					$data_test_name = '';
-				}
-
-
-				$qry1 = "SELECT count(chemist_code)
-						 FROM final_test_result AS ftr
-						 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
-						 GROUP BY chemist_code ";
-				
-			
-
-				$res2	= $conn->execute($qry1);
-				$res2 = $res2->fetchAll('assoc');
+			$res2	= $conn->execute($qry1);
+			$res2 = $res2->fetchAll('assoc');
 			 
-				//get sample type code from sample sample inward table, to check if sample type is "Challenged"
-				//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
-				//applied on 27-10-2011 by Amol
-				$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
-				$sampleTypeCode = $getSampleType['sample_type_code'];
+			//get sample type code from sample sample inward table, to check if sample type is "Challenged"
+			//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
+			//applied on 27-10-2011 by Amol
+			$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
+			$sampleTypeCode = $getSampleType['sample_type_code'];
+			
+			if($sampleTypeCode==4){
 				
-				if($sampleTypeCode==4){
-					
-					$res2=array();//this will create report for selected final results, if this res set to blank
-					
-				}
+				$res2=array();//this will create report for selected final results, if this res set to blank
+			}
 
-				$count_chemist = '';
-				$all_chemist_code = array();
+			$count_chemist = '';
+			$all_chemist_code = array();
 
-				// get all  allocated chemist if sample is for duplicate analysis
-				if (isset($res2[0]['count'])>0) {
+			// get all  allocated chemist if sample is for duplicate analysis
+			if (isset($res2[0]['count'])>0) {
 
-					 $all_chemist_code = $conn->execute("SELECT ftr.chemist_code
-					 									 FROM m_sample_allocate AS ftr
-														 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
+				$all_chemist_code = $conn->execute("SELECT ftr.chemist_code
+													FROM m_sample_allocate AS ftr
+													INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
 
-				   $all_chemist_code= $all_chemist_code->fetchAll('assoc');
-				  
-					$count_chemist = count($all_chemist_code);
-					
-				}
+				$all_chemist_code= $all_chemist_code->fetchAll('assoc');
+				
+				$count_chemist = count($all_chemist_code);
+			}
 
-				// to get approved final result by Inward officer test wise
-				$this->loadModel('FinalTestResult');
-			    $test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
+			// to get approved final result by Inward officer test wise
+			$this->loadModel('FinalTestResult');
+			$test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
 		
 			//if sample is for duplicate analysis
 			//so get result chmeist wise
@@ -1267,7 +1242,6 @@ class TestController extends AppController {
 
 				}
 
-
 				//else get result from final test rsult
 				//for single anaylsis this is fianl approved result array
 			} else {
@@ -1275,11 +1249,10 @@ class TestController extends AppController {
 				if (count($test_result)>0) {
 
 					foreach ($test_result as $key=>$val) {
-
 						$result = $val;
 					}
-				} else {
 
+				} else {
 					$result="";
 				}
 			}
@@ -1291,6 +1264,7 @@ class TestController extends AppController {
 				foreach ($test_result as $key=>$val) {
 					$result_D= $val;
 				}
+
 			} else {
 				$result_D="";
 			}
@@ -1299,7 +1273,6 @@ class TestController extends AppController {
 			$this->set('comm_date',$commencement_date[0]['commencement_date']);
 
 			if (!empty($count_chemist)) {
-
 				$count_chemist1 =  $count_chemist;
 			} else {
 				$count_chemist1 = '';
@@ -1307,7 +1280,6 @@ class TestController extends AppController {
 
 			$this->set('count_test_result',$count_chemist1);
 		
-
 			$minMaxValue = '';
 
 			foreach ($commo_grade as $key=>$val) {
@@ -1324,13 +1296,11 @@ class TestController extends AppController {
 
 						if (trim($data4['min_max'])=='Min') {
 							$minMaxValue = "<br>(".$data4['min_max'].")";
-						}
-						elseif (trim($data4['min_max'])=='Max') {
+						} elseif (trim($data4['min_max'])=='Max') {
 							$minMaxValue = "<br>(".$data4['min_max'].")";
 						}
 					}
 				}
-
 			}
 
 			$str.="<tr><td>".$j."</td><td>".$data_test_name.$minMaxValue."</td>";
@@ -1367,18 +1337,15 @@ class TestController extends AppController {
 							$str.="<td>".$data4['grade_value']."</td>";
 
 						}
-						
 					}
 				}
 
 				if ($grade_code_match == 'no') {
 					$str.="<td>---</td>";
 				}
-
 			}
 
 
-			
 			//for duplicate analysis chemist wise results
 			if ($count_chemist1>0) {
 
@@ -1391,12 +1358,12 @@ class TestController extends AppController {
 
 			//for single analysis final results
 			} else {
-			// added of new column  in the table start 27/05/2022 shreeya
+				// added of new column  in the table start 27/05/2022 shreeya
 				$get_chemval = $this->ActualTestData->find('all',array('fields'=>array('result'),'conditions'=>array('org_sample_code IS' => $Sample_code,'chemist_code IS'=>$chemist_code,'test_code IS'=>$row,'display'=>'Y')))->first();
 				$che_val = $get_chemval['result'];
 				$str.="<td>".$che_val."</td>";
-			// added of new column in the table end 27/05/2022 
-			
+
+				// added of new column in the table end 27/05/2022 
 				$str.="<td>".$result."</td>";
 			}
 			
@@ -1405,10 +1372,6 @@ class TestController extends AppController {
 		}
 
 		$this->set('table_str',$str );
-
-
-
-		
 
 
 		$query = $conn->execute("SELECT si.*,mc.commodity_name, mcc.category_name, st.sample_type_desc, ct.container_desc, pc.par_condition_desc, uw.unit_weight, rf.ro_office, sa.sample_code, ur.user_flag, gd.grade_desc, u1.f_name, u1.l_name, rf2.ro_office
@@ -1432,14 +1395,13 @@ class TestController extends AppController {
 
 
 		if($test_report){
-			
-		
+
 			$sample_final_date = $this->Workflow->find('all',array('fields'=>'tran_date','conditions'=>array('stage_smpl_flag'=>'FG','org_sample_code IS'=>$Sample_code)))->first();
 			$sample_final_date['tran_date'] = date('d/m/Y');//taking current date bcoz creating pdf before grading for preview.
 			
-
 			$this->set('sample_final_date',$sample_final_date['tran_date']);
 			$this->set('test_report',$test_report);
+
 			// Call to function for generate pdf file,
 			// change generate pdf file name,
 			$current_date = date('d-m-Y');
@@ -1447,8 +1409,6 @@ class TestController extends AppController {
 			$test_report_name = 'grade_report_'.$sample_code1.'.pdf';
 
 			// NEW CODE ADDED END
-
-
 		}
 
 		$this->set('test_finalized_date',$test_finalized_date['tran_date']);
@@ -1481,22 +1441,6 @@ class TestController extends AppController {
 		$commodity_code = $this->Session->read('ABcommodity_code12');
 
 		$alloc_user1 = $_SESSION['user_code'];
-
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//																																																									//
-		//		/*$sample_details = $this->Sample_Inward->find('first',array('joins'=>array(array('table'=>'workflow','alias'=>'wf','type'=>'INNER','conditions'=>array('wf.org_sample_code=Sample_Inward.org_sample_code')),				//
-		//																	array('table'=>'m_commodity_category','alias'=>'mcc','type'=>'INNER','conditions'=>array('mcc.category_code = Sample_Inward.category_code')),					//
-		//																	array('table'=>'m_commodity','alias'=>'mc','type'=>'INNER','conditions'=>array('mc.commodity_code = Sample_Inward.commodity_code')),							//
-		//																	array('table'=>'m_sample_type','alias'=>'mst','type'=>'INNER','conditions'=>array('mst.sample_type_code = Sample_Inward.sample_type_code')),					//
-		//																	array('table'=>'m_sample_allocate','alias'=>'msa','type'=>'INNER','conditions'=>array('msa.chemist_code = wf.stage_smpl_cd')),									//
-		//																	array('table'=>'dmi_users','alias'=>'usr','type'=>'INNER','conditions'=>array('usr.id = wf.src_usr_cd')),														//
-		//																	array('table'=>'dmi_ro_offices','alias'=>'roo','type'=>'INNER','conditions'=>array('roo.id = usr.posted_ro_office'))),											//
-		//													'fields'=>array('wf.stage_smpl_cd','usr.f_name','usr.l_name','mcc.category_name','mc.commodity_name','mst.sample_type_desc','msa.recby_ch_date','usr.role','roo.ro_office'),	//
-		//													'conditions'=>array('wf.stage_smpl_cd'=>$chemist_code,'wf.stage_smpl_flag'=>'FT')));*/																							//
-		//																																																									//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 		$query = $conn->execute("SELECT wf.stage_smpl_cd,
 										usr.f_name,

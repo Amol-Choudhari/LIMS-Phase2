@@ -47,7 +47,7 @@ return [
             'username' => 'postgres',
             'password' => '123',
 
-            'database' => 'newphaseIIdb', 	
+            'database' => 'dmi', 	
             /*
              * If not using the default 'public' schema with the PostgreSQL driver
              * set it here.

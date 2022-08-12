@@ -21,7 +21,6 @@
 	var sample_type = $("#sample_type").val();
 	if(sample_type != ''){
 		$('#sample_type_code').attr("style", "pointer-events: none;").css("background-color", "lightgray");
-   		
 	}
 
 
@@ -145,6 +144,7 @@
 			$("#abc").show();
 		}
 
+		
 	});
 
 
@@ -187,7 +187,7 @@
 		if (sample_inward_form_validations() == false) {
 			e.preventDefault();
 		} else {
-		$('#frm_sample_inward').submit();
+			$('#frm_sample_inward').submit();
 		}
 	});
 
@@ -208,6 +208,15 @@
 		var category_code = $('#category_code').val();
 		var commodity_code = $('#commodity_code').val();
 		var ref_src_code = $('#ref_src_code').val();
+		var expiry_month = $('#expiry_month').val();
+		var expiry_year = $('#expiry_year').val();
+		var customer_name=$("#customer_name").val();
+		var customer_email_id = $("#customer_email_id").val();
+		var street_address = $("#street_address").val();
+		var state = $("#state").val();
+		var district = $("#district").val();
+		var postal_code = $("#postal_code").val();
+		var customer_mobile_no = $("#customer_mobile_no").val();
 
 		var value_return = 'true';
 
@@ -319,6 +328,100 @@
 			value_return = 'false';
 		}
 
+		if(expiry_month==""){
+
+			$("#error_expiry_month").show().text("Please Select Expiry Month.");
+			$("#expiry_month").addClass("is-invalid");
+			$("#expiry_month").click(function(){$("#error_expiry_month").hide().text;$("#expiry_month").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(expiry_year==""){
+
+			$("#error_expiry_year").show().text("Please Select Expiry Year.");
+			$("#expiry_year").addClass("is-invalid");
+			$("#expiry_year").click(function(){$("#error_expiry_year").hide().text;$("#expiry_year").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(customer_name==""){
+
+			$("#error_customer_name").show().text("Please Enter Customer Full Name.");
+			$("#customer_name").addClass("is-invalid");
+			$("#customer_name").click(function(){$("#error_customer_name").hide().text;$("#customer_name").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(customer_email_id==""){
+
+			$("#error_customer_email_id").show().text("Please Enter Email.");
+			$("#customer_email_id").addClass("is-invalid");
+			$("#customer_email_id").click(function(){$("#error_customer_email_id").hide().text;$("#customer_email_id").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(street_address==""){
+
+			$("#error_street_address").show().text("Please Enter Street Address.");
+			$("#street_address").addClass("is-invalid");
+			$("#street_address").click(function(){$("#error_street_address").hide().text;$("#street_address").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(state==""){
+
+			$("#error_state").show().text("Please Select State.");
+			$("#state").addClass("is-invalid");
+			$("#state").click(function(){$("#error_state").hide().text;$("#state").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(district==""){
+
+			$("#error_district").show().text("Please Select District.");
+			$("#district").addClass("is-invalid");
+			$("#district").click(function(){$("#error_district").hide().text;$("#district").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(postal_code==""){
+
+			$("#error_postal_code").show().text("Please Enter Postal Code.");
+			$("#postal_code").addClass("is-invalid");
+			$("#postal_code").click(function(){$("#error_postal_code").hide().text;$("#postal_code").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(customer_mobile_no==""){
+
+			$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
+			$("#customer_mobile_no").addClass("is-invalid");
+			$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;	$("#customer_mobile_no").removeClass("is-invalid");});
+			value_return = 'false';
+		}else{
+			alert();
+			if(customer_mobile_no.match(/^(?=.*[0-9])[0-9]{10}$/g)){}else{//also allow if 6 X $ 4 nos found //added on 12-10-2017 by Amol
+
+				$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
+				$("#customer_mobile_no").addClass("is-invalid");
+				$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+				value_return = 'false';
+			}
+
+			//first valid no. for mob.no, applid on 16-02-2021 by Amol
+			var validfirstno = ['7','8','9'];
+			//get first character of mobile no.
+			var f_m_no = customer_mobile_no.charAt(0);
+			if($.inArray(f_m_no,validfirstno) != -1){
+				//valid
+			}else{
+				$("#error_customer_mobile_no").show().text("Invalid mobile number");
+				$("#customer_mobile_no").addClass("is-invalid");
+				$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+				value_return='false';
+			}
+		}
+
 		if(value_return == 'false'){
 
 			var msg = "Please check some fields are missing or not proper.";
@@ -328,104 +431,128 @@
 		}else{
 			exit();
 		}
-
-
-
 	}
 
 
-        /// For Comercial Type Sample ///
+	/// For Comercial Type Sample ///
 
-        $('#sample_type_code').change(function (e) {    
-			//e.preventDefault();
-			var sample_type_code = $('#sample_type_code').val();
+	$('#sample_type_code').change(function (e) {
+		//e.preventDefault();
+		var sample_type_code = $('#sample_type_code').val();
 
-            if(sample_type_code == '3'){
-				$.confirm({
-					title: 'Commercial Sample',
-					content: 'Please Note: As you have selected <b>Commercial</b> Sample Type the payment details to be filled in <i>Payment Section</i>. <br>After saving the <i>Inward Section</i> the Payment Section will be avaible to fill.',
-					icon: 'glyphicon glyphicon-info-sign',
-					type: 'info',
-					columnClass: 'm',
-					buttons: {
-						OK: {
-							btnClass: 'btn-info',
-							action: function(){}
-						},
-						cancel: function () {
-							$("#sample_type_code option:eq(0)").prop("selected", true);
+		if(sample_type_code == '3'){
+			
+			$.confirm({
+				title: 'Commercial Sample',
+				content:"<u>Please Note :</u> As you have selected <b>Commercial</b> Sample Type. <br> You need to submit the payment details in the <i><b>Payment Section</b></i> which will available after saving the <i><b>Inward Section</b></i>.<br>",
+				icon: 'glyphicon glyphicon-info-sign',
+				type: 'info',
+				columnClass: 'm',
+				buttons: {
+					OK: {
+						btnClass: 'btn-info',
+						action: function(){
+						
 						}
-					}
-				});
-            }
-        });
-
-
-
-		$('#commodity_code').change(function (e) {
-
-			var sample_type_code = $('#sample_type_code').val();
-			if (sample_type_code != "") {
-				if (sample_type_code == '3') {
-					if(checkCommodityUsed()==false){
-						e.preventDefault();
-					}	
-				}
-			}
-		});
-
-
-		$('#sample_type_code').change(function (e) {
-			
-			var sample_type_code = $('#sample_type_code').val();
-			
-			if (sample_type_code != "") {
-				if (sample_type_code == '3') {
-					if(checkCommodityUsed()==false){
-						e.preventDefault();
-					}	
-				}
-			}
-		});
-	
-	
-		function checkCommodityUsed(){
-	
-			var commodity = $("#commodity_code").val();
-			var commodityName = $("#commodity_code option:selected").text();
-	
-			if (commodity !='') {
-				
-				$.ajax({
-					type: "POST",
-					async:true,
-					url:"../AjaxFunctions/check_if_commodity_added",
-					data: {commodity:commodity},
-					beforeSend: function (xhr) { // Add this line
-						xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
 					},
-					success: function (data) {
-						if (data == 'no') {
+					cancel: function () {
+						$("#sample_type_code option:eq(0)").prop("selected", true);
+					}
+				}
+			});
 
-							$.confirm({
-								title:'Commercial Charges',
-								content: 'There is no <i>charges</i> available for the <b>'+ commodityName +'</b> commodity. <br/> Please use the <i>Commercial Charges</i> Master to add the charges for commodity. </br> <b>OR</b> Contact the Administrator.',
-								icon: 'glyphicon glyphicon-info-sign',
-								type: 'info',
-								columnClass: 'm',
-								buttons: {
-									OK: {
-										btnClass: 'btn-info',
-										action: function(){
-											
-										}
+		}
+	});
+
+
+	//this is for the commecial flow to check the commodity charges are filled or not.
+	$('#commodity_code').change(function (e) {
+
+		var sample_type_code = $('#sample_type_code').val();
+		if (sample_type_code != "") {
+			if (sample_type_code == '3') {
+				if(checkCommodityUsed()==false){
+					e.preventDefault();
+				}	
+			}
+		}
+	});
+
+
+	$('#sample_type_code').change(function (e) {
+		
+		var sample_type_code = $('#sample_type_code').val();
+		if (sample_type_code != "") {
+			if (sample_type_code == '3') {
+				if(checkCommodityUsed()==false){
+					e.preventDefault();
+				}	
+			}
+		}
+	});
+
+	
+	function checkCommodityUsed(){
+
+		var commodity = $("#commodity_code").val();
+		var commodityName = $("#commodity_code option:selected").text();
+
+		if (commodity !='') {
+			
+			$.ajax({
+				type: "POST",
+				async:true,
+				url:"../AjaxFunctions/check_if_commodity_added",
+				data: {commodity:commodity},
+				beforeSend: function (xhr) { // Add this line
+					xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+				},
+				success: function (data) {
+					if (data == 'no') {
+
+						$.confirm({
+							title:'Commercial Charges',
+							content: 'There is no <i>charges</i> available for the <b>'+ commodityName +'</b> commodity. <br/> Please use the <i>Commercial Charges</i> Master to add the charges for commodity. </br> <b>OR</b> Contact the Administrator.',
+							icon: 'glyphicon glyphicon-info-sign',
+							type: 'info',
+							columnClass: 'm',
+							buttons: {
+								OK: {
+									btnClass: 'btn-info',
+									action: function(){
 									}
 								}
-							});				
-						}
-					  
+							}
+						});
 					}
-				});
-			}
-			
+				}
+			});
 		}
+	}
+
+
+	$("#state").change(function(){
+		get_district();
+	});
+
+
+	//function to district
+	function get_district(){
+
+		$("#district").find('option').remove();
+		var state = $("#state").val();	
+
+		$.ajax({
+			
+			type: "POST",
+			async:true,
+			url:"../AjaxFunctions/show-district-dropdown",
+			data: {state:state},
+			beforeSend: function (xhr) { // Add this line
+				xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+			}, 
+			success: function (data) {
+				$("#district").append(data);
+			}
+		});
+	}

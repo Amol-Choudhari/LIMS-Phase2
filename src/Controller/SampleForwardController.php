@@ -18,6 +18,9 @@ class SampleForwardController extends AppController {
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
+		$this->loadModel('DmiSmsEmailTemplates');
+		$this->loadModel('LimsUserActionLogs');
+
 	}
 
 /************************************************************************************************************************************************************************************************************************/
@@ -116,15 +119,6 @@ class SampleForwardController extends AppController {
 
 				$sample_code	= $this->request->getData('stage_sample_code');
 
-				//#########################################################################//
-					/*	$sample_code_pattern	= '/^[0-9]+$/';
-						$valid_sample_code		= preg_match($sample_code_pattern,$sample_code);
-						if ($valid_sample_code==0){
-							$this->Session->setFlash(__('Select a proper sample code'));
-							return $this->redirect(array('action' => 'sample_forward'));
-						}*/
-				//##########################################################################//
-
 				//Checked Empty Conditions on Post Data
 				if($this->request->getData('dst_usr_cd') != '' && $this->request->getData('ral_cal') != '' && $this->request->getData('dst_loc_id') != '' ) {
 
@@ -151,14 +145,8 @@ class SampleForwardController extends AppController {
 
 
 					$ogrsample1	= $this->SampleInward->find('all', array('conditions'=> array('stage_sample_code IS' => $sample_code)))->first();
+					
 					$ogrsample	= $ogrsample1['org_sample_code'];
-
-				
-					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-					//$data			= $this->Workflow->find('all', array('fields' => array('amount' => 'MAX(stage)'),'conditions'=> array('org_sample_code IS' => $ogrsample)))->toArray();//
-					/*$stage			= $data[0][0]['max']+1	;																														  //
-					//$type			= explode(",",$_POST["type"]);*/																													 //
-					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 					$user_code	= $this->request->getData('dst_usr_cd');
 
@@ -234,56 +222,22 @@ class SampleForwardController extends AppController {
 							$conn->execute($str);
 
 							$get_user_codes = $this->Workflow->find('all',array('fields'=>array('src_usr_cd','dst_usr_cd'),'conditions'=>array('stage_smpl_cd IS'=>$new_sample_code)))->first();
-							$source_user_code = $get_user_codes['src_usr_cd'];
-							$destination_user_code = $get_user_codes['dst_usr_cd'];
+						
+							//Sample Forward SMS/EMAIL
+							#$this->DmiSmsEmailTemplates->sendMessage(129,$get_user_codes['src_usr_cd'],$new_sample_code); #source user
+							#$this->DmiSmsEmailTemplates->sendMessage(130,$get_user_codes['dst_usr_cd'],$new_sample_code); #destination user
 							
-							$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$source_user_code)))->first();
-							//print_r($user_role); exit;
-							
-							//Call To the Common SMS/Email Sending Method
-							$this->loadModel('DmiSmsEmailTemplates');
-						/*
-							if ($user_role['role'] == 'Inward Officer') {
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
 
-								//Message When Inward Officer Forward the Sample
-								//$this->DmiSmsEmailTemplates->sendMessage(2007,$new_sample_code,$source_user_code);
-								//Message When Forwarded To RAL/CAL OIC From Inward Officer
-								$this->DmiSmsEmailTemplates->sendMessage(2008,$new_sample_code,$destination_user_code);
-
-							} elseif ($user_role['role'] == 'RO/SO OIC') {
-								
-								//Message When RO/SO OIC Forward the Sample
-								$this->DmiSmsEmailTemplates->sendMessage(2010,$new_sample_code,$source_user_code);
-								//Message When Forward From RO/SO OIC to RAL/CAL OIC
-								$this->DmiSmsEmailTemplates->sendMessage(2011,$new_sample_code,$destination_user_code);	
-
-							} elseif ($user_role['role'] == 'RAL/CAL OIC') {
-							
-								//Message When RAL/CAL OIC Forward the Sample
-								$this->DmiSmsEmailTemplates->sendMessage(2009,$new_sample_code,$source_user_code);
-								//Message to
-								$this->DmiSmsEmailTemplates->sendMessage(2012,$new_sample_code,$destination_user_code);
-
-							}  elseif ($user_role['role'] == 'Sr Chemist') {
-
-								//Message When Sr Chemist Forwarded the Sample
-								//$this->DmiSmsEmailTemplates->sendMessage(2016,$new_sample_code,$source_user_code);
-								$this->DmiSmsEmailTemplates->sendMessage(2031,$new_sample_code,$destination_user_code);
-
-							}  elseif ($user_role['role'] == 'Lab Incharge') {
-
-								//Message When Sr Chemist Forwarded the Sample
-								$this->DmiSmsEmailTemplates->sendMessage(2021,$new_sample_code,$source_user_code);
-								$this->DmiSmsEmailTemplates->sendMessage(2022,$new_sample_code,$destination_user_code);
-
-							}
-						*/
 							$message = 'The sample with registration code '.$this->request->getData('stage_sample_code').' is forwarded to '.$user_flag_new.' '.$ro_office_new.' with code as '.$new_sample_code;
 							$message_theme = 'success';
 							$redirect_to = 'forwarded_list';
 
 						} else {
 
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 							$message = 'Sorry... The Sample not forwarded properly. Please check.';
 							$message_theme = 'failed';
 							$redirect_to = 'available_to_forward_list';
@@ -291,6 +245,8 @@ class SampleForwardController extends AppController {
 
 					} else {
 
+						// For Maintaining Action Log by Akash (26-04-2022)
+						$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 						$message = 'The selected sample is already forwarded.';
 						$message_theme = 'alertinfo';
 						$redirect_to = 'available_to_forward_list';
@@ -402,10 +358,13 @@ class SampleForwardController extends AppController {
 
 
 					$ogrsample1	= $this->SampleInward->find('all', array('conditions'=> array('stage_sample_code IS' => $sample_code)))->first();
+
 					$ogrsample	= $ogrsample1['org_sample_code'];
 
 					$user_role = $this->Workflow->find('all',array('fields'=>array('src_usr_cd'),'conditions'=>array('org_sample_code IS'=>$ogrsample)))->first();
+
 					$usercode = $user_role['src_usr_cd'];
+
 					$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
 
 					$user_code	= $this->request->getData('dst_usr_cd');
@@ -417,6 +376,7 @@ class SampleForwardController extends AppController {
 					$dst_user_office = $this->request->getData('dst_loc_id');
 
 					$tran_date		= date('Y-m-d');
+
 					$dispatch_date	= date("Y/m/d");
 
 					//Generate New Stage Sample Code
@@ -481,58 +441,32 @@ class SampleForwardController extends AppController {
 
 							$conn->execute($str);
 
-							//Call To the Common SMS/Email Sending Method
-							$this->loadModel('DmiSmsEmailTemplates');
-						/*
-							if ($user_role['role'] == 'Inward Officer') {
-
-								//Message When Inward Officer Forward the Sample
-								$this->DmiSmsEmailTemplates->sendMessage(2007,$new_sample_code);
-								//Message When Forwarded To RAL/CAL OIC From Inward Officer
-								$this->DmiSmsEmailTemplates->sendMessage(2008,$new_sample_code);
-
-							} elseif ($user_role['role'] == 'RO/SO OIC') {
-
-								//Message When RO/SO OIC Forward the Sample
-								$this->DmiSmsEmailTemplates->sendMessage(2010,$new_sample_code);
-								//Message When Forward From RO/SO OIC to RAL/CAL OIC
-								$this->DmiSmsEmailTemplates->sendMessage(2011,$new_sample_code);
-
-							} elseif ($user_role['role'] == 'RAL/CAL OIC') {
-
-								//Message When RAL/CAL OIC Forward the Sample
-								$this->DmiSmsEmailTemplates->sendMessage(2009,$new_sample_code);
-								//Message to
-								$this->DmiSmsEmailTemplates->sendMessage(2012,$new_sample_code);
-
-							}  elseif ($user_role['role'] == 'Sr Chemist') {
-
-								//Message When Sr Chemist Forwarded the Sample
-								$this->DmiSmsEmailTemplates->sendMessage(2016,$new_sample_code);
-
-							}
-						*/
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
 
 							$message = 'The sample with registration code '.$this->request->getData('stage_sample_code').' is forwarded to '.$user_flag_new.' '.$ro_office_new.' with code as '.$new_sample_code;
 							$message_theme = 'success';
 							$redirect_to = 'forwarded_list';
 
 						} else {
-
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 							$message = 'Sorry... The Sample not forwarded properly. Please check.';
 							$message_theme = 'failed';
 							$redirect_to = 'available_to_forward_list';
 						}
 
 					} else {
-
+						// For Maintaining Action Log by Akash (26-04-2022)
+						$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 						$message = 'The selected sample is already forwarded.';
 						$message_theme = 'alertinfo';
 						$redirect_to = 'available_to_forward_list';
 					}
 
 				} else {
-
+					// For Maintaining Action Log by Akash (26-04-2022)
+					$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
 					$message = 'Sorry... Please select proper inputs';
 					$message_theme = 'warning';
 					$redirect_to = 'available_to_forward_list';
@@ -562,24 +496,6 @@ class SampleForwardController extends AppController {
 		$this->loadModel('SampleInward');
 		$this->loadModel('Workflow');
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//																																																													//
-		//	/******************************************************************************************************************************************************************************************************************************* */				//																																																									//
-		//	if($_SESSION['user_flag']=='HO'){																																																				//
-		//	$sample_code2=$this->SampleInward->find('all', array('joins' => array(array('table' => 'workflow','alias' => 'w','type' => 'INNER','conditions' => array('w.org_sample_code = SampleInward.org_sample_code'))),									//
-		//														  'order' => array('stage_sample_code' => 'ASC'),'fields' => array('SampleInward.inward_id','SampleInward.stage_sample_code'),																//
-		//														  'group' => 'SampleInward.inward_id,SampleInward.stage_sample_code',																														//
-		//														  'conditions'=>array('SampleInward.display not'=>'N','w.dst_usr_cd'=>$_SESSION['user_code'],'SampleInward.status_flag'=>'H','SampleInward.acc_rej_flg'=>'A','w.stage_smpl_flag'=>'HF')		//
-		//														 ))->toArray();																																												//
-		//	} else {																																																										//
-		//	$sample_code2=$this->SampleInward->find('all', array('joins' => array(array('table' => 'workflow','alias' => 'w','type' => 'INNER','conditions' => array('w.org_sample_code = SampleInward.org_sample_code'))),									//
-		//														  'order' => array('stage_sample_code' => 'ASC'),'fields' => array('SampleInward.inward_id','SampleInward.stage_sample_code'),																//
-		//														  'group' => 'SampleInward.inward_id,SampleInward.stage_sample_code',																														//
-		//														  'conditions'=>array('SampleInward.display NOT IN'=>array('N'),'w.dst_usr_cd'=>$_SESSION['user_code'],'SampleInward.status_flag'=>'S','SampleInward.acc_rej_flg'=>'A')))->toArray();		//
-		//	}																																																												//
-		//	*/																																																												//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////																																																													//
-
 		$getSamplecodes=array();
 
 		//Get Currnt User
@@ -603,15 +519,6 @@ class SampleForwardController extends AppController {
 				$getSamplecodes = $this->SampleInward->find('list',array('keyField'=>'org_sample_code','valueField'=>'org_sample_code','conditions'=>array('org_sample_code IN'=>$workflowData,'display'=>'Y','status_flag'=>'S','acc_rej_flg'=>'A')))->toArray();
 			}
 		}
-
-		//###############################################################################//
-		// sort the sample code array and change the condition for forwarded sample code //	
-		/*$sort_sample_codes = array();
-		
-		//foreach ($sample_code2 as $row) {
-		//	$sort_sample_codes[$row['stage_sample_code']] = $row['stage_sample_code'];
-		//}*/
-		//############################################################################//
 
 		return($getSamplecodes);
 	}
@@ -643,8 +550,6 @@ class SampleForwardController extends AppController {
 
 			$user_code = $_SESSION['user_code'];
 
-			//$sort_sample_codes = $this->sampleForwardList();
-			//asort($sort_sample_codes);
 			$this->set('res',array($rej_sample_cd=>$rej_sample_cd));
 
 
@@ -699,16 +604,19 @@ class SampleForwardController extends AppController {
 						if ($this->SmpRejectAtFwdStage->save($SmpRejectEntity)) {
 
 							//Call to the Common SMS/Email Sending Method
-							$this->loadModel('DmiSmsEmailTemplates');
 							//$this->DmiSmsEmailTemplates->sendMessage(2004,$sample_code);
 
+							// For Maintaining Action Log by Akash (26-04-2022)
+							$this->LimsUserActionLogs->saveActionLog('Sample Reject at Forward Stage','Success');
+
 							$message = 'Sample Rejected Successfully';
+							$message_theme = 'success';
 							$redirect_to = 'rejected_list';
 						}
 					}
 
 				} else {
-
+					
 					$message = 'Please enter sample rejection reason.';
 					$message_theme = 'warning';
 					$redirect_to = 'available_to_forward_list';
@@ -1130,7 +1038,7 @@ class SampleForwardController extends AppController {
 		$user_cd=$this->Session->read('user_code');
 
 		$sample_list = $this->sampleForwardList();
-
+		
 		//set array format
 		$cus_string= '';
 		foreach ($sample_list as $each) {
@@ -1151,6 +1059,7 @@ class SampleForwardController extends AppController {
 		$res = $query ->fetchAll('assoc');
 
 		return $res;
+	
 	}
 
 /************************************************************************************************************************************************************************************************************************/

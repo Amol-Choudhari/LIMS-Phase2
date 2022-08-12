@@ -18,54 +18,54 @@
 		font-family: times;
 	}
 
-				
+	
 </style>
 	
-	
+ 
 	<table width="100%" border="1">
-		<tr>				
+		<tr>
 			<td width="12%" align="center">
 				<img width="35" src="img/logos/emblem.png">
 			</td>
 			<td width="76%" align="center">
 				<h4>Government of India <br> Ministry of Agriculture and Farmers Welfare<br>
-				Department of Agriculture & Farmers Welfare<br>
-				Directorate of Marketing & Inspection<br>
-				</h4>				
+					Department of Agriculture & Farmers Welfare<br>
+					Directorate of Marketing & Inspection<br>
+				</h4>
 			</td>
 			<td width="12%" align="center">
 				<img src="img/logos/agmarklogo.png">
-			</td>				
+			</td>
 		</tr>
 	</table>
 	
 	<table width="100%" border="1">
-		<tr>				
-		<?php if($showNablLogo=='yes'){ ?>
-			<td width="79%" align="center">
-		<?php }else{ ?>	
-			<td align="center">
-		<?php } ?>
+		<tr>
+			<?php if($showNablLogo=='yes'){ ?>
+				<td width="79%" align="center">
+			<?php }else{ ?>	
+				<td align="center">
+			<?php } ?>
 			
-				<?php 
-					if($test_report[0]['grade_user_flag']=="CAL" ){ ?>
-						
-						<h5><span style="font-family: krutidev010;">dsanzh; ,xekdZ ç;ksx“kkyk</span> / Central Agmark Laboratory<br />
-						<span style="font-family: krutidev010;">mŸkj vEck>jh ekxZ</span> / North Ambazari Road Nagpur 440010<br />											
-						Phone:0712-2561748,Fax: 0712-2540952 T-2315 mail:cal@nic.in</h5>
+		  
+			<?php if($test_report[0]['grade_user_flag']=="CAL" ){ ?>
+	  
+					<h5><span style="font-family: krutidev010;">dsanzh; ,xekdZ ç;ksx“kkyk</span> / Central Agmark Laboratory<br />
+					<span style="font-family: krutidev010;">mŸkj vEck>jh ekxZ</span> / North Ambazari Road Nagpur 440010<br />
+					Phone:0712-2561748,Fax: 0712-2540952 T-2315 mail:cal@nic.in</h5>
+			<?php } ?>
 				
-				<?php } ?>
-				
-				<?php 
-					if($test_report[0]['grade_user_flag']=="RAL" ){ ?>
-						
-						<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $_SESSION['ro_office'];?></h5>
-				
-				<?php }elseif(isset($test_report[0]['ro_office']) && isset($ral_lab_name) && $ral_lab_name=='RAL'){ ?>
-				
-						<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $test_report[0]['ro_office'];?></h5>
-				<?php } ?>	
-			
+			  
+	
+		  
+			<?php if($test_report[0]['grade_user_flag']=="RAL" ){ ?>
+	  
+				<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $_SESSION['ro_office'];?></h5>
+	
+			<?php }elseif(isset($test_report[0]['ro_office']) && isset($ral_lab_name) && $ral_lab_name=='RAL'){ ?>
+	
+				<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">{¨™kh; ,xekdZ ç;ksx“kkyk</span> / Regional Agmark Laboratory , <?php echo $test_report[0]['ro_office'];?></h5>
+			<?php } ?>
 			</td>
 			<?php if($showNablLogo=='yes'){ ?>
 				<td width="21%" align="center">
@@ -176,6 +176,40 @@
 		</tr>
 	</table>
 
+	<!--This below code is for the customer details on the PDF by Akash on 10-08-2022-->
+	<h5><span style="font-family: krutidev010; font-weight:bold; font-size:13px;">xzkgd fooj.k</span> / Customer Details : </h5>
+	<table width="100%" border="1" margin-bottom="5" cellspacing="">
+		<tr>
+			<td>1. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk uke</span> / Customer's Name</td>
+			<td><?php if($customer_details != null) { echo $customer_details['customer_name']; } else { echo "N/A"; }  ?></td>
+		</tr>
+		<tr>
+			<td>2. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk bZesy</span> / Customer's Email</td>
+			<td><?php if($customer_details != null) { echo base64_decode($customer_details['customer_email_id']); } else { echo "N/A"; }  ?></td>
+		</tr>
+		<tr>
+			<td>3. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk eksckby</span> / Customer's Mobile</td>
+			<td><?php if($customer_details != null) { echo base64_decode($customer_details['customer_mobile_no']); } else { echo "N/A"; }  ?></td>
+		</tr>
+		<tr>
+			<td>4. <span style="font-family: krutidev010; font-size:10px;">xzkgd QSDl uacj</span> Customer's Fax</td>
+			<td><?php if($customer_details != null) { echo $customer_details['customer_fax_no']; } else { echo "N/A"; }  ?></td>
+		</tr>
+		<tr>
+			<td>5. <span style="font-family: krutidev010; font-size:10px;">xzkgd dk irk</span> / Address</td>
+
+			<td style="padding:10px; vertical-align:top;">
+					<?php if ($customer_details && $stateAndDistrict != null) {
+						echo $customer_details['street_address'].', ';
+						echo $stateAndDistrict['district_name'].', ';
+						echo $stateAndDistrict['state_name'].', ';
+						echo $customer_details['postal_code'].'.<br>';
+					}
+					
+					?>
+			</td>
+		</tr>
+	</table>					
 	<br pagebreak="true" />	
 	
 	<?php
