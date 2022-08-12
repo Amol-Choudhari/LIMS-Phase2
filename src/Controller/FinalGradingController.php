@@ -1392,56 +1392,6 @@ class FinalGradingController extends AppController
 			$test_string[$i]=$each['test_code'];
 			$i++;
 		}
-<<<<<<< HEAD
-
-		//new queries and conditions added on 03-02-2022 by Amol
-		//to print NABL logo and ULR no. on final test report
-				
-		$showNablLogo = ''; $urlNo='';		
-		//get NABL commosity and test details if exist
-		$this->loadModel('LimsLabNablCommTestDetails');
-		$NablTests = $this->LimsLabNablCommTestDetails->find('all',array('fields'=>'tests','conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office'],'commodity IS'=>$commodity_code),'order'=>'id desc'))->first();		
-	
-		if(!empty($NablTests)){
-			//get NABL certifcate details
-			$this->loadModel('LimsLabNablDetails');
-			$NablDetails = $this->LimsLabNablDetails->find('all',array('fields'=>array('accreditation_cert_no','valid_upto_date'), 'conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office']),'order'=>'id desc'))->first();
-			//check validity
-			$validUpto = strtotime($NablDetails['valid_upto_date']);
-			$curDate = strtotime(date('d-m-Y'));
-			
-			if($validUpto > $curDate){
-				
-				$showNablLogo = 'yes';
-				$certNo = $NablDetails['accreditation_cert_no'];
-				$curYear = date('y');
-				//Custom array for Lab no. 
-				$labNoArr = array('55'=>'0','56'=>'1','45'=>'2','46'=>'3','47'=>'4','48'=>'5','49'=>'6','50'=>'7','51'=>'8','52'=>'9','53'=>'10','54'=>'11');
-				$labNo = $labNoArr[$_SESSION['posted_ro_office']];
-				
-				//get total report for respective lab for current year
-				$newDate = '01-01-'.date('Y');
-				$getReportsCounts = $this->Workflow->find('all',array('fields'=>'id','conditions'=>array('src_loc_id'=>$_SESSION['posted_ro_office'],'stage_smpl_flag'=>'FG','date(tran_date) >=' =>$newDate,)))->toArray();
-				$NoOfReport = '';
-				for($i=0;$i<(8-(strlen(count($getReportsCounts))));$i++){
-					$NoOfReport .= '0'; 
-				}
-				if(count($getReportsCounts)==0){
-					$NoOfReport .= '1';
-				}else{
-					$NoOfReport .= count($getReportsCounts)+1;
-				}
-				
-				
-				$NablTests = explode(',',$NablTests['tests']);
-				//compare tests arrays
-				$result=array_diff($test_string,$NablTests);
-				if(!empty($result)){$F_or_P = 'P';}else{$F_or_P = 'F';}
-
-			//	$urlNo = 'ULR-'.$certNo.'/'.$curYear.'/'.$labNo.'/'.$NoOfReport.'/'.$F_or_P;
-				$urlNo = 'ULR-'.$certNo.$curYear.$labNo.$NoOfReport.$F_or_P;
-
-=======
 
 		//new queries and conditions added on 03-02-2022 by Amol
 		//to print NABL logo and ULR no. on final test report
@@ -1490,7 +1440,6 @@ class FinalGradingController extends AppController
 				//$urlNo = 'ULR-'.$certNo.'/'.$curYear.'/'.$labNo.'/'.$NoOfReport.'/'.$F_or_P;
 				$urlNo = 'ULR-'.$certNo.$curYear.$labNo.$NoOfReport.$F_or_P;
 
->>>>>>> daily-lims
 				//to get tests with accreditation
 				$accreditatedtest = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'test_code IN'=>$NablTests, 'display' => 'Y')))->toArray();
 				$test_string=array();
@@ -1513,28 +1462,8 @@ class FinalGradingController extends AppController
 
 		}
 		$this->set(compact('showNablLogo','urlNo'));
-<<<<<<< HEAD
 
 		foreach($test_string as $row1) {
-
-			$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
-										FROM comm_grade AS cg
-										INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
-										WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
-
-			$commo_grade = $query->fetchAll('assoc');
-			$str="";
-
-			$this->set('commo_grade',$commo_grade );
-		}
-
-		$j=1;
-
-		foreach ($test_string as $row) {
-=======
-
-		foreach($test_string as $row1) {
->>>>>>> daily-lims
 
 			$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
 										FROM comm_grade AS cg
@@ -1809,20 +1738,6 @@ class FinalGradingController extends AppController
 
 		foreach ($test_string_ext as $row) {
 
-<<<<<<< HEAD
-				$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
-										 FROM comm_grade AS cg
-										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										 ORDER BY cg.grade_code ASC");
-
-
-							$data = $query->fetchAll('assoc');
-
-
-				$query = $conn->execute("SELECT t.test_name,tm.method_name
-=======
 			$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
 										FROM comm_grade AS cg
 										INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
@@ -1834,7 +1749,6 @@ class FinalGradingController extends AppController
 
 
 			$query = $conn->execute("SELECT t.test_name,tm.method_name
->>>>>>> daily-lims
 										 FROM comm_grade AS cg
 										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
 										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
@@ -1842,102 +1756,6 @@ class FinalGradingController extends AppController
 										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
 										 ORDER BY t.test_name ASC");
 
-<<<<<<< HEAD
-							$data1 = $query->fetchAll('assoc');
-
-				if (!empty($data1)) {
-
-					$data_method_name = $data1[0]['method_name'];
-					$data_test_name = $data1[0]['test_name'];
-
-				} else {
-
-					$data_method_name = '';
-					$data_test_name = '';
-				}
-
-
-				$qry1 = "SELECT count(chemist_code)
-						 FROM final_test_result AS ftr
-						 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
-						 GROUP BY chemist_code ";
-
-				$res2	= $conn->execute($qry1);
-				$res2 = $res2->fetchAll('assoc');
-
-				//get sample type code from sample sample inward table, to check if sample type is "Challenged"
-				//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
-				//applied on 27-10-2011 by Amol
-				$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
-				$sampleTypeCode = $getSampleType['sample_type_code'];
-				if($sampleTypeCode==4){
-					$res2=array();//this will create report for selected final results, if this res set to blank
-				}
-
-				$count_chemist = '';
-				$all_chemist_code = array();
-
-
-			//get al  allocated chemist if sample is for duplicate analysis
-				if (isset($res2[0]['count'])>0) {
-
-					 $all_chemist_code = $conn->execute("SELECT ftr.chemist_code
-					 									 FROM m_sample_allocate AS ftr
-														 INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
-
-				   $all_chemist_code= $all_chemist_code->fetchAll('assoc');
-
-					$count_chemist = count($all_chemist_code);
-
-				}
-
-			//to get approved final result by Inward officer test wise
-			$test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
-
-			//if sample is for duplicate analysis
-			//so get result chmeist wise
-			$result_D = '';
-			$result = array();
-
-			if (isset($res2[0]['count'])>0) {
-
-				$i=0;
-
-				foreach ($all_chemist_code as $each) {
-
-					$chemist_code = $each['chemist_code'];
-
-					//get result for each chemist_code
-					$get_results = $this->ActualTestData->find('all',array('fields'=>array('result'),'conditions'=>array('org_sample_code IS' => $Sample_code,'chemist_code IS'=>$chemist_code,'test_code IS'=>$row,'display'=>'Y')))->first();
-
-					$result[$i] = $get_results['result'];
-
-					$i=$i+1;
-
-				}
-
-
-				//else get result from final test rsult
-				//for single anaylsis this is fianl approved result array
-			} else {
-
-				if (count($test_result)>0) {
-
-					foreach ($test_result as $key=>$val) {
-
-						$result = $val;
-					}
-				} else {
-
-					$result="";
-				}
-			}
-
-
-			//for duplicate anaylsis this is final approved result array
-			if (count($test_result)>0) {
-
-=======
 			$data1 = $query->fetchAll('assoc');
 
 			if (!empty($data1)) {
@@ -2032,13 +1850,11 @@ class FinalGradingController extends AppController
 			//for duplicate anaylsis this is final approved result array
 			if (count($test_result)>0) {
 
->>>>>>> daily-lims
 				foreach ($test_result as $key=>$val) {
 					$result_D= $val;
 				}
 			} else {
 				$result_D="";
-<<<<<<< HEAD
 			}
 
 			$commencement_date= $this->MSampleAllocate->find('all',array('order' => array('commencement_date' => 'asc'),'fields' => array('commencement_date'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
@@ -2051,20 +1867,6 @@ class FinalGradingController extends AppController
 				$count_chemist1 = '';
 			}
 
-=======
-			}
-
-			$commencement_date= $this->MSampleAllocate->find('all',array('order' => array('commencement_date' => 'asc'),'fields' => array('commencement_date'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
-			$this->set('comm_date',$commencement_date[0]['commencement_date']);
-
-			if (!empty($count_chemist)) {
-
-				$count_chemist1 =  $count_chemist;
-			} else {
-				$count_chemist1 = '';
-			}
-
->>>>>>> daily-lims
 			$this->set('count_test_result',$count_chemist1);
 
 
