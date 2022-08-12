@@ -500,11 +500,11 @@ class InwardDetailsController extends AppController {
 
 				//get role and office where sample available after confirmed
 				$query = $conn->execute("SELECT DISTINCT si.org_sample_code,w.dst_usr_cd,u.role,r.ro_office,w.src_usr_cd
-											FROM sample_inward AS si
-											INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
-											INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
-											INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
-											WHERE si.org_sample_code='$org_sample_code'");
+										 FROM sample_inward AS si
+										 INNER JOIN workflow AS w ON si.org_sample_code=w.org_sample_code
+										 INNER JOIN dmi_users AS u ON u.id=w.dst_usr_cd
+										 INNER JOIN dmi_ro_offices AS r ON r.id=w.dst_loc_id
+										 WHERE si.org_sample_code='$org_sample_code'");
 
 				$get_info = $query->fetchAll('assoc');
 	

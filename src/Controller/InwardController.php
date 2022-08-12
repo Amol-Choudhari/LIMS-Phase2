@@ -212,7 +212,7 @@ class InwardController extends AppController{
 		$monthArray = array('1'=>'January','2'=>'February','3'=>'March','4'=>'April','5'=>'May','6'=>'June','7'=>'July','8'=>'August','9'=>'September','10'=>'October','11'=>'November','12'=>'December');
 		$this->set('monthArray',$monthArray);
 
-		// Apply "Order by" clause to get state list by order wise (Done By Pravin 10-01-2018)
+		// To display the states on the inward section for the customer details added below query on the 10-08-2022 By Akash
 		$states = $this->DmiStates->find('list', array('valueField'=>'state_name','conditions'=>array('OR'=>array('delete_status IS NULL','delete_status'=>'no')),'order'=>array('state_name')))->toArray();
 		$this->set('states',$states);
 
@@ -235,7 +235,7 @@ class InwardController extends AppController{
 		//on 23-03-2021 by Akash
 		$org_samp_sess_var = $this->Session->read('org_sample_code');
 		$sample_inward_data = $this->SampleInward->find('all',array('conditions'=>array('org_sample_code IS'=>$org_samp_sess_var),'order'=>'inward_id desc'))->first();
-		$customer_details = $this->LimsCustomerDetails->find('all')->where(['org_sample_code IS' => $org_samp_sess_var])->order('id desc')->first();
+		$customer_details = $this->LimsCustomerDetails->find('all')->where(['org_sample_code IS' => $org_samp_sess_var])->order('id desc')->first(); # This added for the customer data fetch on the 10-08-2022 by Akash
 		
 		if (!empty($org_samp_sess_var) && !empty($sample_inward_data)) {
 			
@@ -258,7 +258,7 @@ class InwardController extends AppController{
 			
 			if (empty($customer_details)) {
 				
-				// This is added for the customer details by Akash on 22-07-2022
+				// Below added for the customer details empty array by Akash on 22-07-2022
 				$customer_details['customer_name'] = '';
 				$customer_details['customer_email_id'] = '';
 				$customer_details['street_address'] = '';
@@ -300,7 +300,7 @@ class InwardController extends AppController{
 			$sample_inward_data['rej_reason']='';
 			$sample_inward_data['status_flag']='';
 
-			// This is added for the customer details by Akash on 22-07-2022
+			// Below added for the customer details empty array by Akash on 22-07-2022
 			$customer_details['customer_name'] = '';
 			$customer_details['customer_email_id'] = '';
 			$customer_details['street_address'] = '';
@@ -311,34 +311,34 @@ class InwardController extends AppController{
 			$customer_details['customer_fax_no'] = '';
 
 			$commodity_list = array();
-			$district_list = array();
+			$district_list = array(); # This empty array added on 22-07-2022 by Akash
 		}
 
 
 		$this->set('commodity_list',$commodity_list);
 		$this->set('sample_inward_data',$sample_inward_data);
 		$this->set('sample_inward_form_status',$sample_inward_form_status);
-		$this->set('customer_details',$customer_details);
-		$this->set('district_list',$district_list);
+		$this->set('customer_details',$customer_details); # This array added for customer details on 22-07-2022 by Akash
+		$this->set('district_list',$district_list); # This array added for district on 22-07-2022 by Akash
 
 		//for sample details progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('sample_details',$this->Session->read('org_sample_code')))) {
 			$sample_details_form_status = 'saved';
-			$details_section = 'Y';
+			$details_section = 'Y'; # For the new field in the Sample Inward Details table to store the status of inward section saved or not on 22-07-2022 by Akash
 		} else {
 			$sample_details_form_status = '';
-			$details_section = '';
+			$details_section = ''; # For the new field in the Sample Inward Details table to store the status of inward section saved or not on 22-07-2022 by Akash
 		}
 
-		//for paymnet progress bar
+		//for payment progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
 			
 			$payment_details = $this->LimsSamplePaymentDetails->find('all')->select('payment_confirmation')->where(['sample_code IS'=>$this->Session->read('org_sample_code')])->order(['id desc'])->first();
 			$payment_details_form_status = trim($payment_details['payment_confirmation']);
-			$payment_section = 'Y';
+			$payment_section = 'Y'; # For the new field in the LimsSamplePaymentDetails table to store the status of inward section saved or not on 22-07-2022 by Akash
 		} else {
 			$payment_details_form_status = '';
-			$payment_section = '';
+			$payment_section = ''; # For the new field in the LimsSamplePaymentDetails table to store the status of inward section saved or not on 22-07-2022 by Akash
 		}
 		
 		$this->set('sample_details_form_status',$sample_details_form_status);
@@ -546,9 +546,9 @@ class InwardController extends AppController{
 					'address'				=>	$postData['address'],
                     'is_payment_applicable' =>  $isPaymentApplicable,
 					'created'				=>	date('Y-m-d H:i:s'),
-					'inward_section'		=> 	'Y',
-					'details_section'		=>	$details_section,
-					'payment_section'		=>	$payment_section
+					'inward_section'		=> 	'Y', # New Field - To Store Status - Akash - 10-08-2022
+					'details_section'		=>	$details_section, # New Field - To Store Status - Akash - 10-08-2022
+					'payment_section'		=>	$payment_section # New Field - To Store Status - Akash - 10-08-2022
 
 				);
 
@@ -572,11 +572,11 @@ class InwardController extends AppController{
 						$_SESSION['stage_sample_code'] ="";
 					}
 					
-					//save the section save flag on the Sample Details Table : Akash : 25-07-2022
+					//To save the status of Details Section  save flag on the Sample Details Table : Akash : 25-07-2022
 					$this->loadModel('SampleInwardDetails');
 					$this->SampleInwardDetails->updateAll(array('details_section'=>'Y'),array('org_sample_code'=>$org_sample_code));
 
-					//Save the Customers Information ny Akash (22-07-2022) 
+					//To Save the customer details on the inward section - by Akash [10-08-2022]
 					$this->LimsCustomerDetails->saveCustomerDetails($org_sample_code,$postData);
 
 					// For Maintaining Action Log by Akash (26-04-2022)
@@ -663,9 +663,9 @@ class InwardController extends AppController{
 						'status_flag' 		 	=>  $postData['status_flag'],
                         'is_payment_applicable' =>  $isPaymentApplicable,
 						'modified' 			 	=>  date('Y-m-d H:i:s'),
-						'inward_section'		=> 	'Y',
-						'details_section'		=>	$details_section,
-						'payment_section'		=>	$payment_section
+						'inward_section'		=> 	'Y', # New Field - To Store Status - Akash - 10-08-2022
+						'details_section'		=>	$details_section, # New Field - To Store Status - Akash - 10-08-2022
+						'payment_section'		=>	$payment_section # New Field - To Store Status - Akash - 10-08-2022
 
 					);
 
@@ -739,7 +739,7 @@ class InwardController extends AppController{
 
 				$get_info = $query->fetchAll('assoc');
 
-				#pr($get_info); exit;
+		
 				// For Maintaining Action Log by Akash (26-04-2022)
 				$this->LimsUserActionLogs->saveActionLog('New Sample Confirmed','Success');
 

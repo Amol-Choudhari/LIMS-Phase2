@@ -394,10 +394,32 @@
 
 		if(customer_mobile_no==""){
 
-			$("#error_customer_mobile_no").show().text("Please Enter Customer Mobile Number.");
+			$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
 			$("#customer_mobile_no").addClass("is-invalid");
-			$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+			$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;	$("#customer_mobile_no").removeClass("is-invalid");});
 			value_return = 'false';
+		}else{
+			alert();
+			if(customer_mobile_no.match(/^(?=.*[0-9])[0-9]{10}$/g)){}else{//also allow if 6 X $ 4 nos found //added on 12-10-2017 by Amol
+
+				$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
+				$("#customer_mobile_no").addClass("is-invalid");
+				$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+				value_return = 'false';
+			}
+
+			//first valid no. for mob.no, applid on 16-02-2021 by Amol
+			var validfirstno = ['7','8','9'];
+			//get first character of mobile no.
+			var f_m_no = customer_mobile_no.charAt(0);
+			if($.inArray(f_m_no,validfirstno) != -1){
+				//valid
+			}else{
+				$("#error_customer_mobile_no").show().text("Invalid mobile number");
+				$("#customer_mobile_no").addClass("is-invalid");
+				$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+				value_return='false';
+			}
 		}
 
 		if(value_return == 'false'){
