@@ -346,7 +346,7 @@ use Cake\View;
 		$message_theme = '';
 		$redirect_to = '';
 
-		$forward_sample_cd = $this->Session->read('forward_sample_cd');
+		$forward_sample_cd = trim($this->Session->read('forward_sample_cd')); //added trim() on 24-06-2022 by Amol;
 
 		if (!empty($forward_sample_cd)) {
 

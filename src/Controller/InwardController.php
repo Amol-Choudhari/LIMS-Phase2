@@ -212,9 +212,9 @@ class InwardController extends AppController{
 		//on 23-03-2021 by Akash
 		$org_samp_sess_var = $this->Session->read('org_sample_code');
 		
-		if (!empty($org_samp_sess_var)) {
-			
-			$sample_inward_data = $this->SampleInward->find('all',array('conditions'=>array('org_sample_code IS'=>$org_samp_sess_var),'order'=>'inward_id desc'))->first();
+		$sample_inward_data = $this->SampleInward->find('all',array('conditions'=>array('org_sample_code IS'=>$org_samp_sess_var),'order'=>'inward_id desc'))->first();
+		
+		if (!empty($org_samp_sess_var) && !empty($sample_inward_data)) {
 			
 			$this->set('default_loc',$sample_inward_data['loc_id']);
 			
