@@ -56,12 +56,12 @@ class AppController extends Controller
 
 
     	//Changes done by Shweta Apale 21-10-2021
-	    define('reporticoReport', $_SERVER['DOCUMENT_ROOT']."/LIMS/vendor/reportico");
-	    define("ForReportsUserName", "dsm");
-		define("ForReportsPassword", "");
-		define("ForReportsConnection", "10.153.72.53");
+	    define('reporticoReport', $_SERVER['DOCUMENT_ROOT']."/LIMS-PHASE2/vendor/reportico");
+	    define("ForReportsUserName", "postgres");
+		define("ForReportsPassword", "123");
+		define("ForReportsConnection", "10.158.81.41");
 		define("ForReportsDatabaseInterfade", "PostgreSQL");
-		define('ForReportsDB','aqcmstest');
+		define('ForReportsDB','newphaseIIdb');
 
 		//below headers are set for "Content-Security-Policy", to allow inline scripts from same origin and report the outer origin scripts calls.
 		//the "Content-Security-Policy" header is commmented from httpd.conf file now and set here.

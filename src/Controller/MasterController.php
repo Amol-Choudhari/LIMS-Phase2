@@ -3033,7 +3033,7 @@ public function createFormula(){
 
 		$label = $this->MLabel->find('list',array('keyField'=>'label_code','valueField'=>'label_desc','conditions'=>array('display'=>'Y')))->toArray();
 		$this->set('reportlebel',$label);
-
+		
 		if ($this->request->is('post')) {
 
 			$modifiedData = 'false';
@@ -3050,8 +3050,9 @@ public function createFormula(){
 				$is_already_present = $this->MReport->find('all',array('fields'=>'report_desc','conditions'=>array('display'=>'Y','trim(lower(report_desc))'=>strtolower(trim($report_name)))))->first();
 				
 				if(empty($is_already_present)){
-
+				
 					$newEntity = $this->MReport->newEntity(array(
+
 						'report_desc'=>$report_name,
 						'user_code'=>$_SESSION['user_code'],
 						'display'=>'Y',
@@ -3060,7 +3061,7 @@ public function createFormula(){
 						'modified'=>date('Y-m-d H:i:s'),
 
 					));
-
+				
 					if($this->MReport->save($newEntity)){
 
 						$message = 'New Report Save Sucessfully';
