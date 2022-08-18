@@ -50,13 +50,13 @@
 													<tr class="text-center">
 													
 														<td><?php echo $i; ?></td>                                     
-														<td><?php echo $res2['org_sample_code']; ?></td>
+														<td><?php echo $res2['stage_smpl_cd']; ?></td>
 														<td class="text-center"><?php echo $res2['commodity_name']; ?></td>	
 														<td class="text-center"><?php echo $res2['ro_office']; ?></td>									
 														<td class="text-center"><?php echo $res2['sample_type_desc'] ?></td>
 														<td class="text-center"><?php echo $res2['tran_date']; ?></td>
-														<td><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'redirect_to_non_grade_zscore', $res2['org_sample_code']),array('class'=>'glyphicon glyphicon-share','title'=>'Finalized Zscore')); ?></td>
-														<!-- ilc_non_grading_by_oic -->
+														<td><?php echo $this->Html->link('', array('controller' => 'FinalGrading', 'action'=>'redirect_to_grade_ilc', trim($res2['stage_smpl_cd'])),array('class'=>'glyphicon glyphicon-share','title'=>'Finalized Zscore')); ?></td>
+														<!-- ilc_non_grading_by_oic  $res2['org_sample_code'] --> 
 														<div class="clearfix"></div>
 													</tr>
 												<?php echo $this->Form->end(); ?>	

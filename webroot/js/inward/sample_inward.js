@@ -29,16 +29,6 @@ if (user_flag_new !='RAL' || user_flag_new !='CAL') {
 	}
 
 
-  /*$('#sample_type_code').change(function (e) {
-		e.preventDefault();
-		var selectedText = $(this).find("option:selected").text().trim();
-		if(selectedText == 'Commercial'){
-			$("#paymentmodal").modal()
-
-		}
-	});*/
-
-
 
   	$(document).ready(function () {
 

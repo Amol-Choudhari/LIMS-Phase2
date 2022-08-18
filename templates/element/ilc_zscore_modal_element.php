@@ -1,9 +1,9 @@
 <!-- Modal getmodal -->
 <div class="modal fade" id="getmodal" tabindex="-1" role="dialog" aria-labelledby="getmodalTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-    <div class="modal-content">
-      	<div class="modal-header">
-			<h5 class="modal-title" id="exampleModalLongTitle"> Z-Score <?php echo $_SESSION['user_flag']; ?> </h5>
+  <div class="modal-dialog modal-dialog-centered modal-lg " role="document">
+    <div class="modal-content ">
+      	<div class="modal-header ">
+			<h5 class="modal-title " id="exampleModalLongTitle"> Z-Score <?php echo $_SESSION['user_flag']; ?> </h5>
 			
 			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 			<span aria-hidden="true">&times;</span>
@@ -52,18 +52,28 @@
 							foreach ($testarr as $eachtest) { ?>
 							
 							<tr>
-								<td><?php echo $j; ?></td>   
+								<td padding: 2px;><?php echo $j; ?></td>   
 								<td><?php echo $testnames[$i]; ?> </td>
 								<?php
+
 									$l=0;
 									foreach($smplList as $eachoff){
 									?>
-									<td><?php echo $zscorearr[$i][$l]; ?> </td>
+									<?php
+										$num = (int) $zscorearr[$i][$l];
+										$format = round($num, 2);
+									?>
+									
+									<td><?php echo $format; ?> </td>
+
 								<?php $l++;	} ?>
 
 							</tr>
-						<?php $i++; $j++; } } ?>
+						
 							
+
+						
+						<?php $i++; $j++; } } ?>
 					</tbody>
 				</table>		
 			</div>
@@ -76,3 +86,5 @@
   </div>
 </div>
 <!-- Modal end-->
+
+

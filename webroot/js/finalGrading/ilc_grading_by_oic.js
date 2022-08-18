@@ -1,22 +1,5 @@
 $(document).ready(function(){
 
-
-	//added for click preview check and show save button 11-07-2022
-	$("#save").hide();
-	$("#reportlink").click(function (e) {
-
-		if($('#reportlink').is(':checked')){
-			$("#save").show();
-		}
-		else{
-			$("#save").hide();
-		}
-
-	  
-	});
-
-
-
 	$("#stage_sample_code").change();
 
 	// To check sub grading value is checked or not
@@ -45,22 +28,32 @@ $(document).ready(function(){
 		e.preventDefault();
 		$("#array").val(' ');
 		$("#array").val(arr);
-		//alert('he');
+
 		var category_code=$("#category_code").val();
 		var commodity_code=$("#commodity_code").val();
 		var sample_code=$("#sample_code").val();
-		var grd_standrd = null;
+		var grd_standrd=$("#grd_standrd").val();
 		var remark=$("#remark").val();
 		var remark_new=$("#remark_new").val();
 		var tran_date=$("#tran_date").val();
 		var result_flg= $('input[name=result_flg]:checked', '#frm_final_grading').val();
 		var login_timestamp=$("#login_timestamp").val();
-		var arraygrade = null;
-		var grade_code = null;
-		var subgrade = null;
-		
+		var arraygrade= $("#array").val();
+		var grade_code;
+		var subgrade;
+
 		// To check sub grading value is checked or not ,
-	
+		if ($('#allGradeListChecked').is(":checked"))
+		{
+			grade_code=$("#fullGradelist").val();
+			subgrade = 'checked';
+
+		}else{
+
+			grade_code=$("#grade_code").val();
+			subgrade = '';
+		}
+
 		if(commodity_code==''){
 			var msg="Please Select Sample Commodity!!";
 			alert(msg);
@@ -71,7 +64,17 @@ $(document).ready(function(){
 			alert(msg);
 			return;
 		}
-		
+		else if(grd_standrd==''){
+			var msg="Please Select Grade Standard !!";
+			alert(msg);
+			return;
+		}/* Apply empty grade_code validation*/
+		else if(grade_code==''){
+
+			var msg=" Please Select Grading Result !!";
+			alert(msg);
+			return;
+		}
 
 		else if(remark==''){
 			var msg="Remark by Inward Officer Required!!";
@@ -84,7 +87,7 @@ $(document).ready(function(){
 			alert(msg);
 			return;
 		}
-		
+
 		if(result_flg == 'R' || result_flg == 'N'){
 
 		}else{
@@ -92,7 +95,7 @@ $(document).ready(function(){
 			alert(msg);
 			return;
 		}
-	
+
 		if(result_flg == 'R'){//if set for retest, dont ask for esign
 
 			$("#button").val('add');
@@ -147,14 +150,13 @@ $(document).ready(function(){
 						xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
 				},
 				success: function (data) {
-					
+
 					var res = data.match(/#([^']+)#/)[1];//getting data bitween ## from response
-					
+
 					if(res == 1){
-						
+
 						//to esign and final grading of sample
 						esign_consent_box();
-						
 					}
 				}
 			});

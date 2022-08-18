@@ -18,7 +18,7 @@
 						<div class="col-md-12">
 							<?php echo $this->Form->create(null, array('id'=>'frm_final_grading','class'=>'form-group')); ?>
 								<div class="card card-lims">
-									<div class="card-header"><h3 class="card-title-new">Final Grading</h3></div>
+									<div class="card-header"><h3 class="card-title-new">Finalized Test Report</h3></div>
 										<div class="form-horizontal">
 											<div class="card-body">
 												<div class="row">
@@ -113,5 +113,5 @@
 			</section>
 </div>
 <?php echo $this->Html->Script('sample_grading_by_oic'); ?>
-
-<?php echo $this->Html->Script('finalGrading/ilc_grading_by_oic'); ?>
+<?php echo $this->Html->Script('finalGrading/grading_by_oic'); ?>
+<!-- <?php echo $this->Html->Script('finalGrading/ilc_grading_by_oic'); ?> -->
