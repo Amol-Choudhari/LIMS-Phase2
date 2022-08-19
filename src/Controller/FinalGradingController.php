@@ -38,7 +38,7 @@ class FinalGradingController extends AppController
 	}
 
 /********************************************************************************************************************************************************************************/
-
+//added for redirection of samples ilc and normal
 	public function availableForGradingToInward() {
 
 		$this->authenticateUser();
@@ -184,7 +184,8 @@ class FinalGradingController extends AppController
 		$this->redirect(array('controller'=>'FinalGrading','action'=>'grading_by_inward'));
 	}
 
-
+//added for rediect to sub samples in ILC flow with non grading
+//inner sub samples
 	public function ilcRedirectToVerify($verify_sample_code)
     {
 		$this->Session->write('verify_sample_code',$verify_sample_code);
@@ -1227,7 +1228,7 @@ class FinalGradingController extends AppController
 	}
 
 /***************************************************************************************************************************************************************************************/
-
+//added for redirection for normal & ilc flow 
 	public function availableForGradingToOic(){
 
 		$this->authenticateUser();
@@ -1245,6 +1246,7 @@ class FinalGradingController extends AppController
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>----------<Get Sample to Grade By OIC>---------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	//created common function to fetch list , to be used for dashboard counts also, on 28-04-2021 by Amol
+	//added component function for ilc flow no grade
 	public function getSampleToGradeByOic(){
 
 		$conn = ConnectionManager::get('default');
@@ -1288,6 +1290,7 @@ class FinalGradingController extends AppController
 
 			// added for ilc flow 11-07-2022
 			//Conditions to check wheather is not sample type ilc 
+			//inner samples in ilc
 			$final_result1 = $this->Ilc->ilcFinalGradeAvaiIf($user_id);
 
 		}
@@ -1382,8 +1385,8 @@ class FinalGradingController extends AppController
 	}
 
 /******************************************************************************************************************************************************************************************************/
-	// added for ilcFlow 08-07-2022
-	
+	// added for ilcFlow  08-07-2022
+	//redirdction for sub samples of inner 
 	public function redirectToGradeIlc($grading_sample_code){
 
 		$this->Session->write('grading_sample_code',$grading_sample_code);
@@ -1391,8 +1394,8 @@ class FinalGradingController extends AppController
 	}
 
 /******************************************************************************************************************************************************************************************************/
-// added for ilcFlow 08-07-2022
-
+	// added for ilcFlow 08-07-2022
+	//for sub samples of inner 
 	public function ilcGradingByOic(){
 
 		$this->authenticateUser();
@@ -1845,7 +1848,7 @@ class FinalGradingController extends AppController
 		$ogrsample = $ogrsample1['org_sample_code'];
 		
 		$src_usr_cd = $conn->execute("SELECT src_usr_cd,src_loc_id FROM workflow WHERE org_sample_code='$ogrsample' AND stage_smpl_flag IN ('OF','IF') ");
-
+		
 		$src_usr_cd = $src_usr_cd->fetchAll('assoc');
 		$org_src_usr_cd = $src_usr_cd[0]['src_usr_cd'];
 		$org_src_usr_id = $src_usr_cd[0]['src_loc_id'];
@@ -1874,12 +1877,16 @@ class FinalGradingController extends AppController
 
 		//get some post value from session after redirecting form cdac
 		$remark = $this->Session->read('post_remark');//inward officer renark
+	
 		$remark_new = $this->Session->read('post_remark_new');//Incharge remark
+	
 		$grade_code_vs = $this->Session->read('post_grade_code_vs');
+		
 		$subGradeChecked = $this->Session->read('post_subGradeChecked');
 		$category_code = $this->Session->read('post_category_code');
+	
 		$commodity_code = $this->Session->read('post_commodity_code');
-
+		
 
 		if ($_SESSION['user_flag']=='RAL' && $_SESSION['role']=='RAL/CAL OIC') {
 
@@ -1896,10 +1903,10 @@ class FinalGradingController extends AppController
 													grade_user_flag='".$_SESSION['user_flag']."',
 													grade_user_loc_id='".$_SESSION['posted_ro_office']."',
 													ral_anltc_rslt_rcpt_dt='$tran_date'
-								WHERE category_code= '$category_code'
-								AND commodity_code = '$commodity_code'
-								AND org_sample_code = '$ogrsample'
-								AND display = 'Y' ");
+													WHERE category_code= '$category_code'
+													AND commodity_code = '$commodity_code'
+													AND org_sample_code = '$ogrsample'
+													AND display = 'Y' ");
 		}
 		elseif ($_SESSION['user_flag']=='CAL' && $_SESSION['role']=='DOL' || $_SESSION['role']=='RAL/CAL OIC') {
 
@@ -1986,7 +1993,7 @@ class FinalGradingController extends AppController
 		$final_reports = $this->finalSampleTestReports();
 		$this->set('final_sample_reports',$final_reports);
 	}
-
+	//inner sub sample list of report
 	public function ilcFinalizedSamples(){
 
 		$final_reports = $this->ilcSampleTestReports();
@@ -1998,7 +2005,7 @@ class FinalGradingController extends AppController
 		$arraylist = $this->ilcAvailableSampleZscore($sample_code);
 		$this->set('final_reports',$arraylist);
 	}
-
+	//inner sub sample list of report with z score model
 	public function ilcSampleZscoreRedirect($sample_code){
 
 		$this->Session->write('grading_sample_code',$sample_code);
@@ -2111,7 +2118,7 @@ class FinalGradingController extends AppController
 		}
 
 		
-
+	//inner sample
 	// final result submited Zscore & report list 14-07-2022
 	public function ilcAvailableSampleZscore()
 	{
@@ -2128,6 +2135,10 @@ class FinalGradingController extends AppController
 
 		
 		// $user_flag = $_SESSION['user_flag'];
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
+
 
 		$conn = ConnectionManager::get('default');
 
@@ -2309,10 +2320,7 @@ class FinalGradingController extends AppController
 		
 		$calresult= $this->IlcCalculateZscores->find('all', array('conditions'=> array('sample_code IS' => $sample['ilc_org_sample_cd'])))->first();
 		$smpl_cd = $calresult['sample_code'];
-		
 	
-		
-		if(!empty($calresult) ){
 
 			//added to finalized zscore forwarded to oic on 27-07-2022 by shreeya
 			if ($this->request->is('post')) {
@@ -2518,27 +2526,34 @@ class FinalGradingController extends AppController
 		
 						if ($_SESSION['user_flag']=='RAL') {
 
-							echo '#The results have been finalized and forwarded to RAL,Office Incharge#';
-							exit;
+							$message ='The results have been finalized and forwarded to RAL,Office Incharge';
+							// exit;
 
 						} elseif ($_SESSION['user_flag']=='CAL') {
 
-							echo '#The results have been finalized and forwarded to CAL,Office Incharge#';
+							$message = 'The results have been finalized and forwarded to CAL,Office Incharge';
+							//echo '#The results have been finalized and forwarded to CAL,Office Incharge#';
 							/* To disaply the message, after save the grading by inward officer.*/
-							exit;
+							// exit;
 
 						} else {
-							echo '#Record Save Sucessfully!#';
-							exit;
+							$message = 'Record Save Sucessfully!';
+							// exit;
 						}
 				}
 				
 			}
-		}else{
 
-			echo "Sorry.. You don't have  forward to oic";
-		}
+			//$message = 'The results have been finalized and forwarded to CAL,Office Incharge';
+			$message_theme = 'success';
+			$redirect_to = 'ilc_finalized_samples';
 		
+	
+	
+			// set variables to show popup messages from view file
+			$this->set('message',$message);
+			$this->set('message_theme',$message_theme);
+			$this->set('redirect_to',$redirect_to);
 			
 	}		
 		
@@ -2615,315 +2630,319 @@ class FinalGradingController extends AppController
 
 		$str2="SELECT stage_smpl_cd FROM workflow WHERE display='Y' ";
 
-		if ($sample_code1!='') {
+		
+			if ($sample_code1!='') {
 
-			$str2.=" AND org_sample_code='$Sample_code' AND stage_smpl_flag='AS' GROUP BY stage_smpl_cd";
-		}
+				$str2.=" AND org_sample_code='$Sample_code' AND stage_smpl_flag='AS' GROUP BY stage_smpl_cd";
+			}
+		
+			$sample_code3 = $conn->execute($str2);
+			$sample_code3 = $sample_code3->fetchAll('assoc');
+			
+			$Sample_code_as = $sample_code3[0]['stage_smpl_cd'];
+		  
+			$this->set('Sample_code_as',$Sample_code_as);
+			
+			$this->loadModel('MSampleRegObs');
 	
-		$sample_code3 = $conn->execute($str2);
-		$sample_code3 = $sample_code3->fetchAll('assoc');
-		
-		$Sample_code_as = $sample_code3[0]['stage_smpl_cd'];
-	  
-		$this->set('Sample_code_as',$Sample_code_as);
-		
-		$this->loadModel('MSampleRegObs');
-
-			$query2 = "SELECT msr.m_sample_reg_obs_code, mso.m_sample_obs_code, mso.m_sample_obs_desc, mst.m_sample_obs_type_code,mst.m_sample_obs_type_value
-					FROM m_sample_reg_obs AS msr
-					INNER JOIN m_sample_obs_type AS mst ON mst.m_sample_obs_type_code=msr.m_sample_obs_type_code
-					INNER JOIN m_sample_obs AS mso ON mso.m_sample_obs_code=mst.m_sample_obs_code AND stage_sample_code='$Sample_code'
-					GROUP BY msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value";
-		
-		$method_homo = $conn->execute($query2);
-		$method_homo = $method_homo->fetchAll('assoc');
-
-		$this->set('method_homo',$method_homo);
+				$query2 = "SELECT msr.m_sample_reg_obs_code, mso.m_sample_obs_code, mso.m_sample_obs_desc, mst.m_sample_obs_type_code,mst.m_sample_obs_type_value
+						FROM m_sample_reg_obs AS msr
+						INNER JOIN m_sample_obs_type AS mst ON mst.m_sample_obs_type_code=msr.m_sample_obs_type_code
+						INNER JOIN m_sample_obs AS mso ON mso.m_sample_obs_code=mst.m_sample_obs_code AND stage_sample_code='$Sample_code'
+						GROUP BY msr.m_sample_reg_obs_code,mso.m_sample_obs_code,mso.m_sample_obs_desc,mst.m_sample_obs_type_code,mst.m_sample_obs_type_value";
+			
+			$method_homo = $conn->execute($query2);
+			$method_homo = $method_homo->fetchAll('assoc');
 	
-		if (null!==($this->request->getData('ral_lab'))) {
-
-			$data=$this->request->getData('ral_lab');
-
-			$data1=explode("~",$data);
-
-			if ($data1[0]!='all') {
-
-				$ral_lab=$data1[0];
-				$ral_lab_name=$data1[1];
-				$this->set('ral_lab_name',$ral_lab_name);
-
+			$this->set('method_homo',$method_homo);
+		
+			if (null!==($this->request->getData('ral_lab'))) {
+	
+				$data=$this->request->getData('ral_lab');
+	
+				$data1=explode("~",$data);
+	
+				if ($data1[0]!='all') {
+	
+					$ral_lab=$data1[0];
+					$ral_lab_name=$data1[1];
+					$this->set('ral_lab_name',$ral_lab_name);
+	
+				} else {
+	
+					$ral_lab=$data1[0];
+					$ral_lab_name='all';
+				}
+	
 			} else {
-
-				$ral_lab=$data1[0];
+	
+				$ral_lab='';
 				$ral_lab_name='all';
 			}
-
-		} else {
-
-			$ral_lab='';
-			$ral_lab_name='all';
-		}
-
-		$test = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
-		 
-		$test_string=array();
-
-		$i=0;
-
-			foreach ($test as $each) {
-
-				$test_string[$i]=$each['test_code'];
-				$i++;
-			}
-
-			foreach($test_string as $row1) {
-
-				$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
-										FROM comm_grade AS cg
-										INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
-										WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
-
-				$commo_grade = $query->fetchAll('assoc');
-				$str="";
-				$this->set('commo_grade',$commo_grade);
-			}
-		
-			$j=1;
-		
-			foreach ($test_string as $row) {
-				
-				$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
-										FROM comm_grade AS cg
-										INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										ORDER BY cg.grade_code ASC");
-
-
-							$data = $query->fetchAll('assoc');
-
-
-				$query = $conn->execute("SELECT t.test_name,tm.method_name
-										FROM comm_grade AS cg
-										INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
-										WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										ORDER BY t.test_name ASC");
-
-							$data1 = $query->fetchAll('assoc');
-
-				if (!empty($data1)) {
-
-					$data_method_name = $data1[0]['method_name'];
-					$data_test_name = $data1[0]['test_name'];
-
-				} else {
-
-					$data_method_name = '';
-					$data_test_name = '';
+	
+			$test = $this->ActualTestData->find('all', array('fields' => array('test_code'=>'distinct(test_code)'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
+			 
+			$test_string=array();
+	
+			$i=0;
+	
+				foreach ($test as $each) {
+	
+					$test_string[$i]=$each['test_code'];
+					$i++;
 				}
-
-
-				$qry1 = "SELECT count(chemist_code)
-						FROM final_test_result AS ftr
-						INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
-						GROUP BY chemist_code ";
-
-				$res2	= $conn->execute($qry1);
-				$res2 = $res2->fetchAll('assoc');
-
-				//get sample type code from sample sample inward table, to check if sample type is "Challenged"
-				//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
-				//applied on 27-10-2011 by Amol
-				$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
-				$sampleTypeCode = $getSampleType['sample_type_code'];
-				
-				if($sampleTypeCode==4){
-					$res2=array();//this will create report for selected final results, if this res set to blank
+	
+				foreach($test_string as $row1) {
+	
+					$query = $conn->execute("SELECT DISTINCT(grade.grade_desc),grade.grade_code,test_code
+											FROM comm_grade AS cg
+											INNER JOIN m_grade_desc AS grade ON grade.grade_code = cg.grade_code
+											WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row1' AND cg.display = 'Y'");
+	
+					$commo_grade = $query->fetchAll('assoc');
+					$str="";
+					$this->set('commo_grade',$commo_grade);
 				}
-
-				$count_chemist = '';
-				$all_chemist_code = array();
-
-
-				//get al  allocated chemist if sample is for duplicate analysis
-				if (isset($res2[0]['count'])>0) {
-
-					$all_chemist_code = $conn->execute("SELECT ftr.chemist_code
-														FROM m_sample_allocate AS ftr
-														INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
-
-				$all_chemist_code= $all_chemist_code->fetchAll('assoc');
-
-					$count_chemist = count($all_chemist_code);
-
-				}
-
-				//to get approved final result by Inward officer test wise
-				$test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
-
-				//if sample is for duplicate analysis
-				//so get result chmeist wise
-				$result_D = '';
-				$result = array();
-
-				if (isset($res2[0]['count'])>0) {
-
-					$i=0;
-
-					foreach ($all_chemist_code as $each) {
-
-						$chemist_code = $each['chemist_code'];
-
-						//get result for each chemist_code
-						$get_results = $this->ActualTestData->find('all',array('fields'=>array('result'),'conditions'=>array('org_sample_code IS' => $Sample_code,'chemist_code IS'=>$chemist_code,'test_code IS'=>$row,'display'=>'Y')))->first();
-
-						$result[$i] = $get_results['result'];
-
-						$i=$i+1;
-
+			
+				$j=1;
+			
+				foreach ($test_string as $row) {
+					
+					$query = $conn->execute("SELECT cg.grade_code,cg.grade_value,cg.max_grade_value,cg.min_max
+											FROM comm_grade AS cg
+											INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+											INNER JOIN m_test AS t ON t.test_code = cg.test_code
+											WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+											ORDER BY cg.grade_code ASC");
+	
+	
+								$data = $query->fetchAll('assoc');
+	
+	
+					$query = $conn->execute("SELECT t.test_name,tm.method_name
+											FROM comm_grade AS cg
+											INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+											INNER JOIN m_test AS t ON t.test_code = cg.test_code
+											INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
+											WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+											ORDER BY t.test_name ASC");
+	
+								$data1 = $query->fetchAll('assoc');
+	
+					if (!empty($data1)) {
+	
+						$data_method_name = $data1[0]['method_name'];
+						$data_test_name = $data1[0]['test_name'];
+	
+					} else {
+	
+						$data_method_name = '';
+						$data_test_name = '';
 					}
-
-
-					//else get result from final test rsult
-					//for single anaylsis this is fianl approved result array
-				} else {
-
+	
+	
+					$qry1 = "SELECT count(chemist_code)
+							FROM final_test_result AS ftr
+							INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1'
+							GROUP BY chemist_code ";
+	
+					$res2	= $conn->execute($qry1);
+					$res2 = $res2->fetchAll('assoc');
+	
+					//get sample type code from sample sample inward table, to check if sample type is "Challenged"
+					//if sample type is "challenged" then get report for selected final values only, no matter if single/duplicate analysis
+					//applied on 27-10-2011 by Amol
+					$getSampleType = $this->SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $Sample_code)))->first();
+					$sampleTypeCode = $getSampleType['sample_type_code'];
+					
+					if($sampleTypeCode==4){
+						$res2=array();//this will create report for selected final results, if this res set to blank
+					}
+	
+					$count_chemist = '';
+					$all_chemist_code = array();
+	
+	
+					//get al  allocated chemist if sample is for duplicate analysis
+					if (isset($res2[0]['count'])>0) {
+	
+						$all_chemist_code = $conn->execute("SELECT ftr.chemist_code
+															FROM m_sample_allocate AS ftr
+															INNER JOIN sample_inward AS si ON si.org_sample_code=ftr.org_sample_code AND si.result_dupl_flag='D' AND ftr.sample_code='$sample_code1' ");
+	
+					$all_chemist_code= $all_chemist_code->fetchAll('assoc');
+	
+						$count_chemist = count($all_chemist_code);
+	
+					}
+	
+					//to get approved final result by Inward officer test wise
+					$test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
+	
+					//if sample is for duplicate analysis
+					//so get result chmeist wise
+					$result_D = '';
+					$result = array();
+	
+					if (isset($res2[0]['count'])>0) {
+	
+						$i=0;
+	
+						foreach ($all_chemist_code as $each) {
+	
+							$chemist_code = $each['chemist_code'];
+	
+							//get result for each chemist_code
+							$get_results = $this->ActualTestData->find('all',array('fields'=>array('result'),'conditions'=>array('org_sample_code IS' => $Sample_code,'chemist_code IS'=>$chemist_code,'test_code IS'=>$row,'display'=>'Y')))->first();
+	
+							$result[$i] = $get_results['result'];
+	
+							$i=$i+1;
+	
+						}
+	
+	
+						//else get result from final test rsult
+						//for single anaylsis this is fianl approved result array
+					} else {
+	
+						if (count($test_result)>0) {
+	
+							foreach ($test_result as $key=>$val) {
+	
+								$result = $val;
+							}
+						} else {
+	
+							$result="";
+						}
+					}
+	
+	
+					//for duplicate anaylsis this is final approved result array
 					if (count($test_result)>0) {
-
+	
 						foreach ($test_result as $key=>$val) {
-
-							$result = $val;
+							$result_D= $val;
 						}
 					} else {
-
-						$result="";
+						$result_D="";
 					}
-				}
-
-
-				//for duplicate anaylsis this is final approved result array
-				if (count($test_result)>0) {
-
-					foreach ($test_result as $key=>$val) {
-						$result_D= $val;
+	
+					$commencement_date= $this->MSampleAllocate->find('all',array('order' => array('commencement_date' => 'asc'),'fields' => array('commencement_date'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
+					$this->set('comm_date',$commencement_date[0]['commencement_date']);
+	
+					if (!empty($count_chemist)) {
+	
+						$count_chemist1 =  $count_chemist;
+					} else {
+						$count_chemist1 = '';
 					}
-				} else {
-					$result_D="";
-				}
-
-				$commencement_date= $this->MSampleAllocate->find('all',array('order' => array('commencement_date' => 'asc'),'fields' => array('commencement_date'),'conditions' =>array('org_sample_code IS' => $Sample_code, 'display' => 'Y')))->toArray();
-				$this->set('comm_date',$commencement_date[0]['commencement_date']);
-
-				if (!empty($count_chemist)) {
-
-					$count_chemist1 =  $count_chemist;
-				} else {
-					$count_chemist1 = '';
-				}
-
-				$this->set('count_test_result',$count_chemist1);
-
-
-				$minMaxValue = '';
-
-				foreach ($commo_grade as $key=>$val) {
-
-					$key = $val['grade_code'];
-
-					foreach ($data as $data4) {
-
-						$data_grade_code = $data4['grade_code'];
-
-						if ($data_grade_code == $key) {
-
-							$grade_code_match = 'yes';
-
-							if (trim($data4['min_max'])=='Min') {
-								$minMaxValue = "<br>(".$data4['min_max'].")";
-							}
-							elseif (trim($data4['min_max'])=='Max') {
-								$minMaxValue = "<br>(".$data4['min_max'].")";
-							}
-						}
-					}
-
-				}
-
-				$str.="<tr><td>".$j."</td><td>".$data_test_name.$minMaxValue."</td>";
-				$sampleTypeCode = $getSampleType['sample_type_code'];/*  check the count of max value added on 01/06/2022 */
-				if($sampleTypeCode!=8){/* if sample type food safety parameter added on 01/06/2022  by shreeya */
-
-					// Draw tested test reading values,
+	
+					$this->set('count_test_result',$count_chemist1);
+	
+	
+					$minMaxValue = '';
+	
 					foreach ($commo_grade as $key=>$val) {
-
+	
 						$key = $val['grade_code'];
-
-						$grade_code_match = 'no';
-
+	
 						foreach ($data as $data4) {
-
+	
 							$data_grade_code = $data4['grade_code'];
-
+	
 							if ($data_grade_code == $key) {
-
+	
 								$grade_code_match = 'yes';
-
-								if (trim($data4['min_max'])=='Range') {
-
-									$str.="<td>".$data4['grade_value']."-".$data4['max_grade_value']."</td>";
-
-								} elseif (trim($data4['min_max'])=='Min') {
-
-									$str.="<td>".$data4['grade_value']."</td>";
-
-								} elseif (trim($data4['min_max'])=='Max') {
-
-									$str.="<td>".$data4['max_grade_value']."</td>";
-
-								} elseif (trim($data4['min_max'])=='-1') {
-
-									$str.="<td>".$data4['grade_value']."</td>";
-
+	
+								if (trim($data4['min_max'])=='Min') {
+									$minMaxValue = "<br>(".$data4['min_max'].")";
+								}
+								elseif (trim($data4['min_max'])=='Max') {
+									$minMaxValue = "<br>(".$data4['min_max'].")";
 								}
 							}
 						}
-
-						if ($grade_code_match == 'no') {
-							$str.="<td>---</td>";
+	
+					}
+	
+					$str.="<tr><td>".$j."</td><td>".$data_test_name.$minMaxValue."</td>";
+					$sampleTypeCode = $getSampleType['sample_type_code'];/*  check the count of max value added on 01/06/2022 */
+					if($sampleTypeCode!=8){/* if sample type food safety parameter added on 01/06/2022  by shreeya */
+	
+						// Draw tested test reading values,
+						foreach ($commo_grade as $key=>$val) {
+	
+							$key = $val['grade_code'];
+	
+							$grade_code_match = 'no';
+	
+							foreach ($data as $data4) {
+	
+								$data_grade_code = $data4['grade_code'];
+	
+								if ($data_grade_code == $key) {
+	
+									$grade_code_match = 'yes';
+	
+									if (trim($data4['min_max'])=='Range') {
+	
+										$str.="<td>".$data4['grade_value']."-".$data4['max_grade_value']."</td>";
+	
+									} elseif (trim($data4['min_max'])=='Min') {
+	
+										$str.="<td>".$data4['grade_value']."</td>";
+	
+									} elseif (trim($data4['min_max'])=='Max') {
+	
+										$str.="<td>".$data4['max_grade_value']."</td>";
+	
+									} elseif (trim($data4['min_max'])=='-1') {
+	
+										$str.="<td>".$data4['grade_value']."</td>";
+	
+									}
+								}
+							}
+	
+							if ($grade_code_match == 'no') {
+								$str.="<td>---</td>";
+							}
+	
 						}
-
+	
 					}
-
+					//for duplicate analysis chemist wise results
+					if ($count_chemist1>0) {
+	
+						for ($g=0;$g<$count_chemist;$g++) {
+							$str.="<td align='center'>".$result[$g]."</td>";
+						}
+	
+						//for final result column
+						$str.="<td align='center'>".$result_D."</td>";
+	
+					//for single analysis final results
+					} else {
+						// start for max val according to food sefety parameter added on 01/06/2022 by shreeya
+						$str.="<td>".$result."</td>";
+						if($sampleTypeCode==8){
+							$max_val = $data[0]['max_grade_value'];
+							$str.="<td>".$max_val."</td>";
+						}
+						// end 01/06/2022			   
+					}
+					$this->set('getSampleType',$getSampleType );
+	
+					$str.="<td>".$data_method_name."</td></tr>";
+					$j++;
 				}
-				//for duplicate analysis chemist wise results
-				if ($count_chemist1>0) {
+	
+			$this->set('table_str',$str);
+		
 
-					for ($g=0;$g<$count_chemist;$g++) {
-						$str.="<td align='center'>".$result[$g]."</td>";
-					}
-
-					//for final result column
-					$str.="<td align='center'>".$result_D."</td>";
-
-				//for single analysis final results
-				} else {
-					// start for max val according to food sefety parameter added on 01/06/2022 by shreeya
-					$str.="<td>".$result."</td>";
-					if($sampleTypeCode==8){
-						$max_val = $data[0]['max_grade_value'];
-						$str.="<td>".$max_val."</td>";
-					}
-					// end 01/06/2022			   
-				}
-				$this->set('getSampleType',$getSampleType );
-
-				$str.="<td>".$data_method_name."</td></tr>";
-				$j++;
-			}
-
-		$this->set('table_str',$str);
+		
 		
 		//new queries and conditions added on 03-02-2022 by Amol
 		//to print NABL logo and ULR no. on final test report

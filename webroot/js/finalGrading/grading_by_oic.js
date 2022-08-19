@@ -1,5 +1,7 @@
 $(document).ready(function(){
 
+
+
 	$("#stage_sample_code").change();
 
 	// To check sub grading value is checked or not

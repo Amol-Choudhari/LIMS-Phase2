@@ -244,68 +244,10 @@
 	</table>
 	
 	<?php 	} ?>
-
-	<!-- new -->
-	<?php
-	//this if part is for "ILC" report
-	//17-08-2022 by Shreeya
-		$sampleTypeCode =  $getSampleType['sample_type_code'];
-		if($sampleTypeCode==9){  ?>
-                
-            <table width="100%" border="1">
-				<tr>
-					<td width="10%"><b>S.No. <span style="font-family: krutidev010; font-size:10px;">Ø-la</span></b></td>											
-					<td width="30%"><b><span style="font-family: krutidev010; font-size:10px;">iSjkehVj  dk  uke </span>/ Name Of Parameter</b></td>
-					
-					<td><b><span style="font-family: krutidev010; font-size:10px;">çkIr eku</span>/ Value Obtained (Mg/Kg)</b></td>
-					<td><b><span style="font-family: krutidev010; font-size:10px;">vf/kdre  lhek </span>/ Maximum value (Mg/Kg)</b></td>
-					<td><b><span style="font-family: krutidev010; font-size:10px;">viukbZ x;h i)fr</span>/ Method Followed</b></td>
-				</tr>
-				<?php if(isset($table_str)){ echo $table_str; }?>
-			</table>
-            
-    <?php }
-
-	//this else part is for regular report as before
-	//02-06-2022 by Shreeya
-	else { ?>
-
-	<table width="100%" border="1">
-		<tr>
-			<td rowspan="2" width="5%"><b>S.No. <span style="font-family: krutidev010; font-size:10px;">Ø-la</span></b></td>											
-			<td rowspan="2" width="20%"><b><span style="font-family: krutidev010; font-size:10px;">fof'k"V fo'ks"krk,</span>/Special Characteristics</b></td>
-			<td  colspan="" ><b><span style="font-family: krutidev010; font-size:10px;">fofunsZ'kks dh jsat</span>/Range of Specification</b></td>											
-			
-			<td  colspan="1"rowspan="2"><br><br><b>Chemist </b></td>												
-					
-			<td  colspan="1"rowspan="2"><br><br><b>Approved Result</b></td>
-					
-			<td  rowspan="2"><br><br><b><span style="font-family: krutidev010; font-size:10px;">çkIr eku</span>/ Value Obtained</b></td>
-						
-			
-			
-			<td  rowspan="2"><b><span style="font-family: krutidev010; font-size:10px;">viukbZ x;h i)fr</span>/ Method Followed</b></td>
-		</tr>
-		
-		<tr>
-			
-			<td align="center"></td>
-			
-		</tr>
-		
-		
-		<?php if(isset($table_str)){ echo $table_str; }?>
-		
-		
-	</table>
 	
-	<?php 	} ?>
-	<!-- new end -->
-
-
 	<?php
 	$sampleTypeCode =  $getSampleType['sample_type_code'];
-		if($sampleTypeCode==9){ ?> 
+		if($sampleTypeCode!=9){ ?> 
 			
 		<table border="1" width="100%">
 		<tr>
@@ -321,6 +263,3 @@
 		<td align="right"><b>(Authorized Signatory/Incharge)</b> <br><br> <?php if(isset($test_report)) { echo $test_report[0]['grade_user_flag'].','.$test_report[0]['ro_office']; } ?></td>
 	  </tr>	
 	</table> 
-
-	
-	
