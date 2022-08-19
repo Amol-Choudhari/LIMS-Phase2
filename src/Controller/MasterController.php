@@ -3038,6 +3038,7 @@ public function createFormula(){
 
 			$modifiedData = 'false';
 			$report_label = htmlentities($this->request->getData("report_label"),ENT_QUOTES);
+			// pr($report_label);die;
 			$report_name = htmlentities($this->request->getData("report_name"),ENT_QUOTES);
 
 			if(!isset($report_label) || !is_numeric($report_label)){
@@ -3055,13 +3056,14 @@ public function createFormula(){
 
 						'report_desc'=>$report_name,
 						'user_code'=>$_SESSION['user_code'],
+						'label_code' =>$report_label,
 						'display'=>'Y',
 						'login_timestamp'=>date('Y-m-d H:i:s'),
 						'created'=>date('Y-m-d H:i:s'),
 						'modified'=>date('Y-m-d H:i:s'),
 
 					));
-				
+				// pr($newEntity);die;
 					if($this->MReport->save($newEntity)){
 
 						$message = 'New Report Save Sucessfully';
