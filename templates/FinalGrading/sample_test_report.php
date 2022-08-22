@@ -245,6 +245,7 @@
 	
 	<?php 	} ?>
 	
+
 	<?php
 	$sampleTypeCode =  $getSampleType['sample_type_code'];
 		if($sampleTypeCode!=9){ ?> 

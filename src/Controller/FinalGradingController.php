@@ -607,8 +607,8 @@ class FinalGradingController extends AppController
 			}		
 		}
 	}
-
-
+	//added for inner sub sample
+	//no grade by ilc flow
 	public function ilcGradingByInward(){
 
 		$this->authenticateUser();
@@ -2000,11 +2000,11 @@ class FinalGradingController extends AppController
 		$this->set('ilc_sample_reports',$final_reports);
 	}
 
-	public function ilcSampleZscore($sample_code){
+	// public function ilcSampleZscore($sample_code){
 
-		$arraylist = $this->ilcAvailableSampleZscore($sample_code);
-		$this->set('final_reports',$arraylist);
-	}
+	// 	$arraylist = $this->ilcAvailableSampleZscore($sample_code);
+	// 	$this->set('final_reports',$arraylist);
+	// }
 	//inner sub sample list of report with z score model
 	public function ilcSampleZscoreRedirect($sample_code){
 
@@ -2615,19 +2615,21 @@ class FinalGradingController extends AppController
 		$commodity_code=$this->Session->read('sample_test_mc');
 		$sample_code1=$this->Session->read('sample_test_code');
 	
+		
 		$str1="SELECT org_sample_code FROM workflow WHERE display='Y' ";
 
 		if ($sample_code1!='') {
 
 			$str1.=" AND stage_smpl_cd='$sample_code1' GROUP BY org_sample_code"; /* remove trim fun on 01/05/2022 */
 		}
+		
 
 		$sample_code2 = $conn->execute($str1);
 		$sample_code2 = $sample_code2->fetchAll('assoc');
 
 		$Sample_code = $sample_code2[0]['org_sample_code'];
 		
-
+		
 		$str2="SELECT stage_smpl_cd FROM workflow WHERE display='Y' ";
 
 		
@@ -2653,9 +2655,9 @@ class FinalGradingController extends AppController
 			
 			$method_homo = $conn->execute($query2);
 			$method_homo = $method_homo->fetchAll('assoc');
-	
+			
 			$this->set('method_homo',$method_homo);
-		
+			
 			if (null!==($this->request->getData('ral_lab'))) {
 	
 				$data=$this->request->getData('ral_lab');
@@ -2778,7 +2780,7 @@ class FinalGradingController extends AppController
 	
 					//to get approved final result by Inward officer test wise
 					$test_result= $this->FinalTestResult->find('list',array('valueField' => 'final_result','conditions' =>array('org_sample_code IS' => $Sample_code,'test_code' => $row,'display'=>'Y')))->toArray();
-	
+					
 					//if sample is for duplicate analysis
 					//so get result chmeist wise
 					$result_D = '';
@@ -3001,7 +3003,7 @@ class FinalGradingController extends AppController
 		//on 11-08-2022 by shreeya
 		if($sampleTypeCode == 9){
 
-			$query = $conn->execute("SELECT si.*,mc.commodity_name, mcc.category_name, st.sample_type_desc, ct.container_desc, pc.par_condition_desc, uw.unit_weight, rf.ro_office, sa.sample_code, ur.user_flag, gd.grade_desc, u1.f_name, u1.l_name, rf2.ro_office
+			$query = $conn->execute("SELECT si.*,mc.commodity_name, mcc.category_name, st.sample_type_desc, ct.container_desc, pc.par_condition_desc, uw.unit_weight, rf.ro_office, sa.sample_code, ur.user_flag, u1.f_name, u1.l_name, rf2.ro_office
 								FROM sample_inward AS si
 								INNER JOIN m_commodity AS mc ON mc.commodity_code = si.commodity_code
 								INNER JOIN m_commodity_category AS mcc ON mcc.category_code = si.category_code
@@ -3015,7 +3017,7 @@ class FinalGradingController extends AppController
 								INNER JOIN dmi_users AS u ON u.id = si.user_code
 								INNER JOIN dmi_users AS u1 ON u1.id = si.grade_user_cd
 								INNER JOIN dmi_user_roles AS ur ON u.email = ur.user_email_id
-								INNER JOIN m_grade_desc AS gd ON gd.grade_code = si.grade
+								
 								WHERE si.org_sample_code = '$Sample_code' ");
 
 			$test_report = $query->fetchAll('assoc');
@@ -3041,7 +3043,7 @@ class FinalGradingController extends AppController
 								WHERE si.org_sample_code = '$Sample_code' ");
 
 			$test_report = $query->fetchAll('assoc');
-
+			
 		}
 	
 		if($test_report){

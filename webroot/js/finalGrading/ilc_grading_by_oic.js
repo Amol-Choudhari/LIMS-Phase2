@@ -1,19 +1,6 @@
 $(document).ready(function(){
 
 
-	//added for click preview check and show save button 11-07-2022
-	// $("#save").hide();
-	// $("#reportlink").click(function (e) {
-
-	// 	if($('#reportlink').is(':checked')){
-	// 		$("#save").show();
-	// 	}
-	// 	else{
-	// 		$("#save").hide();
-	// 	}
-
-	  
-	// });
 
 	$("#stage_sample_code").change();
 
