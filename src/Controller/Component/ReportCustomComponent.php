@@ -8466,23 +8466,7 @@ class ReportCustomComponent extends Component
             $query->closeCursor();
             if (!empty($records)) {
                 foreach ($records as $record) {
-                    // $commodity_name = $record['commodity_name'];
-                    // $project_sample = 'NA';
-                    // $check_count = $record['check_count'];
-                    // $check_apex_count = $record['check_apex_count'];
-                    // $challenged_count = $record['challenged_count'];
-                    // $ilc_count = $record['ilc_count'];
-                    // $research_count = $record['research_count'];
-                    // $retesting_count = $record['retesting_count'];
-                    // $recby_ch_date = $record['recby_ch_date'];
-                    // $commencement_date = $record['commencement_date'];
-                    // $name_chemist = $record['name_chemist'];
-                    // $sample_type_desc = $record['sample_type_desc'];
-                    // $lab_name = $record['lab_name'];
-                    // $no_of_param = $record['no_of_param'];
-
-
-
+                    
                     $name_chemist            = $record['name_chemist'];
                     $check_apex_count        = $record['check_apex_count'];
                     $challenged_count        = $record['challenged_count'];
