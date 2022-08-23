@@ -26,6 +26,8 @@
                 case "no--of-check--private---research-samples-analyzed-by-rals":
                 case "samples-alloted-analyzed-pending-report-ral-cal":
                 case "time-taken-for-analysis-of-samples":
+                
+                
             ?>
                     <input type="hidden" class="form-control" name="label_name" id="label_name">
                     <input type="hidden" class="form-control" name="posted_ro_office" value="<?= $_SESSION['posted_ro_office']; ?>">
@@ -602,6 +604,7 @@
                 case  "samples-accepted-by-chemist-for-testing":
                 case "samples-alloted-to-chemist-for-testing":
                 case "sample-analyzed-by-chemist":
+               
                 ?>
                     <input type="hidden" class="form-control" name="label_name" id="label_name">
                     <input type="hidden" class="form-control" name="posted_ro_office" value="<?= $_SESSION['posted_ro_office']; ?>">
@@ -2188,6 +2191,7 @@
                 case "sample-allotment-sheet-of-coding-section-to-the-i-c-analytical-section-of-cal--nagpur":
                 case "sample-allotment-sheet-of-i-c-analytical-section-issued-to-the-chemist-for-analysis":
                 case "perticulars-of-samples-received-and-analyzed-by-ral-annexure-d":
+                case "consolidated-report-analysed-by-chemist":
     ?>
         <input type="hidden" class="form-control" name="label_name" id="label_name">
         <input type="hidden" class="form-control" name="posted_ro_office" value="<?= $_SESSION['posted_ro_office']; ?>">
@@ -2292,8 +2296,8 @@
         <?php echo $this->Form->end(); ?>
     <?php
 
-                    break;
-                case "common-report":
+      break;
+      case "common-report":
 
     ?>
         <input type="hidden" class="form-control" name="label_name" id="label_name">

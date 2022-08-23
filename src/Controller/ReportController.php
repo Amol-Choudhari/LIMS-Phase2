@@ -83,6 +83,7 @@ class ReportController extends AppController
 		$this->Session->delete('my_report_title');
 
 		$role = $_SESSION['role'];
+
 		$conn = ConnectionManager::get('default');
 
 		$qlabel = $conn->execute("SELECT ml.label_desc,ml.label_code FROM m_label ml
@@ -90,13 +91,16 @@ class ReportController extends AppController
 		INNER JOIN m_report mr ON ml.label_code = mr.label_code
 		WHERE mrl.role = '$role' AND ml.label_code != '14' GROUP BY ml.label_desc,ml.label_code ORDER BY ml.label_desc");
 		$recordlabels = $qlabel->fetchAll('assoc');
+		
 		$this->set('recordlabels', $recordlabels);
 
 		$q = $conn->execute("SELECT mr.report_code,mr.report_desc,mrl.role,ml.label_desc,mr.label_code FROM m_report mr
 		INNER JOIN m_reportlabel mrl ON mr.report_code = mrl.report_code AND mrl.display = 'Y'
 		INNER JOIN m_label ml ON mrl.label_code = ml.label_code AND mr.label_code = ml.label_code
 		WHERE mrl.role = '$role' AND mr.display = 'Y' GROUP BY mr.report_code,ml.label_desc,mrl.role,mr.label_code ORDER BY mr.report_desc");
+	
 		$records = $q->fetchAll('assoc');
+		
 		$this->set('records', $records);
 	}
 
@@ -106,7 +110,7 @@ class ReportController extends AppController
 		$report_name = $this->Session->read('my_report_title');
 		$this->set('title', $title);
 		$this->set('report_name', $report_name);
-
+		
 		//Set Sample Type Value
 		$querySample = $this->MSampleType->find('list', [
 			'keyField' => 'sample_type_code',
@@ -121,7 +125,7 @@ class ReportController extends AppController
 		$samples_type = $query->fetchAll('assoc');
 		$query->closeCursor();
 		$this->set('samples_type', $samples_type);
-
+		
 		//Set All Commodity
 		$queryCommodity = $this->MCommodity->find('list', [
 			'keyField' => 'commodity_code',
@@ -130,10 +134,13 @@ class ReportController extends AppController
 			->select(['commodity_code', 'commodity_name'])->where(['display' => 'Y'])->order(['commodity_name' => 'ASC']);
 		$commodity = $queryCommodity->toArray();
 		$this->set('commodity', $commodity);
-
+		
 		//To get User Flag as per Report Title
 		$user_flags = $this->getLabName($report_name);
+	
 		$this->set('user_flags', $user_flags);
+
+		
 	}
 
 	// To set Report Title in Session variable
@@ -157,6 +164,7 @@ class ReportController extends AppController
 	//To get Lab Name dropdown as per Report Title
 	public function getLabName($report_name)
 	{
+
 		$str1 = "";
 		$this->loadModel('MReportLab');
 		if ($_SESSION['user_flag'] == 'RAL') {
@@ -5129,6 +5137,149 @@ class ReportController extends AppController
 				->group("report_date")
 				->header("report_date")
 				->customTrailer("Total Number of Samples : {counts} ", "")
+				->customTrailer("{$name} ", "")
+				->customTrailer("({$email}) ", "")
+				->customTrailer("{$role} ", "")
+
+				// ->customTrailer("{$name} ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 10px;margin-bottom:10px;")
+				// ->customTrailer("({$email}) ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 25px;margin-bottom:10px;")
+				// ->customTrailer("{$role} ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 45px; margin-bottom:10px;")
+
+
+				->group("lab_name")
+				->header("lab_name")
+
+				->group("name_chemist")
+				->header("name_chemist")
+
+				->group("sample_type_desc")
+				->header("sample_type_desc")
+
+				->page()
+				->pagetitledisplay("TopOfFirstPage")
+
+				->header($header, "")
+
+
+				// ->footer("Time: date('Y-m-d H:i:s')", "font-size: 8pt; text-align: right; font-style: italic; width: 100%; margin-top: 55px; padding-bottom:60px;")
+				->footer("Page: {PAGE} of {PAGETOTAL} & Time: date('Y-m-d H:i:s')", "")
+				->execute();
+		}
+	}
+  //added for consolidated report on 22-08-2022 by shreeya
+	public function consolidatedReportAnalysedByChemist()
+	{
+		
+		$this->autoRender = false;
+
+		if ($this->request->is('post')) {
+
+			$month = $this->request->getData('month');
+			$year = $this->request->getData('year');
+			$lab = $this->request->getData('lab');
+			$ral_lab = $this->request->getData('ral_lab');
+		    $ral_lab = explode('~', $ral_lab);
+			$ral_lab_no = $ral_lab[0];
+			$ral_lab_name = $ral_lab[1];
+			$posted_ro_office = $this->request->getData('posted_ro_office');
+			
+			$fname = $this->request->getData('fname');
+			$lname = $this->request->getData('lname');
+			
+			$name = $fname . ' ' . $lname;
+			$email = base64_decode($this->request->getData('email'));
+		
+			$role = $this->request->getData('role');
+		
+			$user_id = $_SESSION['user_code'];
+		
+		
+			$month_name = date("F", mktime(0, 0, 0, $month, 10));
+			
+			$report_name = "Consolidated Reporte Analyzed By Chemist For The Month Of " . $month_name . ' , ' . $year;
+
+			$header1 = "भारत सरकार/Goverment of India";
+			$header2 = "कृषि और किसान कल्याण मंत्रालय /Ministry of Agriculture & Farmers Welfare";
+			$header3 = "कृषि, सहकारिता एवं किसान कल्याण विभाग / Department of Agriculture & Farmers Welfare";
+			$header4 = "विपणन और निरीक्षण निदेशालय / Directorate of Marketing and Inspection";
+
+			if ($lab == 'RAL') {
+				$header5 = "प्रादेशिक एगमार्क प्रयोगशाला / Regional Agmark Laboratory , " . $_SESSION['ro_office'];
+			} else if ($lab == 'CAL') {
+				$header5 = "केंद्रीय एगमार्क प्रयोगशाला / Central Agmark Laboratory <br> उत्तर अम्बज़री मार्ग / North Ambazari Road Nagpur 440010";
+			} else if ($lab == 'RO') {
+				$header5 = "प्रादेशिक कार्यालय / Regional Office , " . $_SESSION['ro_office'];
+			} else if ($lab == 'SO') {
+				$header5 = "उप-कार्यालय / Sub Office , " . $_SESSION['ro_office'];
+			}
+
+			$headerone = $header1 . '<br>' . $header2 . '<br>' . $header3 . '<br>' . $header4;
+			$header = $headerone . '<br>' . $header5;
+
+			$sql = "";
+
+			if ($role == 'DOL') {
+				$query = ReportCustomComponent::getDolConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					$sql = "SELECT lab_name, name_chemist, sample_type_desc, working_days, check_count, check_apex_count, challenged_count, ilc_count,research_count, retesting_count, other, project_sample, commodity_name, no_of_param, other_work, total_no, norm, counts,report_date FROM temp_reportico_dol_details_sample_analyzed WHERE user_id = '$user_id'";
+				}
+			}
+
+			if ($role == 'Head Office') {
+				$query = ReportCustomComponent::getHoConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, total_no, rep_date 
+					FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'";
+				
+				}
+				
+				
+			}
+			// print_r($query); exit;
+			if ($role == 'Admin') {
+				$query = ReportCustomComponent::getAdminConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					$sql = "SELECT lab_name, name_chemist, sample_type_desc, working_days, check_count, check_apex_count, challenged_count, ilc_count,research_count, retesting_count, other, project_sample, commodity_name, no_of_param, other_work, total_no, norm, counts,report_date FROM temp_reportico_admin_details_sample_analyzed WHERE user_id = '$user_id'";
+				}
+			}
+			
+			if ($sql == "") {
+				return $this->redirect("/report/index");
+			}
+
+			ini_set("include_path", reporticoReport);
+			require_once("vendor/autoload.php");
+			require_once("vendor/reportico-web/reportico/src/Reportico.php");
+
+			Builder::build()
+				->properties(["bootstrap_preloaded" => true])
+				->datasource()->database("pgsql:host=" . ForReportsConnection . "; dbname=" . ForReportsDB)->user(ForReportsUserName)->password(ForReportsPassword)
+				->title($report_name)
+
+				->sql($sql)
+
+				->column("sr_no")->justify("center")->label("Sr. No.")
+				->column("name_chemist")->justify("center")->label("Name of The Chemist")
+				->column("check_count")->justify("center")->label("Check Samples")
+				->column("check_apex_count")->justify("center")->label("Check(APEX) Sample")
+				->column("challenged_count")->justify("center")->label(" Challenged Sample")
+				->column("ilc_count")->justify("center")->label("ILC")
+				->column("research_count")->justify("center")->label("Research")
+				->column("retesting_count")->justify("center")->label("Retesting")
+				->column("smpl_analysed_instrn")->justify("center")->label("Analysed")
+				->column("project_sample")->justify("center")->label("Project Samples")
+				->column("other_private_sample")->justify("center")->label("Other")
+				->column("total_no")->justify("center")->label("Total Nos.")
+				->column("lab_name")->justify("center")->label("Lab Name.")
+				->column("sample_type_desc")->justify("center")->label("Sample Type Desc.")
+				->column("rep_date")->justify("center")->label("Report Date.")
+				// ->column("counts")->hide()
+
+				//->to('CSV') //Auto download excel file	
+
+				->group("rep_date")
+				->header("rep_date")
+				// ->customTrailer("Total Number of Samples : {counts} ", "")
 				->customTrailer("{$name} ", "")
 				->customTrailer("({$email}) ", "")
 				->customTrailer("{$role} ", "")

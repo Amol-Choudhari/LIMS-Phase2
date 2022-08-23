@@ -21,7 +21,7 @@
                             <div id="collapse<?= $recordlabel['label_code']; ?>" class="collapse" data-parent="#accordion">
                                 <div class="card-body"> 
                                     <?php
-                                    foreach ($records as $record) {
+                                    foreach ($records as $record) { 
                                         if ($recordlabel['label_code'] == $record['label_code']) {
                                             $labelR = strtolower(str_replace([' ', '/', '(', ')','&',',','.'], '-', $record['report_desc']));
                                             $report_desc = substr($labelR, -1, 1);
