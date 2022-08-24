@@ -1,15 +1,4 @@
 
-//added for only RAL/CAL show ilc option 10-08-2022 
-var user_flag_new = $("#user_flag_new").val();
-
-if (user_flag_new !='RAL' || user_flag_new !='CAL') {
-
-	$("#sample_type_code option[value='9']").prop('disabled', true);
-	
-}
-
-
-
 //JS File for Sample Inward
 
 

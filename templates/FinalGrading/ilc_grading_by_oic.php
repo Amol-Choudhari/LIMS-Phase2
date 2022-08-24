@@ -113,5 +113,5 @@
 			</section>
 </div>
 <?php echo $this->Html->Script('sample_grading_by_oic'); ?>
-<?php echo $this->Html->Script('finalGrading/grading_by_oic'); ?>
-<!-- <?php echo $this->Html->Script('finalGrading/ilc_grading_by_oic'); ?> -->
+
+ <?php echo $this->Html->Script('finalGrading/ilc_grading_by_oic'); ?> 

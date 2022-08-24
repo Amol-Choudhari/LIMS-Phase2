@@ -1385,7 +1385,7 @@ class FinalGradingController extends AppController
 	}
 
 /******************************************************************************************************************************************************************************************************/
-	// added for ilcFlow  08-07-2022
+	//added for ilcFlow  08-07-2022
 	//redirdction for sub samples of inner 
 	public function redirectToGradeIlc($grading_sample_code){
 
@@ -1420,11 +1420,11 @@ class FinalGradingController extends AppController
 			$this->set('samples_list',array($grading_sample_code=>$grading_sample_code));
 			$this->set('stage_sample_code',$grading_sample_code);//for hidden field, to use common script
 
-			$grades_strd=$this->MGradeStandard->find('list',array('keyField'=>'grd_standrd','valueField'=>'grade_strd_desc','order' => array('grade_strd_desc' => 'ASC')))->toArray();
-			$this->set('grades_strd',$grades_strd);
+			// $grades_strd=$this->MGradeStandard->find('list',array('keyField'=>'grd_standrd','valueField'=>'grade_strd_desc','order' => array('grade_strd_desc' => 'ASC')))->toArray();
+			// $this->set('grades_strd',$grades_strd);
 
-			$grades=$this->MGradeDesc->find('list',array('keyField'=>'grade_code','valueField'=>'grade_desc','order' => array('grade_desc' => 'ASC'),'conditions' => array('display' => 'Y')))->toArray();
-			$this->set('grades',$grades);
+			// $grades=$this->MGradeDesc->find('list',array('keyField'=>'grade_code','valueField'=>'grade_desc','order' => array('grade_desc' => 'ASC'),'conditions' => array('display' => 'Y')))->toArray();
+			// $this->set('grades',$grades);
 
 
 			//get org samle code
@@ -1451,10 +1451,10 @@ class FinalGradingController extends AppController
 				if ($this->request->getData('button')=='add') {
 
 					// Add new filed to add subgrading value
-					$subGradeChecked = $this->request->getData('subgrade');
+					//$subGradeChecked = $this->request->getData('subgrade');
 
 					$category_code=$this->request->getData('category_code');
-
+ 					
 					$commodity_code=$this->request->getData('commodity_code');
 
 					$remark=$this->request->getData('remark');
@@ -1993,7 +1993,7 @@ class FinalGradingController extends AppController
 		$final_reports = $this->finalSampleTestReports();
 		$this->set('final_sample_reports',$final_reports);
 	}
-	//inner sub sample list of report
+	//outer main sample list of report z score model
 	public function ilcFinalizedSamples(){
 
 		$final_reports = $this->ilcSampleTestReports();
@@ -2005,6 +2005,7 @@ class FinalGradingController extends AppController
 	// 	$arraylist = $this->ilcAvailableSampleZscore($sample_code);
 	// 	$this->set('final_reports',$arraylist);
 	// }
+
 	//inner sub sample list of report with z score model
 	public function ilcSampleZscoreRedirect($sample_code){
 
@@ -2073,6 +2074,7 @@ class FinalGradingController extends AppController
 		return $final_reports;
 	}
 
+	//outer sample for ilc to  show the list
 	// create new fun for showing ilc finalized sample done 13/07-2022 by shreeya
 	public function ilcSampleTestReports(){ 
 		
@@ -2559,7 +2561,7 @@ class FinalGradingController extends AppController
 		
 			
 			
-	
+	//outer sample of ILC main sample
 	//added for show the finalized  list of ilc zscore on 25/07/2022 by Shreeya
 	public function ilcFinalizedZscore(){
 

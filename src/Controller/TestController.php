@@ -690,6 +690,11 @@ class TestController extends AppController {
 		if ($flag) {
 
 			echo "#1#";
+		
+		//added else condition on 24-08-2022 by Shreeya
+		//because page loader script requires some to be return from the function inresponse.
+		}else{
+			echo "#0#";
 		}
 
 		exit;
