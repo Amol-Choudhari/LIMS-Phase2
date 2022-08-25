@@ -5196,7 +5196,7 @@ class ReportController extends AppController
 		
 			$month_name = date("F", mktime(0, 0, 0, $month, 10));
 			
-			$report_name = "Consolidated Reporte Analyzed By Chemist For The Month Of " . $month_name . ' , ' . $year;
+			$report_name = "Consolidated Report Analyzed By Chemist For The Month Of " . $month_name . ' , ' . $year;
 
 			$header1 = "भारत सरकार/Goverment of India";
 			$header2 = "कृषि और किसान कल्याण मंत्रालय /Ministry of Agriculture & Farmers Welfare";
@@ -5221,14 +5221,15 @@ class ReportController extends AppController
 			if ($role == 'DOL') {
 				$query = ReportCustomComponent::getDolConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {
-					$sql = "SELECT lab_name, name_chemist, sample_type_desc, working_days, check_count, check_apex_count, challenged_count, ilc_count,research_count, retesting_count, other, project_sample, commodity_name, no_of_param, other_work, total_no, norm, counts,report_date FROM temp_reportico_dol_details_sample_analyzed WHERE user_id = '$user_id'";
+					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count ,counts , check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, rep_date 
+					FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'";
 				}
 			}
 
 			if ($role == 'Head Office') {
 				$query = ReportCustomComponent::getHoConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {
-					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, total_no, rep_date 
+					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count, counts, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, rep_date 
 					FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'";
 				
 				}
@@ -5239,7 +5240,8 @@ class ReportController extends AppController
 			if ($role == 'Admin') {
 				$query = ReportCustomComponent::getAdminConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {
-					$sql = "SELECT lab_name, name_chemist, sample_type_desc, working_days, check_count, check_apex_count, challenged_count, ilc_count,research_count, retesting_count, other, project_sample, commodity_name, no_of_param, other_work, total_no, norm, counts,report_date FROM temp_reportico_admin_details_sample_analyzed WHERE user_id = '$user_id'";
+					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count, counts,check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, rep_date 
+					FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'";
 				}
 			}
 			
@@ -5259,7 +5261,7 @@ class ReportController extends AppController
 				->sql($sql)
 
 				->column("sr_no")->justify("center")->label("Sr. No.")
-				->column("name_chemist")->justify("center")->label("Name of The Chemist")
+				
 				->column("check_count")->justify("center")->label("Check Samples")
 				->column("check_apex_count")->justify("center")->label("Check(APEX) Sample")
 				->column("challenged_count")->justify("center")->label(" Challenged Sample")
@@ -5269,17 +5271,15 @@ class ReportController extends AppController
 				->column("smpl_analysed_instrn")->justify("center")->label("Analysed")
 				->column("project_sample")->justify("center")->label("Project Samples")
 				->column("other_private_sample")->justify("center")->label("Other")
-				->column("total_no")->justify("center")->label("Total Nos.")
-				->column("lab_name")->justify("center")->label("Lab Name.")
-				->column("sample_type_desc")->justify("center")->label("Sample Type Desc.")
+				//  ->column("total_no")->justify("center")->label("Total Nos.")
 				->column("rep_date")->justify("center")->label("Report Date.")
-				// ->column("counts")->hide()
+				->column("counts")->hide()
 
 				//->to('CSV') //Auto download excel file	
 
 				->group("rep_date")
 				->header("rep_date")
-				// ->customTrailer("Total Number of Samples : {counts} ", "")
+				->customTrailer("Total Number of Samples : {counts} ", "")
 				->customTrailer("{$name} ", "")
 				->customTrailer("({$email}) ", "")
 				->customTrailer("{$role} ", "")

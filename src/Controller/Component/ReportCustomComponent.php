@@ -8201,7 +8201,7 @@ class ReportCustomComponent extends Component
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                 FROM sa.alloc_date):: INTEGER = '$year'  AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
                 GROUP BY sa.alloc_to_user_code, sa.commodity_code";
-
+       
         $sql = $con->execute($sql);
         $recordNames = $sql->fetchAll('assoc');
         $sql->closeCursor();
@@ -8354,21 +8354,21 @@ class ReportCustomComponent extends Component
         $i = 0;
         $user_id = $_SESSION['user_code'];
         $con = ConnectionManager::get('default');
-
+      
         $delete = $con->execute("DELETE FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'");
 
-        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.f_name,u.l_name FROM sample_inward AS si
+        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email FROM sample_inward AS si
                 INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
                 INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
                 INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
                 INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
                 INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
                 INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
-                WHERE sa.lab_code ='$ral_lab_no' AND EXTRACT(MONTH
+                WHERE si.entry_type = 'sub_sample' AND sa.lab_code ='$ral_lab_no' AND EXTRACT(MONTH
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                 FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
-                GROUP BY sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.f_name,u.l_name";
-        //pr($sql);die;
+                GROUP BY sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email";
+    //    pr($sql); exit;
         $sql = $con->execute($sql);
         $recordNames = $sql->fetchAll('assoc');
         $sql->closeCursor();
@@ -8410,10 +8410,10 @@ class ReportCustomComponent extends Component
                 (
                 SELECT COUNT(si.sample_type_code) 
                 FROM sample_inward AS si
-                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 7
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
                 INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
                 INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
-                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                WHERE si.entry_type = 'sub_sample' AND sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
                 FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
                 ) AS ilc_count,
                 (
@@ -8487,13 +8487,13 @@ class ReportCustomComponent extends Component
                     $i = $i + 1;
                     $total_no = $check_count + $check_apex_count + $challenged_count + $ilc_count + $research_count + $retesting_count;
 
-                    $insert = $con->execute("INSERT INTO temp_consolidated_reporte_analyzed_by_chemists (sr_no, user_id, lab_name, name_chemist, sample_type_desc, project_sample, check_count, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, total_no, rep_date) 
+                    $insert = $con->execute("INSERT INTO temp_consolidated_reporte_analyzed_by_chemists (sr_no, user_id, lab_name, name_chemist, sample_type_desc, project_sample, check_count, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, total_no, rep_date,created,modified) 
                     VALUES (
-                    '$i','$user_id','$lab_name','$name_chemist', '$sample_type_desc', '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count','$other_private_sample','$smpl_analysed_instrn', '$total_no', '$report_date')");
+                    '$i','$user_id','$lab_name','$name_chemist', '$sample_type_desc', '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count','$other_private_sample','$smpl_analysed_instrn', '$total_no', '$report_date', '$date', '$date')");
 
-                    //$update = $con->execute("UPDATE temp_consolidated_reporte_analyzed_by_chemists SET counts = (SELECT COUNT(user_id) FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
+                    $update = $con->execute("UPDATE temp_consolidated_reporte_analyzed_by_chemists SET counts = (SELECT COUNT(user_id) FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
                 }
-                // print_r($insert); exit;
+              
                 $record_insert = 1;
             }
         }
