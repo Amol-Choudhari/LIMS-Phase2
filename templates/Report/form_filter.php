@@ -604,6 +604,7 @@
                 case  "samples-accepted-by-chemist-for-testing":
                 case "samples-alloted-to-chemist-for-testing":
                 case "sample-analyzed-by-chemist":
+                    
                
                 ?>
                     <input type="hidden" class="form-control" name="label_name" id="label_name">
@@ -2192,6 +2193,8 @@
                 case "sample-allotment-sheet-of-i-c-analytical-section-issued-to-the-chemist-for-analysis":
                 case "perticulars-of-samples-received-and-analyzed-by-ral-annexure-d":
                 case "consolidated-report-analysed-by-chemist":
+               
+               
     ?>
         <input type="hidden" class="form-control" name="label_name" id="label_name">
         <input type="hidden" class="form-control" name="posted_ro_office" value="<?= $_SESSION['posted_ro_office']; ?>">
@@ -2294,6 +2297,130 @@
             </div>
         </div>
         <?php echo $this->Form->end(); ?>
+    <!-- NEW START -->
+        <?php
+            break;
+            case "details-of-samples-analysed-carry-forward-for-the-month":
+               
+        ?>
+        <input type="hidden" class="form-control" name="label_name" id="label_name">
+        <input type="hidden" class="form-control" name="posted_ro_office" value="<?= $_SESSION['posted_ro_office']; ?>">
+        <input type="hidden" class="form-control" name="fname" value="<?= $_SESSION['f_name']; ?>">
+        <input type="hidden" class="form-control" name="lname" value="<?= $_SESSION['l_name']; ?>">
+        <input type="hidden" class="form-control" name="email" value="<?= $_SESSION['username']; ?>">
+        <input type="hidden" class="form-control" name="role" value="<?= $_SESSION['role']; ?>">
+        <input type="hidden" class="form-control" name="user_code" value="<?= $_SESSION['user_code']; ?>">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+            <legend class="heading"><?= $report_name; ?></legend><br>
+            <fieldset class="fsStyle">
+                <?php if ($_SESSION['role'] == 'Head Office' || $_SESSION['role'] == 'RAL/CAL OIC' || $_SESSION['role'] == 'Inward Officer' || $_SESSION['role'] == 'Admin' || $_SESSION['role'] == 'Inward Officer' || $_SESSION['role'] == 'DOL') {  ?>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="labelForm"><span class="compulsoryField">*</span> Date </label>
+                        </div>
+                        <div class="col-md-4">
+                            <?php
+                            $data = ['01' => 'Janaury', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'];
+                            ?>
+                            <?= $this->Form->control('month', [
+                                'type' => 'select',
+                                'class' => 'form-control',
+                                'required' => true,
+                                'label' => false,
+                                'options' => $data,
+                                'empty' => '--Select Month-- ',
+                                'id' => 'month',
+                            ]); ?>
+                        </div>
+                        <div class="col-md-4">
+                            <?= $this->Form->year('year', [
+                                'type' => 'select',
+                                'class' => 'form-control',
+                                'required' => true,
+                                'label' => false,
+                                'empty' => '--Select Year-- ',
+                                'id' => 'year',
+                                'min' => 2011,
+                                'max' => date('Y')
+                            ]); ?>
+                        </div>
+                    </div>
+                <?php } ?><br>
+                <?php if ($_SESSION['role'] == 'Lab Incharge' || $_SESSION['role'] == 'RO Officer' || $_SESSION['role'] == 'SO Officer' || $_SESSION['role'] == 'Head Office' || $_SESSION['role'] == 'RAL/CAL OIC' || $_SESSION['role'] == 'Inward Officer' || $_SESSION['role'] == 'Admin' || $_SESSION['role'] == 'Inward Officer' || $_SESSION['role'] == 'DOL' || $_SESSION['role'] == 'RAL/CAL OIC' || $_SESSION['role'] == 'RO/SO OIC') {  ?>
+
+                    <div class="row" id="loading_con">
+                        <div class="col-md-12">
+                            <?php echo $this->Html->image('other/loader.gif', array('class' => 'loader_img')); ?>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="labelForm"><span class="compulsoryField">*</span> Offices </label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="form-control" id="lab" name="lab">
+                                <option hidden="hidden" value=''>-----Select-----</option>
+                                <!-- Get User flag list for getLabName() in ReportController -->
+                                <?php if ($_SESSION['user_flag'] == 'CAL' || $_SESSION['user_flag'] == 'HO' || $_SESSION['user_flag'] == "RAL" || $_SESSION['user_flag'] == 'RO' || $_SESSION['user_flag'] == 'SO') {
+                                    foreach ($user_flags as $user_flag) { ?>
+                                        <option value="<?php echo $user_flag['user_flag']; ?>" selected><?php echo $user_flag['user_flag']; ?></option>
+                                <?php }
+                                } ?>
+                            </select>
+                        </div>
+                    </div>
+                <?php } ?><br>
+                <?php if ($_SESSION['role'] == 'Lab Incharge' || $_SESSION['role'] == 'RO Officer' || $_SESSION['role'] == 'SO Officer' || $_SESSION['role'] == 'Head Office' ||  $_SESSION['role'] == 'RAL/CAL OIC' || $_SESSION['role'] == 'Inward Officer' || $_SESSION['role'] == 'Admin' || $_SESSION['role'] == 'Inward Officer' || $_SESSION['role'] == 'DOL' || $_SESSION['role'] == 'RAL/CAL OIC' || $_SESSION['role'] == 'RO/SO OIC' || $_SESSION['role'] == 'DOL') { ?>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="labelForm"> </label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="form-control" id="ral_lab_list" name="ral_lab">
+                                <option hidden="hidden" value=''>-----Select-----</option>
+                                <!-- To get list of office on change lab from getRallabByLab() in DmiUsers Model -->
+                                <?php if ($_SESSION['user_flag'] == "CAL" || $_SESSION['user_flag'] == "HO" || $_SESSION['user_flag'] == "RAL" || $_SESSION['user_flag'] == 'RO' || $_SESSION['user_flag'] == 'SO') {  ?>
+                                    <option value="" selected></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+                <?php } ?><br>
+                <?php if ($_SESSION['role'] == 'Head Office' || $_SESSION['role'] == 'Admin' || $_SESSION['role'] == 'DOL') { ?>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="labelForm"><span class="compulsoryField">*</span> Sample Type </label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="form-control" id="sample_type_dropdown" name = "sample_type[]"  multiple="multiple">
+                               <?php foreach ($samples_type as $samples_type) { ?>
+                                    <option value="<?php echo $samples_type['sample_type_code']; ?>"><?php echo $samples_type['sample_type_desc']; ?></option>
+                                <?php } ?>
+
+                            </select>
+                        </div>
+                    </div>
+                <?php } ?><br>
+            
+        </div>
+        <div class="col-md-1"></div>
+        <div class="row parameters">
+            <div class="col-md-12 text-center">
+                <span>
+                    <button class="btn btn-primary" type="submit" name="save" id="save">Generate Report</button>
+                </span>
+                <span>
+                    <button class="btn btn-primary" type="reset" name="cancel" id="cancel">Cancel</button>
+                </span>
+                <span>
+                    <button class="btn btn-primary" name="close" id="close">Close</button>
+                </span>
+            </div>
+        </div>
+        <?php echo $this->Form->end(); ?>
+    <!-- NEW END-->
     <?php
 
       break;
