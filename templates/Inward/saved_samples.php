@@ -32,6 +32,7 @@
 														<tr>
 															<th>SR.No</th>
 															<th>Sample Code</th>
+															<th>Sample Type</th>
 															<th>Received Date</th>
 															<th>Drawing Date</th>
 															<th>Inward</th>
@@ -47,6 +48,7 @@
 																<tr>
 																	<td><?php echo $sr_no; ?></td>
 																	<td><?php echo $each['org_sample_code']; ?></td>
+																	<td><?php echo $each['sample_type_desc']; ?></td>
 																	<td><?php if (isset($each['received_date'])) { 
 																				echo $each['received_date']; 
 																			} else { 

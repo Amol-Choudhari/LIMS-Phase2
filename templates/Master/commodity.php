@@ -48,32 +48,44 @@ if(isset($_SESSION['commodity_code']) && isset($_SESSION['commodity_data'])){
 								<div class="card-header"><h3 class="card-title-new"><?php echo $title; ?></h3></div>
 								<div class="form-horizontal">
 									<?php if(!empty($validate_err)){ ?><div class="badge badge-danger p-2"><?php echo $validate_err; ?></div><?php } ?>
-										<div class="card-body">
-											<div class="row">
-												<?php echo $this->Form->control('commodity_code', array('type'=>'hidden', 'id'=>'commodity_code', 'value'=>$commodity_code, 'label'=>false)); ?>
-												<?php echo $this->Form->control('login_timestamp', array('type'=>'hidden', 'id'=>'login_timestamp', 'label'=>false, 'value'=>date('Y-m-d H:i:s'))); ?>
+									<div class="card-body">
+										<div class="row">
+											<?php echo $this->Form->control('commodity_code', array('type'=>'hidden', 'id'=>'commodity_code', 'value'=>$commodity_code, 'label'=>false)); ?>
+											<?php echo $this->Form->control('login_timestamp', array('type'=>'hidden', 'id'=>'login_timestamp', 'label'=>false, 'value'=>date('Y-m-d H:i:s'))); 
+											
+											// this condition used for readonly Category when user edit commodity
+											// added by shankhpal shende on 02/09/2022
+											if ($commodity_code !='') {
+												$disbaled_status = 'disabled';
+												$readonly_status = 'readonly';
+											} else {
+												$disbaled_status = '';
+												$readonly_status = '';
+											}
+											
+											?>
 
-												<div class="col-md-4">
-													<label>Category <span class="required-star">*</span></label>
-														<select name="category_code" id="category_code" class="form-control" required="">
-															<option value="">--Select--</option>
-															<?php foreach($categoryArray as $catData){ ?>
-																<option value="<?php $cat_code = $catData['category_code']; echo $cat_code; ?>" <?php if($cat_code==$category_code){ echo 'selected'; } ?>><?php echo $catData['category_name']; ?></option>
-															<?php } ?>
-														</select>
-													<div class="error-msg" id="error_category_code"></div>
-												</div>
-												<div class="col-md-4">
-													<label>Commodity Name <span class="required-star">*</span></label>
-														<?php echo $this->Form->control('commodity_name', array('type'=>'text', 'id'=>'commodity_name', 'value'=>$commodity_name, 'label'=>false, 'class'=>'form-control txtOnly', 'placeholder'=>'Commodity Name', 'minLength'=>'4', 'maxLength'=>'50', 'required'=>true)); ?>
-													<div class="error-msg" id="error_commodity_name"></div>
-												</div>
-												<div class="col-md-4">
-													<label>Commodity Name (हिन्दी) <span class="required-star">*</span></label>
-														<?php echo $this->Form->control('l_commodity_name', array('type'=>'text', 'id'=>'l_commodity_name', 'value'=>$l_commodity_name, 'label'=>false, 'class'=>'form-control hindiFont', 'placeholder'=>'Commodity Name (हिन्दी)', 'maxLength'=>'50', 'required'=>true)); ?>
-													<div class="error-msg" id="error_l_commodity_name"></div>
-												</div>
 
+											<div class="col-md-4">
+												<label>Category <span class="required-star">*</span></label>
+												<select name="category_code" id="category_code" class="form-control" readonly ="<?php echo $readonly_status; ?>">
+														<option value="">--Select--</option>
+														<?php foreach($categoryArray as $catData){ ?>
+															<option value="<?php $cat_code = $catData['category_code']; echo $cat_code; ?>" <?php if($cat_code==$category_code){ echo 'selected'; }else{ echo $disbaled_status;} ?>><?php echo $catData['category_name']; ?></option>
+														<?php } ?>
+													</select>
+												<div class="error-msg" id="error_category_code"></div>
+											</div>
+											<div class="col-md-4">
+												<label>Commodity Name <span class="required-star">*</span></label>
+													<?php echo $this->Form->control('commodity_name', array('type'=>'text', 'id'=>'commodity_name', 'value'=>$commodity_name, 'label'=>false, 'class'=>'form-control txtOnly', 'placeholder'=>'Commodity Name', 'minLength'=>'4', 'maxLength'=>'50', 'required'=>true)); ?>
+												<div class="error-msg" id="error_commodity_name"></div>
+											</div>
+											<div class="col-md-4">
+												<label>Commodity Name (हिन्दी) <span class="required-star">*</span></label>
+													<?php echo $this->Form->control('l_commodity_name', array('type'=>'text', 'id'=>'l_commodity_name', 'value'=>$l_commodity_name, 'label'=>false, 'class'=>'form-control hindiFont', 'placeholder'=>'Commodity Name (हिन्दी)', 'maxLength'=>'50', 'required'=>true)); ?>
+												<div class="error-msg" id="error_l_commodity_name"></div>
+											</div>
 										</div>
 									</div>
 								</div>

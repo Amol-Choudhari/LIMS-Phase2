@@ -539,7 +539,7 @@ class InwardDetailsController extends AppController {
 				} else {
 					
 					//Sample Registration SMS/EMAIL
-					$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd']); #sender
+					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd']); #sender
 					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				

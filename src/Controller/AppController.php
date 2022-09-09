@@ -53,15 +53,19 @@ class AppController extends Controller
 
 	public function beforeFilter(EventInterface $event){
 		parent::beforeFilter($event);
-
+		
+		//this redirection added on 02-09-2022 by Amol intentionally
+		if ($this->getRequest()->getAttribute("here")=='/LIMS/') {
+			$this->redirect('/users/login_user');
+		}
 
     	//Changes done by Shweta Apale 21-10-2021
 	    define('reporticoReport', $_SERVER['DOCUMENT_ROOT']."/LIMS/vendor/reportico");
-	    define("ForReportsUserName", "dsm");
-		define("ForReportsPassword", "");
-		define("ForReportsConnection", "10.153.72.53");
+	    define("ForReportsUserName", "postgres");
+		define("ForReportsPassword", "123");
+		define("ForReportsConnection", "localhost");
 		define("ForReportsDatabaseInterfade", "PostgreSQL");
-		define('ForReportsDB','aqcmstest');
+		define('ForReportsDB','dmi');
 
 		//below headers are set for "Content-Security-Policy", to allow inline scripts from same origin and report the outer origin scripts calls.
 		//the "Content-Security-Policy" header is commmented from httpd.conf file now and set here.

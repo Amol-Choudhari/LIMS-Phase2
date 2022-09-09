@@ -251,12 +251,10 @@
 		$max_id_from_list = max($db_table_id_list);
 
 		if (filter_var($post_input_request, FILTER_VALIDATE_INT, array("options" => array("min_range"=>$min_id_from_list, "max_range"=>$max_id_from_list))) === false) {
-				
-			echo "<script>alert('One of selected drop down value is not proper')</script>";
-				
+			
 			$this->Session->destroy();
-				
-			exit();
+			echo "One of selected drop down value is not proper";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 
 		} else {
 				
@@ -275,10 +273,8 @@
 
 		if (count($get_extension_value) != 2 ) {
 
-			$message = 'Invalid file type.';
-			echo '<script type="text/javascript">alert("'.$message.'");</script>';
 			$this->Session->destroy();
-			echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php
+			echo "Invalid file type.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
 			exit;
 
 		} else {
@@ -289,28 +285,22 @@
 
 				} else {
 
-					$message = 'Invalid file type.';
-					echo '<script type="text/javascript">alert("'.$message.'");</script>';
 					$this->Session->destroy();
-					echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php
+					echo "Invalid file type.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
 					exit;
 				}
 		}
 
 		if (($file_size > 2097152)) {
 
-				$message = 'File too large. File must be less than 2 megabytes.';
-				echo '<script type="text/javascript">alert("'.$message.'");</script>';
-				$this->Session->destroy();
-				echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php
-				exit;
+			$this->Session->destroy();
+			echo "File too large. File must be less than 2 megabytes.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 
 		} elseif (($file_type != "application/pdf") && ($file_type != "image/jpeg")) {
 
-			$message = 'Invalid file type. Only PDF, JPG types are accepted.';
-			echo '<script type="text/javascript">alert("'.$message.'");</script>';
 			$this->Session->destroy();
-			echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php
+			echo "Invalid file type. Only PDF, JPG types are accepted.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
 			exit;
 
 		} else {
@@ -333,26 +323,22 @@
 
 								if ($cleaned_pdf_content=='invalid') {
 
-									echo "<script>alert('File seems to be corrupted !')</script>";
 									$this->Session->destroy();
-									echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+									echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php	
 									exit;
 								}
 						
 						} else {
 
-							echo "<script>alert('Sorry....modified PDF file')</script>";
 							$this->Session->destroy();
-							echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php
+							echo "Sorry....modified PDF file";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
 							exit;
 						}
 						
 				} else {
-								
-					echo "<script>alert('Not getting file path')</script>";
-								
-					return false;
-						
+
+					echo "Not getting file path";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+					exit;
 				}
 					//FOR IMAGE FILES
 			} elseif ($file_type == "image/jpeg" ) {
@@ -377,14 +363,9 @@
 						
 						} else {
 
-							echo "<script>alert('File seems to be corrupted !')</script>";
-
 							$this->Session->destroy();
-
-							echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php
-
+							echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>">	Please Login</a><?php
 							exit;
-								
 						}
 							// CHECK IF IMAGE CONTENTS HAVING MALICIOUS CHARACTERS OR NOT
 							$img_content = file_get_contents($file_local_path);
@@ -393,27 +374,22 @@
 
 							if ($cleaned_img_content=='invalid') {
 
-								echo "<script>alert('File seems to be corrupted !')</script>";
 								$this->Session->destroy();
-								echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+								echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>">	Please Login</a><?php	
 								exit;
 							}
 					
 					} else {
-												
-						echo "<script>alert('Sorry....modified JPG file')</script>";
+
 						$this->Session->destroy();
-						echo "";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+						echo "Sorry....modified JPG file";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
 						exit;
-						//return false;
 					}
 				
 				} else {
 					
-					echo "<script>alert('Not getting file path')</script>";
-								
-					return false;
-
+					echo "Not getting file path";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+					exit;
 				}
 
 			}
@@ -430,7 +406,8 @@
 
 			} else {
 				
-				echo "<script>alert('File not uploaded please select proper file')</script>";
+				echo "File not uploaded please select proper file";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+				exit;
 			}
 		
 		}
@@ -536,8 +513,7 @@
 			return $post_input_request;
 
 		} else {
-				echo "<script>alert('one of YES/NO button input is not proper')</script>";
-				return false;
+			return null;
 		}
 	}
 
@@ -554,8 +530,7 @@
 
 		} else {
 
-			echo "<script>alert('One of the given input should be in no. only')</script>";
-			return false;
+			return null;
 		}
 
 	}

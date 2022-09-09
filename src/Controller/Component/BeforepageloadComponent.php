@@ -102,9 +102,9 @@
 		if(!empty($currLoggedin)){
 			$browser_session_d = $currLoggedin['sessionid'];
 			if($this->Controller->Session->read('browser_session_d') !=''){
-				if($browser_session_d != $this->Controller->Session->read('browser_session_d')){
-				//temp commented on 10-05-2022, for testing purpose.	
-					//$this->Controller->Session->destroy();						
+				if($browser_session_d != $this->Controller->Session->read('browser_session_d')){	
+														 
+					$this->Controller->Session->destroy();						
 				}
 			}
 		}

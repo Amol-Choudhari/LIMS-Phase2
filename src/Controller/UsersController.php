@@ -687,7 +687,7 @@ class UsersController extends AppController{
 
 			if (empty($from_dt) || empty($to_dt)) {
 
-				echo "<script>alert('Please Select Proper Dates');</script>";
+				return null;
 			}
 			$this->set(compact('to_dt','from_dt'));
 		}

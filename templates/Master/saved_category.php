@@ -38,20 +38,21 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <?php
-                                                        if(!empty($categoryArray)){
-                                                            $sr_no = 1;
-                                                            foreach($categoryArray as $each){ ?>
-                                                                <tr>
-                                                                    <td><?php echo $sr_no; ?></td>
-                                                                    <td><?php echo $each['category_name'] ?></td>
-                                                                    <td><?php echo $each['l_category_name']  ?></td>
-                                                                    <td><?php echo $each['min_quantity'] ?></td>
-                                                                    <td>
-                                                                        <?php echo $this->Html->link('', array('controller' => 'master', 'action'=>'fetch_category', $each['category_code']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit')); ?> |
-                                                                        <?php echo $this->Html->link('', array('controller' => 'master', 'action'=>'delete_category', $each['category_code']),array('class'=>'glyphicon glyphicon-trash','title'=>'Delete', 'id'=>'delete_record')); ?>
-                                                                    </td>
-                                                                </tr>
+                                                <?php
+                                                    if(!empty($categoryArray)){
+                                                        $sr_no = 1;
+                                                        foreach($categoryArray as $each){ ?>
+                                                        <tr>
+                                                            <td><?php echo $sr_no; ?></td>
+                                                            <td><?php echo $each['category_name'] ?></td>
+                                                            <td><?php echo $each['l_category_name']  ?></td>
+                                                            <td><?php echo $each['min_quantity'] ?></td>
+                                                            <!-- Added class text-center and commented delete action by shankhpal shende on 05/09/2022 -->
+                                                            <td class="text-center"> 
+                                                                <?php echo $this->Html->link('', array('controller' => 'master', 'action'=>'fetch_category', $each['category_code']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit')); ?> 
+                                                                <?php //echo $this->Html->link('', array('controller' => 'master', 'action'=>'delete_category', $each['category_code']),array('class'=>'glyphicon glyphicon-trash','title'=>'Delete', 'id'=>'delete_record')); ?>
+                                                            </td>
+                                                        </tr>
                                                     <?php $sr_no++; } } ?>
                                                 </tbody>
                                             </table>

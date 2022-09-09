@@ -274,6 +274,7 @@ class DmiUsersTable extends Table
 
 	public function getUserByRalLab($lab, $ral_lab_no)
 	{
+		
 		$conn = ConnectionManager::get('default');
 
 		$users = "SELECT du.id,CONCAT(du.f_name,' ',du.l_name) AS chemist_name
@@ -284,7 +285,7 @@ class DmiUsersTable extends Table
 				WHERE du.status !='disactive'
 				GROUP BY du.id,du.f_name,du.l_name ORDER BY du.f_name ASC ";
 
-		//  pr($users);exit;
+		pr($users);exit;
 		$q = $conn->execute($users);
 
 		$records = $q->fetchAll('assoc');

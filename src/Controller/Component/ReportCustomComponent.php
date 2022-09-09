@@ -5665,6 +5665,335 @@ class ReportCustomComponent extends Component
             return 0;
         }
     }
+  
+    //added for 26-08-2022 by shreeya
+    //Details Of Samples Analysed Carry Forward For SampleType
+    public static function getDolDetailsOfSamplesAnalysedCarryForwardForSampleType($month, $year, $ral_lab_no, $ral_lab_name)
+    {
+        $i = 0;
+        $user_id = $_SESSION['user_code'];
+        $con = ConnectionManager::get('default');
+
+        $delete = $con->execute("DELETE FROM temp_dol_details_of_samples_analysed_carry_forward_for_sample WHERE user_id = '$user_id'");
+
+        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
+                FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
+                GROUP BY sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code";
+       
+        $sql = $con->execute($sql);
+        $recordNames = $sql->fetchAll('assoc');
+        $sql->closeCursor();
+
+        $record_insert = 0;
+        foreach ($recordNames as $recordName) {
+            $user_code = $recordName['alloc_to_user_code'];
+            $commodity_code = $recordName['commodity_code'];
+
+            $query = $con->execute("SELECT mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,'NA' AS other, 'NA' AS other_work, 'Yes' AS norm, mst.sample_type_desc,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 1
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no'  AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 5
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_apex_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 4
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS challenged_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS ilc_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 2
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS research_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code AND sa.test_n_r = 'R' 
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS retesting_count,
+                (
+                SELECT COUNT(ct.test_code)
+                FROM commodity_test ct
+                INNER JOIN m_sample_allocate AS msa ON msa.commodity_code = ct.commodity_code AND msa.lab_code = '$ral_lab_no'
+                INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code
+                WHERE ct.commodity_code = $commodity_code AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
+                FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM msa.alloc_date):: INTEGER = '$year'
+                ) AS no_of_param,
+                (
+                SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab
+                FROM dmi_users AS u
+                INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email AND r.user_flag='$ral_lab_name'
+                WHERE u.status = 'active' AND o.id = '$ral_lab_no'
+                GROUP BY ral_lab
+                ) AS lab_name
+
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
+                GROUP BY mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, name_chemist, mst.sample_type_desc, si.received_date
+                ORDER BY si.received_date ASC");
+            $records = $query->fetchAll('assoc');
+
+            $query->closeCursor();
+            if (!empty($records)) {
+                foreach ($records as $record) {
+                    $commodity_name = $record['commodity_name'];
+                    $project_sample = 'NA';
+                    $check_count = $record['check_count'];
+                    $check_apex_count = $record['check_apex_count'];
+                    $challenged_count = $record['challenged_count'];
+                    $ilc_count = $record['ilc_count'];
+                    $research_count = $record['research_count'];
+                    $retesting_count = $record['retesting_count'];
+                    $recby_ch_date = $record['recby_ch_date'];
+                    $commencement_date = $record['commencement_date'];
+                    $name_chemist = $record['name_chemist'];
+                    $sample_type_desc = $record['sample_type_desc'];
+                    $lab_name = $record['lab_name'];
+                    $no_of_param = $record['no_of_param'];
+
+                    if ($recby_ch_date == '' || $commencement_date == '') {
+                        $working_days = '0';
+                    } else {
+                        $diff = abs(strtotime($commencement_date) - strtotime($recby_ch_date));
+                        $years = floor($diff / (365 * 60 * 60 * 24));
+                        $months = floor(($diff - $years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
+                        $working_days = floor(($diff - $years * 365 * 60 * 60 * 24 - $months * 30 * 60 * 60 * 24) / (60 * 60 * 24));
+                    }
+                    $other = $record['other'];
+                    $other_work = $record['other_work'];
+                    $norm = $record['norm'];
+                    $date = date("d/m/Y");
+                    $i = $i + 1;
+                    $total_no = $check_count + $check_apex_count + $challenged_count + $ilc_count + $research_count + $retesting_count;
+
+                    $insert = $con->execute("INSERT INTO temp_dol_details_of_samples_analysed_carry_forward_for_sample 
+                    (sr_no,user_id,months,lab_name,name_chemist,sample_type_desc,commodity_name,project_sample,check_count,check_apex_count,challenged_count,ilc_count,research_count,retesting_count,working_days,
+                    no_of_param,other,other_work,norm,report_date,total_no) 
+                    VALUES (
+                    '$i','$user_id','$month','$lab_name','$name_chemist', '$sample_type_desc', '$commodity_name', '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count', '$working_days',
+                    '$no_of_param', '$other','$other_work','$norm', '$date','$total_no')");
+
+                    $update = $con->execute("UPDATE temp_dol_details_of_samples_analysed_carry_forward_for_sample SET counts = (SELECT COUNT(user_id) FROM temp_dol_details_of_samples_analysed_carry_forward_for_sample WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
+                }
+                                                                                                                                                        
+                $record_insert = 1;
+            }
+        }
+
+        if ($record_insert == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+
+    //added for consolidated report on 22-08-2022 by shreeya
+    public static function getDolConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name)
+    {
+     
+        $i = 0;
+        $user_id = $_SESSION['user_code'];
+       
+        $con = ConnectionManager::get('default');
+
+        $delete = $con->execute("DELETE FROM temp_dol_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'");
+
+        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email FROM sample_inward AS si
+        INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+        INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+        INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+        INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+        INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+        INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+        WHERE si.entry_type = 'sub_sample' AND sa.lab_code ='$ral_lab_no' AND EXTRACT(MONTH
+        FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+        FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
+        GROUP BY sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email";
+                
+        $sql2 = $con->execute($sql2);
+        $recordNames = $sql2->fetchAll('assoc');
+        $sql2->closeCursor();
+
+        $record_insert = 0;
+        foreach ($recordNames as $recordName) {
+            $user_code = $recordName['alloc_to_user_code'];
+            $commodity_code = $recordName['commodity_code'];
+
+            $query = $con->execute("SELECT mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,'NA' AS other, 'NA' AS other_work, 'Yes' AS norm, mst.sample_type_desc,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 1
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no'  AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 5
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_apex_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 4
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS challenged_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE si.entry_type = 'sub_sample' AND sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS ilc_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 2
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS research_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code AND sa.test_n_r = 'R' 
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS retesting_count,
+                (
+                SELECT COUNT(ct.test_code)
+                FROM commodity_test ct
+                INNER JOIN m_sample_allocate AS msa ON msa.commodity_code = ct.commodity_code AND msa.lab_code = '$ral_lab_no'
+                INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code
+                WHERE ct.commodity_code = $commodity_code AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
+                FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM msa.alloc_date):: INTEGER = '$year'
+                ) AS no_of_param,
+                (
+                SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab
+                FROM dmi_users AS u
+                INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email AND r.user_flag='$ral_lab_name'
+                WHERE u.status = 'active' AND o.id = '$ral_lab_no'
+                GROUP BY ral_lab
+                ) AS lab_name
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
+                GROUP BY mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, name_chemist, mst.sample_type_desc, si.received_date
+                ORDER BY si.received_date ASC");
+
+            $records = $query->fetchAll('assoc');
+            $query->closeCursor();
+            if (!empty($records)) {
+                foreach ($records as $record) {
+                    $name_chemist            = $record['name_chemist'];
+                    $check_apex_count        = $record['check_apex_count'];
+                    $challenged_count        = $record['challenged_count'];
+                    $retesting_count         = $record['retesting_count'];
+                    $ilc_count               = $record['ilc_count'];
+                    $other_private_sample    = 'NA';
+                    $research_count          = $record['research_count'];
+                    $project_sample          = 'NA';
+                    $smpl_analysed_instrn    = 'NA';
+                    $check_count             = $record['check_count'];
+                    $report_date             = date("d/m/Y");
+                    $total_no                = 'NA';
+                    $lab_name                = $record['lab_name'];
+                    $sample_type_desc        = $record['sample_type_desc'];
+                    $i                       = $i + 1;
+                    $total_no                = $check_count + $check_apex_count + $challenged_count + $ilc_count + $research_count + $retesting_count;
+
+                    $insert = $con->execute("INSERT INTO temp_dol_consolidated_reporte_analyzed_by_chemists (sr_no, user_id, lab_name, name_chemist, sample_type_desc, project_sample, check_count, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample,smpl_analysed_instrn, total_no, report_date) 
+                    VALUES (
+                    '$i','$user_id','$lab_name','$name_chemist', '$sample_type_desc', '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count', '$other_private_sample','$smpl_analysed_instrn', '$total_no', '$report_date')");
+
+                    $update = $con->execute("UPDATE temp_dol_consolidated_reporte_analyzed_by_chemists SET counts = (SELECT COUNT(user_id) FROM temp_dol_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
+                }
+
+                $record_insert = 1;
+            }
+        }
+
+        if ($record_insert == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 
     public static function getDolMonthlyCarryBroughtForward($month, $year, $ral_lab_no, $ral_lab_name)
     {
@@ -5834,8 +6163,8 @@ class ReportCustomComponent extends Component
             return 0;
         }
     }
-
-    public static function getDolInfoAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name)
+    //update on report on 01-09-2022 by shreeya
+    public static function getDolChemAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name)
     {
         $i = 0;
         $user_id = $_SESSION['user_code'];
@@ -5843,12 +6172,16 @@ class ReportCustomComponent extends Component
 
         $delete = $con->execute("DELETE FROM temp_reportico_dol_info_mpr_division WHERE user_id = '$user_id'");
 
-        $sql = "SELECT sa.alloc_to_user_code, sa.commodity_code
+        $sql = "SELECT sa.alloc_to_user_code, sa.commodity_code, mcc.category_code, mst.sample_type_code
                 FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
                 INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN m_commodity_category mcc ON si.category_code = mcc.category_code
                 WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
-                FROM sa.alloc_date):: INTEGER = '$year'";
+                FROM sa.alloc_date):: INTEGER = '$year'
+                GROUP BY sa.alloc_to_user_code, sa.commodity_code,mcc.category_code, mst.sample_type_code";
 
         $sql = $con->execute($sql);
         $recordNames = $sql->fetchAll('assoc');
@@ -5858,8 +6191,25 @@ class ReportCustomComponent extends Component
         foreach ($recordNames as $recordName) {
             $user_code = $recordName['alloc_to_user_code'];
             $commodity_code = $recordName['commodity_code'];
-
-            $query = $con->execute("SELECT mc.commodity_name,CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,si.remark,
+            $sample_type = $recordName['sample_type_code'];
+            $category_code = $recordName['category_code'];
+            $query = $con->execute("SELECT mc.commodity_name,CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS  name_chemist,si.remark,mst.sample_type_desc,mcc.category_name,
+                    (
+                    SELECT COUNT(DISTINCT(cd.sample_code)) AS bf_count
+                    FROM code_decode AS cd
+                    INNER JOIN sample_inward AS si ON si.org_sample_code=cd.org_sample_code
+                    WHERE cd.lab_code='$ral_lab_no' AND cd.status_flag='G' AND EXTRACT(MONTH
+                    FROM si.received_date):: INTEGER = '$month' AND si.user_code = '$user_code'
+                    ) AS bf_count,
+                    (
+                    SELECT COUNT(*) AS allotment_count
+                    FROM code_decode AS cd
+                    INNER JOIN sample_inward AS si ON si.org_sample_code=cd.org_sample_code
+                    INNER JOIN m_sample_allocate AS msa ON cd.org_sample_code=msa.org_sample_code
+                    WHERE cd.status_flag in ('N','C','G') AND cd.lab_code='$ral_lab_no'
+                    AND EXTRACT(MONTH
+                    FROM si.received_date):: INTEGER = '$month'
+                    ) AS allotment_count,
                     (
                     SELECT COUNT(DISTINCT(cd.sample_code)) AS bf_count
                     FROM code_decode cd
@@ -5942,7 +6292,7 @@ class ReportCustomComponent extends Component
                     SELECT COUNT(ct.test_code)
                     FROM commodity_test ct
                     INNER JOIN m_sample_allocate AS msa ON msa.commodity_code = ct.commodity_code AND msa.lab_code = '$ral_lab_no'
-                    INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code
+                    INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code AND si.sample_type_code IN (1,4)
                     WHERE ct.commodity_code = $commodity_code AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
                     FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM msa.alloc_date):: INTEGER = '$year'
@@ -5950,7 +6300,7 @@ class ReportCustomComponent extends Component
                     (
                     SELECT COUNT(atd.alloc_to_user_code) FROM actual_test_data atd
                     INNER JOIN m_sample_allocate msa ON msa.alloc_to_user_code = atd.alloc_to_user_code AND msa.chemist_code = atd.chemist_code
-                    INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code
+                    INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND si.sample_type_code IN (1,4)
                     WHERE atd.lab_code = '$ral_lab_no' AND msa.commodity_code = '$commodity_code' AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
                     FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM msa.alloc_date):: INTEGER = '$year' 
@@ -5966,6 +6316,8 @@ class ReportCustomComponent extends Component
 
                     FROM sample_inward AS si
                     INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                    INNER JOIN m_commodity_category mcc ON si.category_code = mcc.category_code 
                     INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
                     INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
                     INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
@@ -5973,13 +6325,15 @@ class ReportCustomComponent extends Component
                     WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                     FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
-                    GROUP BY sa.alloc_to_user_code,mc.commodity_name,u.f_name,u.l_name,u.role,si.remark 
+                    GROUP BY sa.alloc_to_user_code,mc.commodity_name,mcc.category_name,u.f_name,u.l_name,u.role,si.remark ,mst.sample_type_desc
                     ORDER BY mc.commodity_name ASC ");
             $records = $query->fetchAll('assoc');
             $query->closeCursor();
             if (!empty($records)) {
                 foreach ($records as $record) {
                     $commodity_name = $record['commodity_name'];
+                    $bf_count = $record['bf_count'];
+                    $user_code = $record['allotment_count'];
                     $check_bf_count = $record['check_bf_count'];
                     $check_apex_bf_count = $record['check_apex_bf_count'];
                     $challenged_bf_count = $record['challenged_bf_count'];
@@ -6003,9 +6357,9 @@ class ReportCustomComponent extends Component
                     $date = date("d/m/Y");
                     $i = $i + 1;
 
-                    $insert = $con->execute("INSERT INTO temp_reportico_dol_info_mpr_division (sr_no, user_id, lab_name, commodity_name, check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month, check_apex_analyzed_count_in_month, challenged_analyzed_count_in_month, total_check, total_check_apex, total_challenged, carry_check, carry_check_apex, carry_challenged, name_chemist, no_of_param, no_of_para_analys, remark, report_date) 
+                    $insert = $con->execute("INSERT INTO temp_reportico_dol_info_mpr_division (sr_no, user_id, lab_name,category_name, commodity_name,sample_type_desc,bf_count,allotment_count, check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month, check_apex_analyzed_count_in_month, challenged_analyzed_count_in_month, total_check, total_check_apex, total_challenged, carry_check, carry_check_apex, carry_challenged, name_chemist, no_of_param, no_of_para_analys, remark, report_date) 
                     VALUES (
-                    '$i','$user_id','$lab_name','$commodity_name', '$check_bf_count', '$check_apex_bf_count', '$challenged_bf_count', '$check_received_count', '$check_apex_received_count', '$challenged_received_count', '$check_analyzed_count_in_month','$check_apex_analyzed_count_in_month', '$challenged_analyzed_count_in_month', '$total_check','$total_check_apex','$total_challenged', '$carry_check','$carry_check_apex','$carry_challenged','$name_chemist','$no_of_param', '$no_of_para_analys','$remark', '$date')");
+                    '$i','$user_id','$lab_name','$category_name','$commodity_name','$sample_type_desc','$bf_count','$user_code', '$check_bf_count', '$check_apex_bf_count', '$challenged_bf_count', '$check_received_count', '$check_apex_received_count', '$challenged_received_count', '$check_analyzed_count_in_month','$check_apex_analyzed_count_in_month', '$challenged_analyzed_count_in_month', '$total_check','$total_check_apex','$total_challenged', '$carry_check','$carry_check_apex','$carry_challenged','$name_chemist','$no_of_param', '$no_of_para_analys','$remark', '$date')");
 
                     $update = $con->execute("UPDATE temp_reportico_dol_info_mpr_division SET counts = (SELECT COUNT(user_id) FROM temp_reportico_dol_info_mpr_division WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
                 }
@@ -8069,7 +8423,7 @@ class ReportCustomComponent extends Component
                 (
                 SELECT COUNT(si.sample_type_code) 
                 FROM sample_inward AS si
-                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 7
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
                 INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
                 INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
                 WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
@@ -8172,7 +8526,179 @@ class ReportCustomComponent extends Component
             return 0;
         }
     }
+	
+    //added for 26-08-2022 by shreeya
+    //Details Of Samples Analysed Carry Forward For SampleType
+    public static function getHoDetailsOfSamplesAnalysedCarryForwardForSampleType($month, $year, $ral_lab_no, $ral_lab_name)
+    {
+        $i = 0;
+        $user_id = $_SESSION['user_code'];
+        $con = ConnectionManager::get('default');
 
+        $delete = $con->execute("DELETE FROM temp_details_of_samples_analysed_carry_forward_for_sample_type WHERE user_id = '$user_id'");
+
+        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
+                FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
+                GROUP BY sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code";
+       
+        $sql = $con->execute($sql);
+        $recordNames = $sql->fetchAll('assoc');
+        $sql->closeCursor();
+
+        $record_insert = 0;
+        foreach ($recordNames as $recordName) {
+            $user_code = $recordName['alloc_to_user_code'];
+            $commodity_code = $recordName['commodity_code'];
+
+            $query = $con->execute("SELECT mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,'NA' AS other, 'NA' AS other_work, 'Yes' AS norm, mst.sample_type_desc,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 1
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no'  AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 5
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_apex_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 4
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS challenged_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 7
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS ilc_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 2
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS research_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code AND sa.test_n_r = 'R' 
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS retesting_count,
+                (
+                SELECT COUNT(ct.test_code)
+                FROM commodity_test ct
+                INNER JOIN m_sample_allocate AS msa ON msa.commodity_code = ct.commodity_code AND msa.lab_code = '$ral_lab_no'
+                INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code
+                WHERE ct.commodity_code = $commodity_code AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
+                FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM msa.alloc_date):: INTEGER = '$year'
+                ) AS no_of_param,
+                (
+                SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab
+                FROM dmi_users AS u
+                INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email AND r.user_flag='$ral_lab_name'
+                WHERE u.status = 'active' AND o.id = '$ral_lab_no'
+                GROUP BY ral_lab
+                ) AS lab_name
+
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
+                GROUP BY mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, name_chemist, mst.sample_type_desc, si.received_date
+                ORDER BY si.received_date ASC");
+            $records = $query->fetchAll('assoc');
+
+            $query->closeCursor();
+            if (!empty($records)) {
+                foreach ($records as $record) {
+                    $commodity_name = $record['commodity_name'];
+                    $project_sample = 'NA';
+                    $check_count = $record['check_count'];
+                    $check_apex_count = $record['check_apex_count'];
+                    $challenged_count = $record['challenged_count'];
+                    $ilc_count = $record['ilc_count'];
+                    $research_count = $record['research_count'];
+                    $retesting_count = $record['retesting_count'];
+                    $recby_ch_date = $record['recby_ch_date'];
+                    $commencement_date = $record['commencement_date'];
+                    $name_chemist = $record['name_chemist'];
+                    $sample_type_desc = $record['sample_type_desc'];
+                    $lab_name = $record['lab_name'];
+                    $no_of_param = $record['no_of_param'];
+
+                    if ($recby_ch_date == '' || $commencement_date == '') {
+                        $working_days = '0';
+                    } else {
+                        $diff = abs(strtotime($commencement_date) - strtotime($recby_ch_date));
+                        $years = floor($diff / (365 * 60 * 60 * 24));
+                        $months = floor(($diff - $years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
+                        $working_days = floor(($diff - $years * 365 * 60 * 60 * 24 - $months * 30 * 60 * 60 * 24) / (60 * 60 * 24));
+                    }
+                    $other = $record['other'];
+                    $other_work = $record['other_work'];
+                    $norm = $record['norm'];
+                    $date = date("d/m/Y");
+                    $i = $i + 1;
+                    $total_no = $check_count + $check_apex_count + $challenged_count + $ilc_count + $research_count + $retesting_count;
+
+                    $insert = $con->execute("INSERT INTO temp_details_of_samples_analysed_carry_forward_for_sample_type 
+                    (sr_no,user_id,months,lab_name,name_chemist,sample_type_desc,commodity_name,project_sample,check_count,check_apex_count,challenged_count,ilc_count,research_count,retesting_count,working_days,
+                    no_of_param,other,other_work,norm,report_date,total_no) 
+                    VALUES (
+                    '$i','$user_id','$month','$lab_name','$name_chemist', '$sample_type_desc', '$commodity_name', '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count', '$working_days',
+                    '$no_of_param', '$other','$other_work','$norm', '$date','$total_no')");
+
+                    $update = $con->execute("UPDATE temp_details_of_samples_analysed_carry_forward_for_sample_type SET counts = (SELECT COUNT(user_id) FROM temp_details_of_samples_analysed_carry_forward_for_sample_type WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
+                }
+                                                                                                                                                        
+                $record_insert = 1;
+            }
+        }
+
+        if ($record_insert == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+	
     public static function getHoMonthlyCarryBroughtForward($month, $year, $ral_lab_no, $ral_lab_name)
     {
         $i = 0;
@@ -8345,7 +8871,8 @@ class ReportCustomComponent extends Component
         }
     }
 
-    public static function getHoInfoAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name)
+    // update report on 01-09-2022 by shreeya
+    public static function getHoChemAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name)
     {
         $i = 0;
         $user_id = $_SESSION['user_code'];
@@ -8353,13 +8880,17 @@ class ReportCustomComponent extends Component
 
         $delete = $con->execute("DELETE FROM temp_reportico_ho_info_mpr_division WHERE user_id = '$user_id'");
 
-        $sql = "SELECT sa.alloc_to_user_code, sa.commodity_code
+        $sql = "SELECT sa.alloc_to_user_code, sa.commodity_code, mcc.category_code, mst.sample_type_code
                 FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
                 INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN m_commodity_category mcc ON si.category_code = mcc.category_code
                 WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
-                FROM sa.alloc_date):: INTEGER = '$year'";
-
+                FROM sa.alloc_date):: INTEGER = '$year'
+                GROUP BY sa.alloc_to_user_code, sa.commodity_code,mcc.category_code, mst.sample_type_code";
+    
         $sql = $con->execute($sql);
         $recordNames = $sql->fetchAll('assoc');
         $sql->closeCursor();
@@ -8368,8 +8899,26 @@ class ReportCustomComponent extends Component
         foreach ($recordNames as $recordName) {
             $user_code = $recordName['alloc_to_user_code'];
             $commodity_code = $recordName['commodity_code'];
-
-            $query = $con->execute("SELECT mc.commodity_name,CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,si.remark,
+            $sample_type = $recordName['sample_type_code'];
+            $category_code = $recordName['category_code'];
+          
+            $query = $con->execute("SELECT mc.commodity_name,CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS  name_chemist,si.remark,mst.sample_type_desc,mcc.category_name,
+                    (
+                    SELECT COUNT(DISTINCT(cd.sample_code)) AS bf_count
+                    FROM code_decode AS cd
+                    INNER JOIN sample_inward AS si ON si.org_sample_code=cd.org_sample_code
+                    WHERE cd.lab_code='$ral_lab_no' AND cd.status_flag='G' AND EXTRACT(MONTH
+                    FROM si.received_date):: INTEGER = '$month' AND si.user_code = '$user_code'
+                    ) AS bf_count,
+                    (
+                    SELECT COUNT(*) AS allotment_count
+                    FROM code_decode AS cd
+                    INNER JOIN sample_inward AS si ON si.org_sample_code=cd.org_sample_code
+                    INNER JOIN m_sample_allocate AS msa ON cd.org_sample_code=msa.org_sample_code
+                    WHERE cd.status_flag in ('N','C','G') AND cd.lab_code='$ral_lab_no'
+                    AND EXTRACT(MONTH
+                    FROM si.received_date):: INTEGER = '$month'
+                    ) AS allotment_count,
                     (
                     SELECT COUNT(DISTINCT(cd.sample_code)) AS bf_count
                     FROM code_decode cd
@@ -8476,6 +9025,8 @@ class ReportCustomComponent extends Component
 
                     FROM sample_inward AS si
                     INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                    INNER JOIN m_commodity_category mcc ON si.category_code = mcc.category_code 
                     INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
                     INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
                     INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
@@ -8483,14 +9034,21 @@ class ReportCustomComponent extends Component
                     WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                     FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
-                    GROUP BY sa.alloc_to_user_code,mc.commodity_name,u.f_name,u.l_name,u.role,si.remark 
+                    GROUP BY sa.alloc_to_user_code,mc.commodity_name,mcc.category_name,u.f_name,u.l_name,u.role,si.remark ,mst.sample_type_desc
                     ORDER BY mc.commodity_name ASC ");
 
             $records = $query->fetchAll('assoc');
+           
             $query->closeCursor();
             if (!empty($records)) {
                 foreach ($records as $record) {
+                    $category_name = $record['category_name'];
                     $commodity_name = $record['commodity_name'];
+                    $bf_count = $record['bf_count'];
+                    $user_code = $record['allotment_count'];
+                    $no_of_para_analys = $record['no_of_para_analys'];
+                    $no_of_param = $record['no_of_param'];
+                    $remark = $record['remark'];
                     $check_bf_count = $record['check_bf_count'];
                     $check_apex_bf_count = $record['check_apex_bf_count'];
                     $challenged_bf_count = $record['challenged_bf_count'];
@@ -8510,13 +9068,14 @@ class ReportCustomComponent extends Component
                     $no_of_param = $record['no_of_param'];
                     $no_of_para_analys = $record['no_of_para_analys'];
                     $remark = $record['remark'];
+					$sample_type_desc = $record['sample_type_desc'];
                     $lab_name = $record['lab_name'];
                     $date = date("d/m/Y");
                     $i = $i + 1;
 
-                    $insert = $con->execute("INSERT INTO temp_reportico_ho_info_mpr_division (sr_no, user_id, lab_name, commodity_name, check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month, check_apex_analyzed_count_in_month, challenged_analyzed_count_in_month, total_check, total_check_apex, total_challenged, carry_check, carry_check_apex, carry_challenged, name_chemist, no_of_param, no_of_para_analys, remark, report_date) 
+                    $insert = $con->execute("INSERT INTO temp_reportico_ho_info_mpr_division (sr_no, user_id, lab_name,category_name, commodity_name,sample_type_desc,bf_count,allotment_count,check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month, check_apex_analyzed_count_in_month, challenged_analyzed_count_in_month, total_check, total_check_apex, total_challenged, carry_check, carry_check_apex, carry_challenged, name_chemist, remark, no_of_param, no_of_para_analys, report_date) 
                     VALUES (
-                    '$i','$user_id','$lab_name','$commodity_name', '$check_bf_count', '$check_apex_bf_count', '$challenged_bf_count', '$check_received_count', '$check_apex_received_count', '$challenged_received_count', '$check_analyzed_count_in_month','$check_apex_analyzed_count_in_month', '$challenged_analyzed_count_in_month', '$total_check','$total_check_apex','$total_challenged', '$carry_check','$carry_check_apex','$carry_challenged','$name_chemist', '$no_of_param', '$no_of_para_analys','$remark', '$date')");
+                    '$i','$user_id','$lab_name','$category_name','$commodity_name','$sample_type_desc','$bf_count','$user_code','$check_bf_count', '$check_apex_bf_count', '$challenged_bf_count', '$check_received_count', '$check_apex_received_count', '$challenged_received_count', '$check_analyzed_count_in_month','$check_apex_analyzed_count_in_month', '$challenged_analyzed_count_in_month', '$total_check','$total_check_apex','$total_challenged', '$carry_check','$carry_check_apex','$carry_challenged','$name_chemist','$remark', '$no_of_param', '$no_of_para_analys', '$date')"); 
 
                     $update = $con->execute("UPDATE temp_reportico_ho_info_mpr_division SET counts = (SELECT COUNT(user_id) FROM temp_reportico_ho_info_mpr_division WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
                 }
@@ -8540,21 +9099,35 @@ class ReportCustomComponent extends Component
 
         $delete = $con->execute("DELETE FROM temp_reportico_ho_details_sample_analyzed_ral WHERE user_id = '$user_id'");
 
-        $sql = "SELECT sa.commodity_code
-                FROM sample_inward AS si
-                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
-                WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
-                FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
-                FROM sa.alloc_date):: INTEGER = '$year' ";
-
+        // $sql = "SELECT sa.commodity_code,si.sample_type_code
+        //         FROM sample_inward AS si
+        //         INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+        //         WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
+        //         FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+        //         FROM sa.alloc_date):: INTEGER = '$year' ";
+        
+        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code FROM sample_inward AS si
+        INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+        INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+        INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+        INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+        INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+        INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+        WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
+        FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+        FROM sa.alloc_date):: INTEGER = '$year'  AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
+        GROUP BY sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code ";
+       
         $sql = $con->execute($sql);
         $recordNames = $sql->fetchAll('assoc');
         $sql->closeCursor();
-
+       
+       
         $record_insert = 0;
         foreach ($recordNames as $recordName) {
             $commodity_code = $recordName['commodity_code'];
-
+            $sample_type = $recordName['sample_type_code'];
+          
             $query = $con->execute("SELECT mc.commodity_name,  si.org_sample_code, mst.sample_type_desc,
                     (
                     SELECT COUNT(cd.sample_code)
@@ -8569,7 +9142,7 @@ class ReportCustomComponent extends Component
                     SELECT COUNT(cd.sample_code)
                     FROM code_decode cd
                     INNER JOIN m_sample_allocate AS msa ON msa.sample_code=cd.sample_code
-                    INNER JOIN sample_inward si ON cd.org_sample_code = si.org_sample_code AND si.sample_type_code = '7' AND msa.commodity_code = si.commodity_code
+                    INNER JOIN sample_inward si ON cd.org_sample_code = si.org_sample_code AND si.sample_type_code = '9' AND msa.commodity_code = si.commodity_code
                     WHERE cd.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                     FROM msa.alloc_date):: INTEGER = '$month'AND EXTRACT(YEAR
                     FROM msa.alloc_date):: INTEGER = '$year'
@@ -11144,7 +11717,7 @@ class ReportCustomComponent extends Component
                 (
                 SELECT COUNT(si.sample_type_code) 
                 FROM sample_inward AS si
-                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 7
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
                 INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
                 INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
                 WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
@@ -11247,7 +11820,330 @@ class ReportCustomComponent extends Component
             return 0;
         }
     }
+    //added for Details Of Samples Analysed SampleType 23-08-2022 by shreeya
+    public static function getAdminDetailsOfSamplesAnalysedCarryForwardForSampleType($month, $year, $ral_lab_no, $ral_lab_name)
+    {
+        $i = 0;
+        $user_id = $_SESSION['user_code'];
+        $con = ConnectionManager::get('default');
 
+        $delete = $con->execute("DELETE FROM temp_admin_details_of_samples_analysed_carry_forward_for_sample WHERE user_id = '$user_id'");
+
+        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
+                FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
+                GROUP BY sa.alloc_to_user_code, sa.commodity_code,si.sample_type_code";
+       
+        $sql = $con->execute($sql);
+        $recordNames = $sql->fetchAll('assoc');
+        $sql->closeCursor();
+
+        $record_insert = 0;
+        foreach ($recordNames as $recordName) {
+            $user_code = $recordName['alloc_to_user_code'];
+            $commodity_code = $recordName['commodity_code'];
+
+            $query = $con->execute("SELECT mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,'NA' AS other, 'NA' AS other_work, 'Yes' AS norm, mst.sample_type_desc,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 1
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no'  AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 5
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_apex_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 4
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS challenged_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS ilc_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 2
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS research_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code AND sa.test_n_r = 'R' 
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS retesting_count,
+                (
+                SELECT COUNT(ct.test_code)
+                FROM commodity_test ct
+                INNER JOIN m_sample_allocate AS msa ON msa.commodity_code = ct.commodity_code AND msa.lab_code = '$ral_lab_no'
+                INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code
+                WHERE ct.commodity_code = $commodity_code AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
+                FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM msa.alloc_date):: INTEGER = '$year'
+                ) AS no_of_param,
+                (
+                SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab
+                FROM dmi_users AS u
+                INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email AND r.user_flag='$ral_lab_name'
+                WHERE u.status = 'active' AND o.id = '$ral_lab_no'
+                GROUP BY ral_lab
+                ) AS lab_name
+
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
+                GROUP BY mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, name_chemist, mst.sample_type_desc, si.received_date
+                ORDER BY si.received_date ASC");
+            $records = $query->fetchAll('assoc');
+
+            $query->closeCursor();
+            if (!empty($records)) {
+                foreach ($records as $record) {
+                    $commodity_name = $record['commodity_name'];
+                    $project_sample = 'NA';
+                    $check_count = $record['check_count'];
+                    $check_apex_count = $record['check_apex_count'];
+                    $challenged_count = $record['challenged_count'];
+                    $ilc_count = $record['ilc_count'];
+                    $research_count = $record['research_count'];
+                    $retesting_count = $record['retesting_count'];
+                    $recby_ch_date = $record['recby_ch_date'];
+                    $commencement_date = $record['commencement_date'];
+                    $name_chemist = $record['name_chemist'];
+                    $sample_type_desc = $record['sample_type_desc'];
+                    $lab_name = $record['lab_name'];
+                    $no_of_param = $record['no_of_param'];
+
+                    if ($recby_ch_date == '' || $commencement_date == '') {
+                        $working_days = '0';
+                    } else {
+                        $diff = abs(strtotime($commencement_date) - strtotime($recby_ch_date));
+                        $years = floor($diff / (365 * 60 * 60 * 24));
+                        $months = floor(($diff - $years * 365 * 60 * 60 * 24) / (30 * 60 * 60 * 24));
+                        $working_days = floor(($diff - $years * 365 * 60 * 60 * 24 - $months * 30 * 60 * 60 * 24) / (60 * 60 * 24));
+                    }
+                    $other = $record['other'];
+                    $other_work = $record['other_work'];
+                    $norm = $record['norm'];
+                    $date = date("d/m/Y");
+                    $i = $i + 1;
+                    $total_no = $check_count + $check_apex_count + $challenged_count + $ilc_count + $research_count + $retesting_count;
+
+                    $insert = $con->execute("INSERT INTO temp_admin_details_of_samples_analysed_carry_forward_for_sample
+                    (sr_no,user_id,months,lab_name,name_chemist,sample_type_desc,commodity_name,project_sample,check_count,check_apex_count,challenged_count,ilc_count,research_count,retesting_count,working_days,
+                    no_of_param,other,other_work,norm,report_date,total_no) 
+                    VALUES (
+                    '$i','$user_id','$month','$lab_name','$name_chemist', '$sample_type_desc', '$commodity_name', '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count', '$working_days',
+                    '$no_of_param', '$other','$other_work','$norm', '$date','$total_no')");
+
+                    $update = $con->execute("UPDATE temp_admin_details_of_samples_analysed_carry_forward_for_sample SET counts = (SELECT COUNT(user_id) FROM temp_admin_details_of_samples_analysed_carry_forward_for_sample WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
+                }
+                                                                                                                                                        
+                $record_insert = 1;
+            }
+        }
+
+        if ($record_insert == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    //added for consolidated report chemist on 23-08-2022 by shreeya
+    public static function getAdminConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name)
+    {
+        $i = 0;
+        $user_id = $_SESSION['user_code'];
+        $con = ConnectionManager::get('default');
+
+        $delete = $con->execute("DELETE FROM temp_admin_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'");
+
+        $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email FROM sample_inward AS si
+        INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+        INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+        INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+        INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+        INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+        INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+        WHERE si.entry_type = 'sub_sample' AND sa.lab_code ='$ral_lab_no' AND EXTRACT(MONTH
+        FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+        FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
+        GROUP BY sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email";
+
+        $sql1 = $con->execute($sql1);
+        $recordNames = $sql1->fetchAll('assoc');
+        $sql1->closeCursor();
+
+        $record_insert = 0;
+        foreach ($recordNames as $recordName) {
+            $user_code = $recordName['alloc_to_user_code'];
+            $commodity_code = $recordName['commodity_code'];
+
+            $query = $con->execute("SELECT mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,'NA' AS other, 'NA' AS other_work, 'Yes' AS norm, mst.sample_type_desc,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 1
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no'  AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 5
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS check_apex_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 4
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS challenged_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE si.entry_type = 'sub_sample' AND sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS ilc_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 2
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS research_count,
+                (
+                SELECT COUNT(si.sample_type_code) 
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code AND sa.test_n_r = 'R' 
+                INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                ) AS retesting_count,
+                (
+                SELECT COUNT(ct.test_code)
+                FROM commodity_test ct
+                INNER JOIN m_sample_allocate AS msa ON msa.commodity_code = ct.commodity_code AND msa.lab_code = '$ral_lab_no'
+                INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code
+                WHERE ct.commodity_code = $commodity_code AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
+                FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                FROM msa.alloc_date):: INTEGER = '$year'
+                ) AS no_of_param,
+                (
+                SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab
+                FROM dmi_users AS u
+                INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email AND r.user_flag='$ral_lab_name'
+                WHERE u.status = 'active' AND o.id = '$ral_lab_no'
+                GROUP BY ral_lab
+                ) AS lab_name
+                FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
+                GROUP BY mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, name_chemist, mst.sample_type_desc, si.received_date
+                ORDER BY si.received_date ASC");
+
+            $records = $query->fetchAll('assoc');
+            $query->closeCursor();
+            if (!empty($records)) {
+                foreach ($records as $record) {
+                    $name_chemist            = $record['name_chemist'];
+                    $check_apex_count        = $record['check_apex_count'];
+                    $challenged_count        = $record['challenged_count'];
+                    $retesting_count         = $record['retesting_count'];
+                    $ilc_count               = $record['ilc_count'];
+                    $other_private_sample    = 'NA';
+                    $research_count          = $record['research_count'];
+                    $project_sample          = 'NA';
+                    $smpl_analysed_instrn    = 'NA';
+                    $check_count             = $record['check_count'];
+                    $report_date             = date("d/m/Y");
+                    $total_no                = 'NA';
+                    $lab_name                = $record['lab_name'];
+                    $sample_type_desc        = $record['sample_type_desc'];
+                    $i                       = $i + 1;
+                    $total_no                = $check_count + $check_apex_count + $challenged_count + $ilc_count + $research_count + $retesting_count;
+
+
+                    $insert = $con->execute("INSERT INTO temp_admin_consolidated_reporte_analyzed_by_chemists (sr_no, user_id, lab_name, name_chemist, sample_type_desc, project_sample, check_count, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample,smpl_analysed_instrn,  total_no, report_date) 
+                    VALUES (
+                    '$i','$user_id','$lab_name','$name_chemist', '$sample_type_desc',  '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count', '$other_private_sample','$smpl_analysed_instrn', '$total_no', '$report_date')");
+
+                    $update = $con->execute("UPDATE temp_admin_consolidated_reporte_analyzed_by_chemists SET counts = (SELECT COUNT(user_id) FROM temp_admin_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
+                }
+
+                $record_insert = 1;
+            }
+        }
+
+        if ($record_insert == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
     public static function getAdminMonthlyCarryBroughtForward($month, $year, $ral_lab_no, $ral_lab_name)
     {
         $i = 0;
@@ -11421,8 +12317,9 @@ class ReportCustomComponent extends Component
             return 0;
         }
     }
-
-    public static function getAdminInfoAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name)
+    // InfoAnnMprDivisionWise
+    // update on report 01-09-2022 by shreeya
+    public static function getAdminChemAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name)
     {
         $i = 0;
         $user_id = $_SESSION['user_code'];
@@ -11430,12 +12327,23 @@ class ReportCustomComponent extends Component
 
         $delete = $con->execute("DELETE FROM temp_reportico_admin_info_mpr_division WHERE user_id = '$user_id'");
 
-        $sql = "SELECT sa.alloc_to_user_code, sa.commodity_code
+        // $sql = "SELECT sa.alloc_to_user_code, sa.commodity_code
+        //         FROM sample_inward AS si
+        //         INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+        //         WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
+        //         FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+        //         FROM sa.alloc_date):: INTEGER = '$year'";
+
+        $sql = "SELECT sa.alloc_to_user_code, sa.commodity_code, mcc.category_code, mst.sample_type_code
                 FROM sample_inward AS si
+                INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
                 INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                INNER JOIN m_commodity_category mcc ON si.category_code = mcc.category_code
                 WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
-                FROM sa.alloc_date):: INTEGER = '$year'";
+                FROM sa.alloc_date):: INTEGER = '$year'
+                GROUP BY sa.alloc_to_user_code, sa.commodity_code,mcc.category_code, mst.sample_type_code";
 
         $sql = $con->execute($sql);
         $recordNames = $sql->fetchAll('assoc');
@@ -11445,8 +12353,26 @@ class ReportCustomComponent extends Component
         foreach ($recordNames as $recordName) {
             $user_code = $recordName['alloc_to_user_code'];
             $commodity_code = $recordName['commodity_code'];
-
-            $query = $con->execute("SELECT mc.commodity_name,CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,si.remark,
+            $sample_type = $recordName['sample_type_code'];
+            $category_code = $recordName['category_code'];
+          
+            $query = $con->execute("SELECT mc.commodity_name,CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS  name_chemist,si.remark,mst.sample_type_desc,mcc.category_name,
+                    (
+                    SELECT COUNT(DISTINCT(cd.sample_code)) AS bf_count
+                    FROM code_decode AS cd
+                    INNER JOIN sample_inward AS si ON si.org_sample_code=cd.org_sample_code
+                    WHERE cd.lab_code='$ral_lab_no' AND cd.status_flag='G' AND EXTRACT(MONTH
+                    FROM si.received_date):: INTEGER = '$month' AND si.user_code = '$user_code'
+                    ) AS bf_count,
+                    (
+                    SELECT COUNT(*) AS allotment_count
+                    FROM code_decode AS cd
+                    INNER JOIN sample_inward AS si ON si.org_sample_code=cd.org_sample_code
+                    INNER JOIN m_sample_allocate AS msa ON cd.org_sample_code=msa.org_sample_code
+                    WHERE cd.status_flag in ('N','C','G') AND cd.lab_code='$ral_lab_no'
+                    AND EXTRACT(MONTH
+                    FROM si.received_date):: INTEGER = '$month'
+                    ) AS allotment_count,
                     (
                     SELECT COUNT(DISTINCT(cd.sample_code)) AS bf_count
                     FROM code_decode cd
@@ -11473,7 +12399,7 @@ class ReportCustomComponent extends Component
                     WHERE cd.lab_code='$ral_lab_no' AND cd.status_flag NOT IN('G','F')AND EXTRACT(MONTH
                     FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM msa.alloc_date):: INTEGER = '$year'   AND si.user_code = '$user_code'
-                    ) AS challenged_bf_count,  
+                    ) AS challenged_bf_count,
                     (
                     SELECT COUNT(DISTINCT(msa.sample_code)) AS received_count
                     FROM m_sample_allocate msa
@@ -11481,7 +12407,7 @@ class ReportCustomComponent extends Component
                     WHERE msa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                     FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM msa.alloc_date):: INTEGER = '$year' AND msa.alloc_to_user_code = '$user_code'
-                    ) AS check_received_count,
+                    ) AS check_received_count, 
                     (
                     SELECT COUNT(DISTINCT(msa.sample_code)) AS check_apex_received_count
                     FROM m_sample_allocate msa
@@ -11506,7 +12432,7 @@ class ReportCustomComponent extends Component
                     WHERE test_n_r!='R' AND cd.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                     FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM msa.alloc_date):: INTEGER = '$year' AND msa.commodity_code = '$commodity_code'AND msa.alloc_to_user_code = '$user_code'
-                    ) AS check_analyzed_count_in_month,
+                    ) AS check_analyzed_count_in_month, 
                     (
                     SELECT COUNT(DISTINCT(cd.sample_code)) AS check_apex_analyzed_count_in_month
                     FROM code_decode AS cd
@@ -11538,12 +12464,12 @@ class ReportCustomComponent extends Component
                     SELECT COUNT(atd.alloc_to_user_code) FROM actual_test_data atd
                     INNER JOIN m_sample_allocate msa ON msa.alloc_to_user_code = atd.alloc_to_user_code AND msa.chemist_code = atd.chemist_code
                     INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND si.sample_type_code IN (1,4)
-                    INNER JOIN commodity_test ct ON atd.test_code = ct.test_code
+					 
                     WHERE atd.lab_code = '$ral_lab_no' AND msa.commodity_code = '$commodity_code' AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
                     FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM msa.alloc_date):: INTEGER = '$year' 
                     ) AS no_of_para_analys,
-                    (
+                    ( 
                     SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab
                     FROM dmi_users AS u
                     INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id
@@ -11554,6 +12480,8 @@ class ReportCustomComponent extends Component
 
                     FROM sample_inward AS si
                     INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                    INNER JOIN m_commodity_category mcc ON si.category_code = mcc.category_code 
                     INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
                     INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
                     INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
@@ -11561,17 +12489,25 @@ class ReportCustomComponent extends Component
                     WHERE sa.lab_code='$ral_lab_no' AND EXTRACT(MONTH
                     FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
-                    GROUP BY sa.alloc_to_user_code,mc.commodity_name,u.f_name,u.l_name,u.role,si.remark 
+                    GROUP BY sa.alloc_to_user_code,mc.commodity_name,mcc.category_name,u.f_name,u.l_name,u.role,si.remark ,mst.sample_type_desc
                     ORDER BY mc.commodity_name ASC ");
+
             $records = $query->fetchAll('assoc');
+
             $query->closeCursor();
             if (!empty($records)) {
                 foreach ($records as $record) {
+                    $category_name = $record['category_name'];
                     $commodity_name = $record['commodity_name'];
-                    $check_bf_count = $record['check_bf_count'];
+                    $bf_count = $record['bf_count'];
+                    $user_code = $record['allotment_count'];
+                    $no_of_para_analys = $record['no_of_para_analys'];
+                    $no_of_param = $record['no_of_param'];
+                    $remark = $record['remark'];
+                    $check_bf_count   = $record['check_bf_count'];
                     $check_apex_bf_count = $record['check_apex_bf_count'];
                     $challenged_bf_count = $record['challenged_bf_count'];
-                    $check_received_count = $record['check_received_count'];
+                    $check_received_count  = $record['check_received_count'];
                     $check_apex_received_count = $record['check_apex_received_count'];
                     $challenged_received_count = $record['challenged_received_count'];
                     $check_analyzed_count_in_month = $record['check_analyzed_count_in_month'];
@@ -11584,16 +12520,17 @@ class ReportCustomComponent extends Component
                     $carry_check_apex = $total_check_apex - $check_apex_analyzed_count_in_month;
                     $carry_challenged = $total_challenged - $challenged_analyzed_count_in_month;
                     $name_chemist = $record['name_chemist'];
-                    $remark = $record['remark'];
+                    $sample_type_desc = $record['sample_type_desc'];
                     $lab_name = $record['lab_name'];
-                    $no_of_param = $record['no_of_param'];
-                    $no_of_para_analys = $record['no_of_para_analys'];
+																					  
+																							  
                     $date = date("d/m/Y");
                     $i = $i + 1;
 
-                    $insert = $con->execute("INSERT INTO temp_reportico_admin_info_mpr_division (sr_no, user_id, lab_name, commodity_name, check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month, check_apex_analyzed_count_in_month, challenged_analyzed_count_in_month, total_check, total_check_apex, total_challenged, carry_check, carry_check_apex, carry_challenged, name_chemist, remark, no_of_param, no_of_para_analys, report_date) 
+
+                    $insert = $con->execute("INSERT INTO temp_reportico_admin_info_mpr_division (sr_no, user_id, lab_name,category_name, commodity_name, sample_type_desc,bf_count,allotment_count,check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month, check_apex_analyzed_count_in_month, challenged_analyzed_count_in_month, total_check, total_check_apex, total_challenged, carry_check, carry_check_apex, carry_challenged, name_chemist, remark, no_of_param, no_of_para_analys, report_date) 
                     VALUES (
-                    '$i','$user_id','$lab_name','$commodity_name', '$check_bf_count', '$check_apex_bf_count', '$challenged_bf_count', '$check_received_count', '$check_apex_received_count', '$challenged_received_count', '$check_analyzed_count_in_month','$check_apex_analyzed_count_in_month', '$challenged_analyzed_count_in_month', '$total_check','$total_check_apex','$total_challenged', '$carry_check','$carry_check_apex','$carry_challenged','$name_chemist','$remark', '$no_of_param', '$no_of_para_analys', '$date')");
+                    '$i','$user_id','$lab_name','$category_name','$commodity_name','$sample_type_desc','$bf_count','$user_code','$check_bf_count', '$check_apex_bf_count', '$challenged_bf_count', '$check_received_count', '$check_apex_received_count', '$challenged_received_count', '$check_analyzed_count_in_month','$check_apex_analyzed_count_in_month', '$challenged_analyzed_count_in_month', '$total_check','$total_check_apex','$total_challenged', '$carry_check','$carry_check_apex','$carry_challenged','$name_chemist','$remark', '$no_of_param', '$no_of_para_analys', '$date')");
 
                     $update = $con->execute("UPDATE temp_reportico_admin_info_mpr_division SET counts = (SELECT COUNT(user_id) FROM temp_reportico_admin_info_mpr_division WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
                 }
@@ -11608,7 +12545,6 @@ class ReportCustomComponent extends Component
             return 0;
         }
     }
-
     public static function getAdminDetailsSampleAnalyzedByRal($month, $year, $ral_lab_no, $ral_lab_name)
     {
         $i = 0;
@@ -12646,4 +13582,169 @@ class ReportCustomComponent extends Component
         }
     }
 
+
+        //added for consolidate report by chemist on 23-08-2022 by shreeya
+        public static function getHoConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name)
+        {
+    
+            $i = 0;
+            $user_id = $_SESSION['user_code'];
+            $con = ConnectionManager::get('default');
+          
+            $delete = $con->execute("DELETE FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'");
+    
+            $sql = "SELECT  sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                    INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                    INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                    INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                    WHERE si.entry_type = 'sub_sample' AND sa.lab_code ='$ral_lab_no' AND EXTRACT(MONTH
+                    FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
+                    GROUP BY sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email";
+        
+            $sql = $con->execute($sql);
+            $recordNames = $sql->fetchAll('assoc');
+            $sql->closeCursor();
+    
+            $record_insert = 0;
+            foreach ($recordNames as $recordName) {
+                $user_code = $recordName['alloc_to_user_code'];
+                $commodity_code = $recordName['commodity_code'];
+    
+                $query = $con->execute("SELECT mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, CONCAT(u.f_name,' ',u.l_name,' (',u.role,') ') AS name_chemist,'NA' AS other, 'NA' AS other_work, 'Yes' AS norm, mst.sample_type_desc,
+                    (
+                    SELECT COUNT(si.sample_type_code) 
+                    FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 1
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                    WHERE sa.lab_code='$ral_lab_no'  AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                    ) AS check_count,
+                    (
+                    SELECT COUNT(si.sample_type_code) 
+                    FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 5
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                    WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                    ) AS check_apex_count,
+                    (
+                    SELECT COUNT(si.sample_type_code) 
+                    FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 4
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                    INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                    WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                    ) AS challenged_count,
+                    (
+                    SELECT COUNT(si.sample_type_code) 
+                    FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 9
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                    WHERE si.entry_type = 'sub_sample' AND sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                    ) AS ilc_count,
+                    (
+                    SELECT COUNT(si.sample_type_code) 
+                    FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code AND si.sample_type_code = 2
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                    WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                    ) AS research_count,
+                    (
+                    SELECT COUNT(si.sample_type_code) 
+                    FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code AND sa.test_n_r = 'R' 
+                    INNER JOIN dmi_users AS du ON sa.alloc_to_user_code = du.id
+                    WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year'  AND sa.alloc_to_user_code = '$user_code'
+                    ) AS retesting_count,
+                    (
+                    SELECT COUNT(ct.test_code)
+                    FROM commodity_test ct
+                    INNER JOIN m_sample_allocate AS msa ON msa.commodity_code = ct.commodity_code AND msa.lab_code = '$ral_lab_no'
+                    INNER JOIN sample_inward si ON msa.org_sample_code = si.org_sample_code AND msa.commodity_code = si.commodity_code
+                    WHERE ct.commodity_code = $commodity_code AND msa.alloc_to_user_code = '$user_code' AND EXTRACT(MONTH
+                    FROM msa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM msa.alloc_date):: INTEGER = '$year'
+                    ) AS no_of_param,
+                    (
+                    
+                    SELECT CONCAT(r.user_flag,', ',o.ro_office) AS ral_lab
+                    FROM dmi_users AS u
+                    INNER JOIN dmi_ro_offices AS o ON u.posted_ro_office=o.id
+                    INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email AND r.user_flag='$ral_lab_name'
+                    WHERE u.status = 'active' AND o.id = '$ral_lab_no'
+                    GROUP BY ral_lab
+                    ) AS lab_name
+    
+                   
+                    FROM sample_inward AS si
+                    INNER JOIN m_sample_type AS mst ON si.sample_type_code = mst.sample_type_code
+                    INNER JOIN m_sample_allocate AS sa ON sa.org_sample_code=si.org_sample_code
+                    INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code
+                    INNER JOIN dmi_users AS u ON u.id=sa.alloc_to_user_code
+                    INNER JOIN dmi_ro_offices AS ml ON ml.id=sa.lab_code
+                    INNER JOIN dmi_user_roles AS r ON r.user_email_id=u.email
+                    WHERE sa.lab_code='$ral_lab_no' AND Extract(month from sa.alloc_date)::INTEGER = '$month' AND EXTRACT(YEAR
+                    FROM sa.alloc_date):: INTEGER = '$year' AND sa.alloc_to_user_code = '$user_code'
+                    GROUP BY mc.commodity_name,  sa.alloc_date, sa.recby_ch_date, sa.commencement_date, name_chemist, mst.sample_type_desc, si.received_date
+                    ORDER BY si.received_date ASC");
+                $records = $query->fetchAll('assoc');
+    
+                $query->closeCursor();
+                if (!empty($records)) {
+                    foreach ($records as $record) {
+                        
+                        $name_chemist            = $record['name_chemist'];
+                        $check_apex_count        = $record['check_apex_count'];
+                        $challenged_count        = $record['challenged_count'];
+                        $retesting_count         = $record['retesting_count'];
+                        $ilc_count               = $record['ilc_count'];
+                        $other_private_sample    = 'NA';
+                        $research_count          = $record['research_count'];
+                        $project_sample          = 'NA';
+                        $smpl_analysed_instrn    = 'NA';
+                        $check_count             = $record['check_count'];
+                        $report_date             = date("d/m/Y");
+                        $total_no                = 'NA';
+                        $lab_name                = $record['lab_name'];
+                        $sample_type_desc        = $record['sample_type_desc'];
+                        $date                    = date("d/m/Y");
+                        $i                       = $i + 1;
+                        $total_no                = $check_count + $check_apex_count + $challenged_count + $ilc_count + $research_count + $retesting_count;
+    
+                        $insert = $con->execute("INSERT INTO temp_consolidated_reporte_analyzed_by_chemists (sr_no, user_id, lab_name, name_chemist, sample_type_desc, project_sample, check_count, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, total_no, report_date,created,modified) 
+                        VALUES (
+                        '$i','$user_id','$lab_name','$name_chemist', '$sample_type_desc', '$project_sample', '$check_count', '$check_apex_count', '$challenged_count', '$ilc_count','$research_count','$retesting_count','$other_private_sample','$smpl_analysed_instrn', '$total_no', '$report_date', '$date', '$date')");
+    
+                        $update = $con->execute("UPDATE temp_consolidated_reporte_analyzed_by_chemists SET counts = (SELECT COUNT(user_id) FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id') WHERE user_id = '$user_id'");
+                    }
+                  
+                    $record_insert = 1;
+                }
+            }
+    
+            if ($record_insert == 1) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+
+
 }
+
+?>

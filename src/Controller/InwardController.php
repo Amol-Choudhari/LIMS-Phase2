@@ -816,10 +816,15 @@ class InwardController extends AppController{
 		$loc_id = $this->Session->read('posted_ro_office');
 		$user_flag = $this->Session->read('user_flag');
 
+		// Load Models
+		$this->loadModel('Workflow');
+		$this->loadModel('SampleInward');
+		$this->loadModel('SampleInwardDetails');
+		$this->loadModel('MSampleType');
+
 		if ($user_flag=='RO' || $user_flag=='SO') {
 
 			//get all samples from workflow table with status (SI.SD) by current user
-			$this->loadModel('Workflow');
 			$workflowData = $this->Workflow->find('all',array('fields'=>array('org_sample_code'),'conditions'=>array('src_usr_cd IS'=>$user_cd,'src_loc_id IS'=>$loc_id),'group'=>array('org_sample_code')))->toArray();
 			
 			//creating array of values for each of the sample code regt. but not confirmed
@@ -829,23 +834,25 @@ class InwardController extends AppController{
 			foreach ($workflowData as $each_sample) {
 
 				//check the sample is not confirmed
-				$this->loadModel('SampleInward');
 				$getInward = $this->SampleInward->find('all',array('fields'=>array('org_sample_code','received_date','inward_id','status_flag','inward_section','details_section','payment_section','sample_type_code'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'inward_id desc'))->first();
 				
 				//det inward, if saved
 				if (!empty($getInward) && trim($getInward['status_flag'])=='D') {
 					
-					$sampleArray[$i]['received_date'] = $getInward['received_date'];
-					$sampleArray[$i]['inward_id'] = $getInward['inward_id'];
-					$sampleArray[$i]['org_sample_code'] = $each_sample['org_sample_code'];
-					$sampleArray[$i]['inward_section'] = $getInward['inward_section'];
-					$sampleArray[$i]['details_section'] = $getInward['details_section'];
-					$sampleArray[$i]['payment_section'] = $getInward['payment_section'];
+					$sampleArray[$i]['received_date'] =    $getInward['received_date'];
+					$sampleArray[$i]['inward_id'] =        $getInward['inward_id'];
+					$sampleArray[$i]['org_sample_code'] =  $each_sample['org_sample_code'];
+					$sampleArray[$i]['inward_section'] =   $getInward['inward_section'];
+					$sampleArray[$i]['details_section'] =  $getInward['details_section'];
+					$sampleArray[$i]['payment_section'] =  $getInward['payment_section'];
 					$sampleArray[$i]['sample_type_code'] = $getInward['sample_type_code'];
+					
+					$sampleType = $this->MSampleType->find('all')->select(['sample_type_desc'])->where(['sample_type_code'=>$getInward['sample_type_code']])->first();
+					
+					$sampleArray[$i]['sample_type_desc'] = $sampleType['sample_type_desc'];
 				}
-
+				
 				//get sample details, if saved
-				$this->loadModel('SampleInwardDetails');
 				$getDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code','smpl_drwl_dt','id','inward_section','details_section','payment_section','sample_type_code'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'id desc'))->first();
 
 				if (!empty($getInward)) {
@@ -883,7 +890,7 @@ class InwardController extends AppController{
 					$i=$i+1;
 				}
 			}
-			
+		
 		} else {
 
 		 	//if user flag is CAL/RAL

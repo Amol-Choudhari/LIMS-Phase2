@@ -25,6 +25,8 @@
 
 
   	$(document).ready(function () {
+		
+		$('#customer_details_div').hide(); // This is added on the 24-08-2022 to hide the customer details by Akash
 
 		$('#expiry_year').datepicker({
 			format: "yyyy",
@@ -217,7 +219,7 @@
 		var district = $("#district").val();
 		var postal_code = $("#postal_code").val();
 		var customer_mobile_no = $("#customer_mobile_no").val();
-
+		var sample_type_code = $('#sample_type_code').val();
 		var value_return = 'true';
 
 
@@ -344,83 +346,98 @@
 			value_return = 'false';
 		}
 
-		if(customer_name==""){
+		if(sample_type_code == 3){
 
-			$("#error_customer_name").show().text("Please Enter Customer Full Name.");
-			$("#customer_name").addClass("is-invalid");
-			$("#customer_name").click(function(){$("#error_customer_name").hide().text;$("#customer_name").removeClass("is-invalid");});
-			value_return = 'false';
-		}
+			if(customer_name==""){
 
-		if(customer_email_id==""){
-
-			$("#error_customer_email_id").show().text("Please Enter Email.");
-			$("#customer_email_id").addClass("is-invalid");
-			$("#customer_email_id").click(function(){$("#error_customer_email_id").hide().text;$("#customer_email_id").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(street_address==""){
-
-			$("#error_street_address").show().text("Please Enter Street Address.");
-			$("#street_address").addClass("is-invalid");
-			$("#street_address").click(function(){$("#error_street_address").hide().text;$("#street_address").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(state==""){
-
-			$("#error_state").show().text("Please Select State.");
-			$("#state").addClass("is-invalid");
-			$("#state").click(function(){$("#error_state").hide().text;$("#state").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(district==""){
-
-			$("#error_district").show().text("Please Select District.");
-			$("#district").addClass("is-invalid");
-			$("#district").click(function(){$("#error_district").hide().text;$("#district").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(postal_code==""){
-
-			$("#error_postal_code").show().text("Please Enter Postal Code.");
-			$("#postal_code").addClass("is-invalid");
-			$("#postal_code").click(function(){$("#error_postal_code").hide().text;$("#postal_code").removeClass("is-invalid");});
-			value_return = 'false';
-		}
-
-		if(customer_mobile_no==""){
-
-			$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
-			$("#customer_mobile_no").addClass("is-invalid");
-			$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;	$("#customer_mobile_no").removeClass("is-invalid");});
-			value_return = 'false';
-		}else{
-			alert();
-			if(customer_mobile_no.match(/^(?=.*[0-9])[0-9]{10}$/g)){}else{//also allow if 6 X $ 4 nos found //added on 12-10-2017 by Amol
-
-				$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
-				$("#customer_mobile_no").addClass("is-invalid");
-				$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+				$("#error_customer_name").show().text("Please Enter Customer Full Name.");
+				$("#customer_name").addClass("is-invalid");
+				$("#customer_name").click(function(){$("#error_customer_name").hide().text;$("#customer_name").removeClass("is-invalid");});
 				value_return = 'false';
 			}
-
-			//first valid no. for mob.no, applid on 16-02-2021 by Amol
-			var validfirstno = ['7','8','9'];
-			//get first character of mobile no.
-			var f_m_no = customer_mobile_no.charAt(0);
-			if($.inArray(f_m_no,validfirstno) != -1){
-				//valid
-			}else{
-				$("#error_customer_mobile_no").show().text("Invalid mobile number");
+	
+			if(street_address==""){
+	
+				$("#error_street_address").show().text("Please Enter Street Address.");
+				$("#street_address").addClass("is-invalid");
+				$("#street_address").click(function(){$("#error_street_address").hide().text;$("#street_address").removeClass("is-invalid");});
+				value_return = 'false';
+			}
+	
+			if(state==""){
+	
+				$("#error_state").show().text("Please Select State.");
+				$("#state").addClass("is-invalid");
+				$("#state").click(function(){$("#error_state").hide().text;$("#state").removeClass("is-invalid");});
+				value_return = 'false';
+			}
+	
+			if(district==""){
+	
+				$("#error_district").show().text("Please Select District.");
+				$("#district").addClass("is-invalid");
+				$("#district").click(function(){$("#error_district").hide().text;$("#district").removeClass("is-invalid");});
+				value_return = 'false';
+			}
+	
+			if(postal_code==""){
+	
+				$("#error_postal_code").show().text("Please Enter Postal Code.");
+				$("#postal_code").addClass("is-invalid");
+				$("#postal_code").click(function(){$("#error_postal_code").hide().text;$("#postal_code").removeClass("is-invalid");});
+				value_return = 'false';
+			}
+	
+			if(customer_mobile_no==""){
+	
+				$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
 				$("#customer_mobile_no").addClass("is-invalid");
-				$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
-				value_return='false';
+				$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;	$("#customer_mobile_no").removeClass("is-invalid");});
+				value_return = 'false';
+			}else{
+				
+				if(customer_mobile_no.match(/^(?=.*[0-9])[0-9]{10}$/g)){}else{//also allow if 6 X $ 4 nos found //added on 12-10-2017 by Amol
+	
+					$("#error_customer_mobile_no").show().text("Should not be blank, Only numbers allowed, max & min length is 10");
+					$("#customer_mobile_no").addClass("is-invalid");
+					$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+					value_return = 'false';
+				}
+	
+				//first valid no. for mob.no, applid on 16-02-2021 by Amol
+				var validfirstno = ['7','8','9'];
+				//get first character of mobile no.
+				var f_m_no = customer_mobile_no.charAt(0);
+				if($.inArray(f_m_no,validfirstno) != -1){
+					//valid
+				}else{
+					$("#error_customer_mobile_no").show().text("Invalid mobile number");
+					$("#customer_mobile_no").addClass("is-invalid");
+					$("#customer_mobile_no").click(function(){$("#error_customer_mobile_no").hide().text;$("#customer_mobile_no").removeClass("is-invalid");});
+					value_return='false';
+				}
+			}
+	
+			if(customer_email_id==""){
+	
+				$("#error_customer_email_id").show().text("Please enter your Email id.");
+				$("#customer_email_id").addClass("is-invalid");
+				$("#customer_email_id").click(function(){$("#error_customer_email_id").hide().text; $("#customer_email_id").removeClass("is-invalid");});
+				value_return = 'false';
+			
+			}else{
+	
+				if(!customer_email_id.match(/^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/)){ 
+					
+					$("#error_customer_email_id").show().text("Entered email id is not valid.");
+					$("#customer_email_id").addClass("is-invalid");
+					$("#customer_email_id").click(function(){$("#error_customer_email_id").hide().text; $("#customer_email_id").removeClass("is-invalid");});
+					value_return = 'false';
+				}
+			
 			}
 		}
+		
 
 		if(value_return == 'false'){
 
@@ -438,13 +455,14 @@
 
 	$('#sample_type_code').change(function (e) {
 		//e.preventDefault();
+		$('#customer_details_div').hide(); // This is added on the 24-08-2022 to hide the customer details by Akash
 		var sample_type_code = $('#sample_type_code').val();
 
 		if(sample_type_code == '3'){
 			
 			$.confirm({
 				title: 'Commercial Sample',
-				content:"<u>Please Note :</u> As you have selected <b>Commercial</b> Sample Type. <br> You need to submit the payment details in the <i><b>Payment Section</b></i> which will available after saving the <i><b>Inward Section</b></i>.<br>",
+				content:"<u>Please Note :</u> As you have selected <b>Commercial</b> Sample Type. <br> 1. You need to submit the payment details in the <i><b>Payment Section</b></i> which will available after saving the <i><b>Inward Section</b></i>.<br> 2. The <i>Customer Details</i> needs to be filled in this section.",
 				icon: 'glyphicon glyphicon-info-sign',
 				type: 'info',
 				columnClass: 'm',
@@ -452,11 +470,12 @@
 					OK: {
 						btnClass: 'btn-info',
 						action: function(){
-						
+							$('#customer_details_div').show(); // This is added on the 24-08-2022 to hide the customer details by Akash
 						}
 					},
 					cancel: function () {
 						$("#sample_type_code option:eq(0)").prop("selected", true);
+						$('#customer_details_div').hide(); // This is added on the 24-08-2022 to hide the customer details by Akash
 					}
 				}
 			});

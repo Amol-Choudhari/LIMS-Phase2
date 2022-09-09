@@ -213,7 +213,7 @@ class ReportController extends AppController
 					INNER JOIN m_reportlabel AS mrl ON mrl.role=du.role
 					INNER JOIN m_report AS mr ON mrl.report_code=mr.report_code AND ml.user_flag='" . $_SESSION['user_flag'] . "' AND du.role='" . $_SESSION['role'] . "' AND mr.report_desc='$report_name' GROUP BY ml.user_flag";
 		}
-		// pr($str);
+		//  pr($str);
 		$con = ConnectionManager::get('default');
 		$query = $con->execute($str);
 		$sample = $query->fetchAll('assoc');
@@ -5283,9 +5283,12 @@ class ReportController extends AppController
 				->execute();
 		}
 	}
-
-	public function informationOfAnnexureEAlongWithMprDivisionWise()
+	
+	// informationOfAnnexureEAlongWithMprDivisionWise replace name
+	//chemistwisedetailsforthesampleanalysedandcarryforward 30-08-22
+	public function chemistWiseDetailsForTheSampleAnalysedAndCarryForward()
 	{
+
 		$this->autoRender = false;
 
 		if ($this->request->is('post')) {
@@ -5305,7 +5308,7 @@ class ReportController extends AppController
 			$year = $this->request->getData('year');
 			$month_name = date("F", mktime(0, 0, 0, $month, 10));
 
-			$report_name = "Information of Annexure E along with MPR division for the month of " . $month_name . ' , ' . $year;
+			$report_name = "Chemist Wise Details For The Sample Analysed And Carry Forward for the month of " . $month_name . ' , ' . $year;
 
 			$header1 = "भारत सरकार/Goverment of India";
 			$header2 = "कृषि और किसान कल्याण मंत्रालय /Ministry of Agriculture & Farmers Welfare";
@@ -5328,23 +5331,27 @@ class ReportController extends AppController
 			$sql = "";
 
 			if ($role == 'DOL') {
-				$query = ReportCustomComponent::getDolInfoAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name);
+				// getDolInfoAnnMprDivisionWise
+				$query = ReportCustomComponent::getDolChemAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {
-					$sql = "SELECT sr_no, commodity_name, lab_name, name_chemist, check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month,  challenged_analyzed_count_in_month, check_apex_analyzed_count_in_month, no_of_param, no_of_para_analys,  carry_check, carry_check_apex, carry_challenged, remark, counts,report_date FROM temp_reportico_dol_info_mpr_division WHERE user_id = '$user_id'";
+					$sql = "SELECT sr_no,category_name, commodity_name,bf_count,allotment_count,check_bf_count ,check_apex_bf_count ,challenged_bf_count ,check_received_count ,check_apex_received_count ,challenged_received_count ,check_analyzed_count_in_month ,check_apex_analyzed_count_in_month ,challenged_analyzed_count_in_month ,carry_check ,carry_check_apex ,carry_challenged ,lab_name, name_chemist, no_of_param,no_of_para_analys, remark, counts,report_date FROM temp_reportico_dol_info_mpr_division WHERE user_id = '$user_id'";
 				}
 			}
 
 			if ($role == 'Head Office') {
-				$query = ReportCustomComponent::getHoInfoAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name);
+				$query = ReportCustomComponent::getHoChemAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {
-					$sql = "SELECT sr_no, commodity_name, lab_name, name_chemist, check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month,  challenged_analyzed_count_in_month, check_apex_analyzed_count_in_month, no_of_param, no_of_para_analys,  carry_check, carry_check_apex, carry_challenged, remark, counts,report_date FROM temp_reportico_ho_info_mpr_division WHERE user_id = '$user_id'";
+					$sql = "SELECT sr_no, sample_type_desc ,allotment_count,category_name,commodity_name,bf_count,lab_name, name_chemist, no_of_param,no_of_para_analys, remark, counts,report_date FROM temp_reportico_ho_info_mpr_division WHERE user_id = '$user_id'";
 				}
 			}
 
+
+
+
 			if ($role == 'Admin') {
-				$query = ReportCustomComponent::getAdminInfoAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name);
+				$query = ReportCustomComponent::getAdminChemAnnMprDivisionWise($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {
-					$sql = "SELECT sr_no, commodity_name, lab_name, name_chemist, check_bf_count, check_apex_bf_count, challenged_bf_count, check_received_count, check_apex_received_count, challenged_received_count, check_analyzed_count_in_month,  challenged_analyzed_count_in_month, check_apex_analyzed_count_in_month, no_of_param, no_of_para_analys, carry_check, carry_check_apex, carry_challenged, remark, counts,report_date FROM temp_reportico_admin_info_mpr_division WHERE user_id = '$user_id'";
+					$sql = "SELECT sr_no, commodity_name,bf_count,allotment_count,check_bf_count ,check_apex_bf_count ,challenged_bf_count ,check_received_count ,check_apex_received_count ,challenged_received_count ,check_analyzed_count_in_month ,check_apex_analyzed_count_in_month ,challenged_analyzed_count_in_month ,carry_check ,carry_check_apex ,carry_challenged ,lab_name, name_chemist, no_of_param,no_of_para_analys, remark, counts,report_date FROM temp_reportico_admin_info_mpr_division WHERE user_id = '$user_id'";
 				}
 			}
 
@@ -5364,23 +5371,37 @@ class ReportController extends AppController
 				->sql($sql)
 
 				->column("sr_no")->justify("center")->label("Sr. No.")
-				->column("commodity_name")->justify("center")->label("Commodity Name")
-				->column("name_chemist")->justify("center")->label("Name of Chemist")
-				->column("check_bf_count")->justify("center")->label("No. of Check Sample BF")
-				->column("check_apex_bf_count")->justify("center")->label("No. of Check(APEX) Sample BF")
-				->column("challenged_bf_count")->justify("center")->label("No. of Challenged Sample BF")
-				->column("check_received_count")->justify("center")->label("No. of Check Sample Alloted")
-				->column("check_apex_received_count")->justify("center")->label("No. of Check(APEX) Sample Alloted")
-				->column("challenged_received_count")->justify("center")->label("No. of Challenged Sample Alloted")
-				->column("check_analyzed_count_in_month")->justify("center")->label("No. of Check Sample Analyzed in (commodity-wise)")
-				->column("check_apex_analyzed_count_in_month")->justify("center")->label("No. of Check(APEX) Sample Analyzed in (commodity-wise)")
-				->column("challenged_analyzed_count_in_month")->justify("center")->label("No. of Challenged Sample Analyzed in (commodity-wise)")
+				->column("category_name")->justify("center")->label("Division")
+				->column("commodity_name")->justify("center")->label("AGMARK Commodity")
+				->column("bf_count")->justify("center")->label("Brought Forward")
+																							 
+				->column("no_of_para_analys")->justify("center")->label("Analyzed")
+																							 
+																										
+																									   
+																														   
+																																	  
+																																	 
 				->column("no_of_param")->justify("center")->label("No. of Parameters in Commodity")
-				->column("no_of_para_analys")->justify("center")->label("No. of Parameters Analyzed")
-				->column("carry_check")->justify("center")->label("No. of Check Sample Pending CF")
-				->column("carry_check_apex")->justify("center")->label("No. of Check(APEX) Sample Pending CF")
-				->column("carry_challenged")->justify("center")->label("No. of Challenged Sample Pending CF")
-				->column("remark")->justify("center")->label("Remark/Result for Carry Forward")
+				->column("remark")->justify("center")->label("Carry Forward")
+				->column("allotment_count")->justify("center")->label("Allotted")
+				
+				// ->column("name_chemist")->justify("center")->label("Name of Chemist")
+				->column("sample_type_desc")->justify("center")->label("Sample Type")
+				// ->column("allotment_count")->justify("center")->label("Alotted")
+			    // ->column("check_bf_count")->justify("center")->label("No. of Check Sample BF")
+				// ->column("check_apex_bf_count")->justify("center")->label("No. of Check(APEX) Sample BF")
+				// ->column("challenged_bf_count")->justify("center")->label("No. of Challenged Sample BF")
+				// ->column("check_received_count")->justify("center")->label("No. of Check Sample Alloted")
+				// ->column("check_apex_received_count")->justify("center")->label("No. of Check(APEX) Sample Alloted")
+				// ->column("challenged_received_count")->justify("center")->label("No. of Challenged Sample Alloted")
+				// ->column("check_analyzed_count_in_month")->justify("center")->label("No. of Check Sample Analyzed in (commodity-wise)")
+				// ->column("check_apex_analyzed_count_in_month")->justify("center")->label("No. of Check(APEX) Sample Analyzed in (commodity-wise)")
+				// ->column("challenged_analyzed_count_in_month")->justify("center")->label("No. of Challenged Sample Analyzed in (commodity-wise)")
+				// ->column("carry_check")->justify("center")->label("No. of Check Sample Pending CF")
+				// ->column("carry_check_apex")->justify("center")->label("No. of Check(APEX) Sample Pending CF")
+				// ->column("carry_challenged")->justify("center")->label("No. of Challenged Sample Pending CF")
+				
 				->column("counts")->hide()
 
 				//->to('CSV') //Auto download excel file	
@@ -5403,16 +5424,22 @@ class ReportController extends AppController
 				->group("name_chemist")
 				->header("name_chemist")
 
-				->expression("total1")->sum("check_analyzed_count_in_month", "commodity_name")
-				->expression("total2")->sum("check_apex_analyzed_count_in_month", "commodity_name")
-				->expression("total3")->sum("challenged_analyzed_count_in_month", "commodity_name")
+				->group("sample_type_desc")
+				 ->header("sample_type_desc")
+
+				// ->expression("total1")->sum("check_analyzed_count_in_month", "commodity_name")
+				// ->expression("total2")->sum("check_apex_analyzed_count_in_month", "commodity_name")
+				// ->expression("total3")->sum("challenged_analyzed_count_in_month", "commodity_name")
 
 				->group("commodity_name")
-				->header("commodity_name")
+				// ->header("commodity_name")
 
-				->trailer("total1")->below("check_analyzed_count_in_month")->label("Total : ")
-				->trailer("total2")->below("check_apex_analyzed_count_in_month")->label("Total : ")
-				->trailer("total3")->below("challenged_analyzed_count_in_month")->label("Total : ")
+				// ->group("sample_type_desc")
+				//  ->header("sample_type_desc")
+
+				// ->trailer("total1")->below("check_analyzed_count_in_month")->label("Total : ")
+				// ->trailer("total2")->below("check_apex_analyzed_count_in_month")->label("Total : ")
+				// ->trailer("total3")->below("challenged_analyzed_count_in_month")->label("Total : ")
 
 				->page()
 				->pagetitledisplay("TopOfFirstPage")
@@ -5505,6 +5532,10 @@ class ReportController extends AppController
 
 				->column("sr_no")->justify("center")->label("Sr. No.")
 				->column("commodity_name")->justify("center")->label("Commodity Name")
+				// ->column("check_sample")->justify("center")->label("Code no. of Check Samples")
+				// ->column("check_apex")->justify("center")->label("Code no. of Check apex")
+				// ->column("challenge_sample")->justify("center")->label("Code no. of Challenge Samples")
+				// ->column("ilc_sample")->justify("center")->label("Code no. of ILC Samples")
 				->column("commodity_counts")->justify("center")->label("No. of Sample Analyzed")
 				->column("org_sample_code")->justify("center")->label("Code no. of Sample Analyzed")
 				->column("inter_lab_compare")->justify("center")->label("Inter Lab Comparasion")
@@ -6048,8 +6079,9 @@ class ReportController extends AppController
 				->column("received_count")->justify("center")->label("Received during month")
 				->column("total")->justify("center")->label("Total")
 				->column("analyzed_count_original")->justify("center")->label("Analyzed during month original")
-				->column("analyzed_count_duplicate")->justify("center")->label("Duplicate")
-				->column("analyzed_count_repeat")->justify("center")->label("Repeat (Retest)")
+				// ->column("analyzed_count_duplicate")->justify("center")->label("Duplicate")
+				// ->column("analyzed_count_repeat")->justify("center")->label("Repeat (Retest)")
+				/* remove this two column 29-08-2022 by shreeya*/
 				->column("carry_forward")->justify("center")->label("Carried Forwards")
 				->column("remark")->justify("center")->label("Remark")
 				->column("lab_name")->justify("center")->label("Name of RAL")
@@ -6163,7 +6195,7 @@ class ReportController extends AppController
 				->sql($sql)
 
 				->column("sr_no")->justify("center")->label("Sr. No.")
-				->column("sample_count")->justify("center")->label("No. of Samples")
+				->column("sample_count")->justify("center")->label("Sample Code No.")/* replace heading no of sample -> to sample code no 29-08-2022 by shreeya*/
 				->column("received_date")->justify("center")->label("Dt. of receipt of sample at RAL")
 				->column("dispatch_date")->justify("center")->label("Dt. of Submission of results")
 				->column("time_taken")->justify("center")->label("Time Taken for Ananlysis/Submission")
@@ -6784,4 +6816,306 @@ class ReportController extends AppController
 			}
 		}
 	}
+	
+	
+	//added on separate report of sample type 26-08-2022 by shreeya 
+	// sample type
+	
+	public function detailsOfSamplesAnalysedCarryForwardForSampleType(){
+		
+		$this->autoRender = false;
+
+		if ($this->request->is('post')) {
+
+			$month = $this->request->getData('month');
+			$year = $this->request->getData('year');
+			$lab = $this->request->getData('lab');
+			$ral_lab = $this->request->getData('ral_lab');
+		    $ral_lab = explode('~', $ral_lab);
+			$ral_lab_no = $ral_lab[0];
+			$ral_lab_name = $ral_lab[1];
+			$posted_ro_office = $this->request->getData('posted_ro_office');
+			
+			$fname = $this->request->getData('fname');
+			$lname = $this->request->getData('lname');
+			
+			$name = $fname . ' ' . $lname;
+			$email = base64_decode($this->request->getData('email'));
+		
+			$role = $this->request->getData('role');
+		
+			$user_id = $_SESSION['user_code'];
+		
+		
+			$month_name = date("F", mktime(0, 0, 0, $month, 10));
+			
+			$report_name = "Details Of Samples Analysed Carry Forward For The Month Of" . $month_name . ' , ' . $year;
+
+			$header1 = "भारत सरकार/Goverment of India";
+			$header2 = "कृषि और किसान कल्याण मंत्रालय /Ministry of Agriculture & Farmers Welfare";
+			$header3 = "कृषि, सहकारिता एवं किसान कल्याण विभाग / Department of Agriculture & Farmers Welfare";
+			$header4 = "विपणन और निरीक्षण निदेशालय / Directorate of Marketing and Inspection";
+
+			if ($lab == 'RAL') {
+				$header5 = "प्रादेशिक एगमार्क प्रयोगशाला / Regional Agmark Laboratory , " . $_SESSION['ro_office'];
+			} else if ($lab == 'CAL') {
+				$header5 = "केंद्रीय एगमार्क प्रयोगशाला / Central Agmark Laboratory <br> उत्तर अम्बज़री मार्ग / North Ambazari Road Nagpur 440010";
+			} else if ($lab == 'RO') {
+				$header5 = "प्रादेशिक कार्यालय / Regional Office , " . $_SESSION['ro_office'];
+			} else if ($lab == 'SO') {
+				$header5 = "उप-कार्यालय / Sub Office , " . $_SESSION['ro_office'];
+			}
+
+			$headerone = $header1 . '<br>' . $header2 . '<br>' . $header3 . '<br>' . $header4;
+			$header = $headerone . '<br>' . $header5;
+
+			$sql = "";
+
+			if ($role == 'DOL') {
+				$query = ReportCustomComponent::getDoldetailsOfSamplesAnalysedCarryForwardForSampleType($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					$sql = "SELECT sr_no, months,commodity_name,working_days,name_chemist,project_sample,check_count,
+					check_apex_count,challenged_count,ilc_count,research_count,retesting_count,other,other_work,norm,sample_type_desc,total_no,counts,report_date,lab_name,no_of_param FROM temp_dol_details_of_samples_analysed_carry_forward_for_sample WHERE user_id = '$user_id'";
+				
+				}
+			}
+
+			if ($role == 'Head Office') {
+				$query = ReportCustomComponent::getHodetailsOfSamplesAnalysedCarryForwardForSampleType($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+				 $sql = "SELECT sr_no, months,commodity_name,working_days,name_chemist,project_sample,check_count,
+				 check_apex_count,challenged_count,ilc_count,research_count,retesting_count,other,other_work,norm,sample_type_desc,total_no,counts,report_date,lab_name,no_of_param FROM temp_details_of_samples_analysed_carry_forward_for_sample_type WHERE user_id = '$user_id'";
+				}
+			}
+			
+			// print_r($query); exit;
+			if ($role == 'Admin') {
+				$query = ReportCustomComponent::getAdmindetailsOfSamplesAnalysedCarryForwardForSampleType($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					"SELECT sr_no, months,commodity_name,working_days,name_chemist,project_sample,check_count,
+				 check_apex_count,challenged_count,ilc_count,research_count,retesting_count,other,other_work,norm,sample_type_desc,total_no,counts,report_date,lab_name,no_of_param FROM temp_admin_details_of_samples_analysed_carry_forward_for_sample WHERE user_id = '$user_id'";
+				}
+			}
+			
+			if ($sql == "") {
+				return $this->redirect("/report/index");
+			}
+
+			ini_set("include_path", reporticoReport);
+			require_once("vendor/autoload.php");
+			require_once("vendor/reportico-web/reportico/src/Reportico.php");
+
+			Builder::build()
+				->properties(["bootstrap_preloaded" => true])
+				->datasource()->database("pgsql:host=" . ForReportsConnection . "; dbname=" . ForReportsDB)->user(ForReportsUserName)->password(ForReportsPassword)
+				->title($report_name)
+
+				->sql($sql)
+
+				->column("sr_no")->justify("center")->label("Sr. No.")
+				->column("lab_name")->justify("center")->label("Lab Name.")
+				->column("name_chemist")->justify("center")->label("Name of Chemist")
+				->column("sample_type_desc")->justify("center")->label("Sample Type")
+				->column("commodity_name")->justify("center")->label("Name of Commodity")
+				->column("project_sample")->justify("center")->label("Project Samples")
+				->column("check_count")->justify("center")->label("Check")
+				->column("check_apex_count")->justify("center")->label("Check(APEX)")
+				->column("challenged_count")->justify("center")->label(" Challenged")
+				->column("ilc_count")->justify("center")->label("ILC")
+				->column("research_count")->justify("center")->label("Research")
+				->column("retesting_count")->justify("center")->label("Retesting")
+				->column("working_days")->justify("center")->label("No. of working days")
+				->column("no_of_param")->justify("center")->label("No. of parameters")
+				->column("other")->justify("center")->label("Other")
+				->column("other_work")->justify("center")->label("Other Work")
+				->column("norm")->justify("center")->label("Whether analyzed as per norm")
+				->column("total_no")->justify("center")->label("Total Nos.")
+				->column("counts")->hide()
+
+ 
+				//->to('CSV') //Auto download excel file	
+
+				->group("report_date")
+				->header("report_date")
+				->customTrailer("Total Number of Samples : {counts} ", "")
+				->customTrailer("{$name} ", "")
+				->customTrailer("({$email}) ", "")
+				->customTrailer("{$role} ", "")
+
+				// ->customTrailer("{$name} ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 10px;margin-bottom:10px;")
+				// ->customTrailer("({$email}) ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 25px;margin-bottom:10px;")
+				// ->customTrailer("{$role} ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 45px; margin-bottom:10px;")
+
+
+				->group("lab_name")
+				->header("lab_name")
+
+				->group("name_chemist")
+				->header("name_chemist")
+
+				->group("sample_type_desc")
+				->header("sample_type_desc")
+
+				->page()
+				->pagetitledisplay("TopOfFirstPage")
+
+				->header($header, "")
+
+
+				// ->footer("Time: date('Y-m-d H:i:s')", "font-size: 8pt; text-align: right; font-style: italic; width: 100%; margin-top: 55px; padding-bottom:60px;")
+				->footer("Page: {PAGE} of {PAGETOTAL} & Time: date('Y-m-d H:i:s')", "")
+				->execute();
+		}
+	}
+	
+	
+	
+	//added for consolidated report on 22-08-2022 by shreeya
+	public function consolidatedReportAnalysedByChemist()
+	{
+		
+		$this->autoRender = false;
+
+		if ($this->request->is('post')) {
+
+			$month = $this->request->getData('month');
+			$year = $this->request->getData('year');
+			$lab = $this->request->getData('lab');
+			$ral_lab = $this->request->getData('ral_lab');
+		    $ral_lab = explode('~', $ral_lab);
+			$ral_lab_no = $ral_lab[0];
+			$ral_lab_name = $ral_lab[1];
+			$posted_ro_office = $this->request->getData('posted_ro_office');
+			
+			$fname = $this->request->getData('fname');
+			$lname = $this->request->getData('lname');
+			
+			$name = $fname . ' ' . $lname;
+			$email = base64_decode($this->request->getData('email'));
+		
+			$role = $this->request->getData('role');
+		
+			$user_id = $_SESSION['user_code'];
+		
+		
+			$month_name = date("F", mktime(0, 0, 0, $month, 10));
+			
+			$report_name = "Consolidated Report Analyzed By Chemist For The Month Of " . $month_name . ' , ' . $year;
+
+			$header1 = "भारत सरकार/Goverment of India";
+			$header2 = "कृषि और किसान कल्याण मंत्रालय /Ministry of Agriculture & Farmers Welfare";
+			$header3 = "कृषि, सहकारिता एवं किसान कल्याण विभाग / Department of Agriculture & Farmers Welfare";
+			$header4 = "विपणन और निरीक्षण निदेशालय / Directorate of Marketing and Inspection";
+
+			if ($lab == 'RAL') {
+				$header5 = "प्रादेशिक एगमार्क प्रयोगशाला / Regional Agmark Laboratory , " . $_SESSION['ro_office'];
+			} else if ($lab == 'CAL') {
+				$header5 = "केंद्रीय एगमार्क प्रयोगशाला / Central Agmark Laboratory <br> उत्तर अम्बज़री मार्ग / North Ambazari Road Nagpur 440010";
+			} else if ($lab == 'RO') {
+				$header5 = "प्रादेशिक कार्यालय / Regional Office , " . $_SESSION['ro_office'];
+			} else if ($lab == 'SO') {
+				$header5 = "उप-कार्यालय / Sub Office , " . $_SESSION['ro_office'];
+			}
+
+			$headerone = $header1 . '<br>' . $header2 . '<br>' . $header3 . '<br>' . $header4;
+			$header = $headerone . '<br>' . $header5;
+
+			$sql = "";
+
+			if ($role == 'DOL') {
+				$query = ReportCustomComponent::getDolConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count ,counts , check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, report_date 
+					FROM temp_dol_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'";
+				}
+			}
+
+			if ($role == 'Head Office') {
+				$query = ReportCustomComponent::getHoConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count, counts, check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, report_date 
+					FROM temp_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'";
+				
+				}
+				
+				
+			}
+			// print_r($query); exit;
+			if ($role == 'Admin') {
+				$query = ReportCustomComponent::getAdminConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
+				if ($query == 1) {
+					$sql = "SELECT sr_no,lab_name, name_chemist, sample_type_desc, project_sample, check_count, counts,check_apex_count, challenged_count, ilc_count, research_count, retesting_count,other_private_sample, smpl_analysed_instrn, report_date 
+					FROM temp_admin_consolidated_reporte_analyzed_by_chemists WHERE user_id = '$user_id'";
+				}
+			}
+			
+			if ($sql == "") {
+				return $this->redirect("/report/index");
+			}
+
+			ini_set("include_path", reporticoReport);
+			require_once("vendor/autoload.php");
+			require_once("vendor/reportico-web/reportico/src/Reportico.php");
+
+			Builder::build()
+				->properties(["bootstrap_preloaded" => true])
+				->datasource()->database("pgsql:host=" . ForReportsConnection . "; dbname=" . ForReportsDB)->user(ForReportsUserName)->password(ForReportsPassword)
+				->title($report_name)
+
+				->sql($sql)
+
+				->column("sr_no")->justify("center")->label("Sr. No.")
+				
+				->column("check_count")->justify("center")->label("Check Samples")
+				->column("check_apex_count")->justify("center")->label("Check(APEX) Sample")
+				->column("challenged_count")->justify("center")->label(" Challenged Sample")
+				->column("ilc_count")->justify("center")->label("ILC")
+				->column("research_count")->justify("center")->label("Research")
+				->column("retesting_count")->justify("center")->label("Retesting")
+				->column("smpl_analysed_instrn")->justify("center")->label("Analysed")
+				->column("project_sample")->justify("center")->label("Project Samples")
+				->column("other_private_sample")->justify("center")->label("Other")
+				//  ->column("total_no")->justify("center")->label("Total Nos.")
+				->column("report_date")->justify("center")->label("Report Date.")
+				->column("counts")->hide()
+
+				//->to('CSV') //Auto download excel file	
+
+				->group("report_date")
+				->header("report_date")
+				->customTrailer("Total Number of Samples : {counts} ", "")
+				->customTrailer("{$name} ", "")
+				->customTrailer("({$email}) ", "")
+				->customTrailer("{$role} ", "")
+
+				// ->customTrailer("{$name} ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 10px;margin-bottom:10px;")
+				// ->customTrailer("({$email}) ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 25px;margin-bottom:10px;")
+				// ->customTrailer("{$role} ", "font-size: 10pt; text-align: right; font-weight: bold; width: 100%; margin-top: 45px; margin-bottom:10px;")
+
+
+				->group("lab_name")
+				->header("lab_name")
+
+				->group("name_chemist")
+				->header("name_chemist")
+
+				->group("sample_type_desc")
+				->header("sample_type_desc")
+
+				->page()
+				->pagetitledisplay("TopOfFirstPage")
+
+				->header($header, "")
+
+
+				// ->footer("Time: date('Y-m-d H:i:s')", "font-size: 8pt; text-align: right; font-style: italic; width: 100%; margin-top: 55px; padding-bottom:60px;")
+				->footer("Page: {PAGE} of {PAGETOTAL} & Time: date('Y-m-d H:i:s')", "")
+				->execute();
+		}
+	}
+	
+	
+	
 }
+
+?>

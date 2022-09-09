@@ -179,7 +179,7 @@ class TestController extends AppController {
 
 		//call to the common SMS/Email sending method
 		$this->loadModel('DmiSmsEmailTemplates');
-		//$this->DmiSmsEmailTemplates->sendMessage(2034,$sample[0]['sample_code'],$sample[0]['alloc_by_user_code']);
+		#$this->DmiSmsEmailTemplates->sendMessage(2034,$sample[0]['sample_code'],$sample[0]['alloc_by_user_code']);
 
 		echo '#'.json_encode($chemist_code).'#';
 		exit;

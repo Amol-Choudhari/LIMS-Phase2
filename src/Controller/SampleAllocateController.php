@@ -412,8 +412,8 @@ use Cake\View;
 					$conn->execute("UPDATE sample_inward SET status_flag='IF' WHERE org_sample_code='$ogrsample'");
 
 					// Sample Forward to Lab Incharge SMS/EMAIL
-					#$this->DmiSmsEmailTemplates->sendMessage(2029,$stage_smpl_cd,$_SESSION["user_code"]);
-					//$this->DmiSmsEmailTemplates->sendMessage(2032,$stage_smpl_cd,$alloc_to_user_code);
+					#$this->DmiSmsEmailTemplates->sendMessage(91,$_SESSION['user_code'],$stage_smpl_cd);
+					#$this->DmiSmsEmailTemplates->sendMessage(92,$alloc_to_user_code,$stage_smpl_cd);
 
 					// For Maintaining Action Log by Akash (28-07-2022)
 					$this->LimsUserActionLogs->saveActionLog('Sample Forwarded to Lab Incharge','Success');
@@ -454,7 +454,7 @@ use Cake\View;
 		$category_code=trim($_POST['category_code']);
 		$sample_code=trim($_POST['sample_code']);
 		$type=$_POST['type'];
-
+		
 		if (!is_numeric($sample_code) || $sample_code=='') {
 
 			echo '#[error]~Invalid Sample Code#';
@@ -500,7 +500,7 @@ use Cake\View;
 				   AND si.commodity_code='$commodity_code' 
 				   AND si.category_code='$category_code' 
 				   AND w.stage_smpl_flag IN('OF','IF','AS') 
-				   AND w.src_loc_id=".$_SESSION['posted_ro_office']."AND w.stage_smpl_cd='$sample_code' AND w.dst_usr_cd= ".$_SESSION['user_code']." GROUP BY si.stage_sample_code,w.stage_smpl_cd,si.sample_total_qnt,si.parcel_size,mnw.unit_weight ORDER BY si.stage_sample_code asc";
+				   AND w.src_loc_id=".$_SESSION['posted_ro_office']."AND w.stage_smpl_cd='$sample_code' AND w.dst_usr_cd= ".$_SESSION['user_code']." GROUP BY si.actual_received_qty,si.stage_sample_code,w.stage_smpl_cd,si.sample_total_qnt,si.parcel_size,mnw.unit_weight ORDER BY si.stage_sample_code asc";
 
 		} else {
 
@@ -1035,7 +1035,7 @@ use Cake\View;
 							   IN('AS','IF')  ");
 
 		$flg = $flg->fetchAll('assoc');
-
+		
 		echo '#'.json_encode($flg).'#';
 		exit;
 
@@ -1336,7 +1336,7 @@ use Cake\View;
 
 			if (empty($from_dt) || empty($to_dt)) {
 
-				echo "<script>alert('Please Select Proper Dates');</script>";
+				return null;
 			}
 			$this->set(compact('to_dt','from_dt'));
 		}
@@ -1508,7 +1508,7 @@ use Cake\View;
 
 			if (empty($from_dt) || empty($to_dt)) {
 
-				echo "<script>alert('Please Select Proper Dates');</script>";
+				return null;
 			}
 			$this->set(compact('to_dt','from_dt'));
 		}
@@ -2087,7 +2087,7 @@ use Cake\View;
 
 			if (empty($from_dt) || empty($to_dt)) {
 
-				echo "<script>alert('Please Select Proper Dates');</script>";
+				return null;
 			}
 			
 			$this->set(compact('to_dt','from_dt'));

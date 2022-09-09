@@ -11,7 +11,6 @@ $(document).ready(function(){
             autoclose: true,
             todayHighlight: true,
             format: 'dd/mm/yyyy'
-        
         });
     });
 
@@ -19,8 +18,7 @@ $(document).ready(function(){
     $("#save").click(function(){
 
       $("#tests").val(arrtestOrigin);
-   
-    });
+   });
 
 
     $("#save").click(function(){
@@ -45,57 +43,44 @@ $(document).ready(function(){
 
     $("#user_type").change(function(e){
 		
-		getflag();//added here on 05-05-2022 by Amol, to show analysis flag
+		//getflag();//added here on 05-05-2022 by Amol, to show analysis flag commented on the 25-08-2022 by akash for test
 
-      if(get_users()==false){
-
-        e.preventDefault();
-      
-      }else{
-
-        if(getqty()==false){
-
-          e.preventDefault();
-
-        }else{
-
-          if(getuserdetail_new()==false){
-            
+        if(get_users()==false){
             e.preventDefault();
-
-          }else{
-
-            if(getalloctest1()==false){
-              e.preventDefault();
-
+        }else{
+            if(getqty()==false){
+                e.preventDefault();
             }else{
+                if(getuserdetail_new()==false){
+                    e.preventDefault();
+                }else{
 
-                if(getflag()==false){
-                  e.preventDefault();
-
+                    if(getalloctest1()==false){
+                         e.preventDefault();
+                    }else{
+                        if(getflag()==false){
+                            e.preventDefault();
+                        }
+                    }
                 }
             }
-          }
         }
-      }
-    
     });
 
 
     $("#alloc_to_user_code").change(function(e){
 
-      if(getalloctest()==false){
-        e.preventDefault();
-      }else{
-        if(getchem_code()==false){
-          e.preventDefault();
-
-        }else{
-          if(getuserdetail()==false){
+        if(getalloctest()==false){
             e.preventDefault();
-          }
+        }else{
+            if(getchem_code()==false){
+                e.preventDefault();
+            }else{
+                if(getuserdetail()==false){
+                    e.preventDefault();
+                }
+            }
         }
-      }
     });
 
     $("#sample_qnt").change(function(e){
@@ -124,7 +109,7 @@ $(document).ready(function(){
 
     $("#moveright").click(function(e){
 
-      if(getsampledetails()==false){
+      if(move_right()==false){
         e.preventDefault();
       }
     });

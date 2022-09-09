@@ -115,6 +115,10 @@ class MasterController extends AppController {
 	public function category(){
 
 		$this->authenticateUser();
+		
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
 
 		// load records if session is set
 		if ($this->Session->read('category_data')!=null) {
@@ -154,7 +158,7 @@ class MasterController extends AppController {
 
 					$category_nm = $this->request->getData('category_name');
 					$this->set('message',  $category_nm . ' record already exist, Please contact administrator to delete it!');
-					$this->set('message_theme','failed');								 
+					$this->set('message_theme','failed');
 					$this->set('redirect_to', 'category');
 					return null;
 				}
@@ -166,11 +170,13 @@ class MasterController extends AppController {
 				if ($recordPush) {
 
 					$message = 'Successfully added new category!';
+					$message_theme = 'success';
 					$redirect_to = 'saved_category';
 
 				} else {
 
 					$message = 'Problem in saving new category, try again later!';
+					$message_theme = 'failed';
 					$redirect_to = 'saved_category';
 
 				}
@@ -269,7 +275,8 @@ class MasterController extends AppController {
 			}
 		}
 
-											 
+		$this->redirect("/master/delete_category");	// This line added by shankhpal shende on 05/09/2022
+		
         // set variables to show popup messages FROM view file
         $this->set('message', $message);
         $this->set('message_theme',$message_theme);
@@ -301,7 +308,6 @@ class MasterController extends AppController {
 		$this->Session->delete('commodity_code');
 		$this->Session->delete('commodity_data');
 		$this->redirect('/Master/commodity');
-
 	}
 
 
@@ -311,12 +317,9 @@ class MasterController extends AppController {
 	public function fetchCommodity($id){
 
 		$commodity_data = $this->MCommodity->find('all', array('conditions'=> array('commodity_code IS'=>$id)))->first();
-		//print_r($commodity_data); exit;
-
 		$this->Session->write('commodity_code', $id);
 		$this->Session->write('commodity_data', $commodity_data);
 		$this->redirect('/Master/commodity');
-
 	}
 
 
@@ -501,9 +504,9 @@ class MasterController extends AppController {
 		}
 
 		$this->redirect("/master/saved_commodity");
-	// set variables to show popup messages FROM view file
-	$this->set('message', $message);
-	$this->set('redirect_to', $redirect_to);
+		// set variables to show popup messages FROM view file
+		$this->set('message', $message);
+		$this->set('redirect_to', $redirect_to);
 
 	}
 
@@ -721,7 +724,7 @@ class MasterController extends AppController {
 	// delete phy appear modules record
 	public function deletePhyAppear($code_name, $table, $action, $code){
 
-		$this->autoRender=false;
+		// $this->autoRender=false;
 		// check phy appear already in use or not
 		$inUsed = '0';
 		$this->loadModel($table);
@@ -758,8 +761,8 @@ class MasterController extends AppController {
 				$redirect_to = '../../../../saved-phy-appear/' . $action;
 
 			}
-
-			$this->redirect('/master/saved-phy-appear/' . $action);
+           // This line commented by shankhpal shende on 05/09/2022 for displaying error message 
+			//$this->redirect('/master/saved-phy-appear/' . $action);
 
 		}
 
@@ -1100,18 +1103,16 @@ class MasterController extends AppController {
 		if ($recordDeleted) {
 			$message = 'Successfully deleted homogenization value!';
 			$redirect_to = '../../../../saved-homo-value';
-			//$this->view = '/Element/message_boxes';
 		} else {
 			$message = 'Problem in deleting, try again later!';
 			$redirect_to = '../../../../saved-homo-value';
-			//$this->view = '/Element/message_boxes';
 		}
 
-		$this->redirect("/master/saved-homo-value");
+		//$this->redirect("/master/saved-homo-value");  // commented by shankhpal shende on 05/09/2022
 
-	// set variables to show popup messages from view file
-	$this->set('message', $message);
-	$this->set('redirect_to', $redirect_to);
+		// set variables to show popup messages from view file
+		$this->set('message', $message);
+		$this->set('redirect_to', $redirect_to);
 
 	}
 
@@ -3054,6 +3055,7 @@ public function createFormula(){
 					$newEntity = $this->MReport->newEntity(array(
 						'report_desc'=>$report_name,
 						'user_code'=>$_SESSION['user_code'],
+						'label_code' =>$report_label,								   
 						'display'=>'Y',
 						'login_timestamp'=>date('Y-m-d H:i:s'),
 						'created'=>date('Y-m-d H:i:s'),

@@ -187,9 +187,14 @@
 
 	$("#no_of_packets").focusout(function(e){
 
-		if(get_serial_no()==false){
-			e.preventDefault();
+		var sample_type = $("#sample_type").val();
+
+		if (sample_type != 3) {
+			if(get_serial_no()==false){
+				e.preventDefault();
+			}
 		}
+		
 	});
 
 
@@ -260,7 +265,7 @@
 		var no_of_packets	= $("#no_of_packets").val();
 		
 		if(no_of_packets>15){
-			alert("You can enter maximum 15.");
+			$.alert("You can enter maximum 15.");
 			return false;
 		}
 

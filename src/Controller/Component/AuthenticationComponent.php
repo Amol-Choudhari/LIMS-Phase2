@@ -389,7 +389,6 @@ class AuthenticationComponent extends Component {
 
 
                         // this echo statment commented because this messages shows on usersController side (by pravin 27/05/2017)
-                        //echo "<script> alert('login failed')</script>";
                         return 1;
                     }
 
@@ -407,14 +406,12 @@ class AuthenticationComponent extends Component {
             }else{
 
                 // this echo statment commented because this messages shows on usersController side (by pravin 27/05/2017)
-                //echo "<script> alert('This username does not exist')</script>";
                 return 2;
             }
         }
         else
         {
             // this echo statment commented because this messages shows on usersController side (by pravin 27/05/2017)
-            //echo "<script> alert('Wrong Captcha Code Entered')</script>";
             return 3;
         }
 

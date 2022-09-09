@@ -627,13 +627,23 @@ var arrtestOrigin=new Array();
 						var tot_qnt=parseInt(resArray);
 						var tot_alloc_qnt=parseInt(sample_qnt);
 						if(tot_qnt!=0){
-						if(tot_qnt<tot_alloc_qnt)
-							{
-								var msg="  Sample quantity for allocation exceeds total quantity,Please enter valid quantity..!!!";
-									alert(msg);
-								$("#sample_qnt").val('');
-								$("#sample_qnt").focus();
-								return;
+
+							if(tot_qnt<tot_alloc_qnt){
+
+								$.alert({
+									title: 'alert',
+									type: 'red',
+									icon: "fas fa-exclamation-circle",
+									columnClass: 'm',
+									content: 'Sample quantity for allocation exceeds total quantity,Please enter valid quantity..!!!',
+									onClose: function(){
+										$("#sample_qnt").val('');
+										$("#sample_qnt").focus();
+										return;
+									}
+								});
+
+							
 							}
 						}else{
 							alert("Quantity not available!");

@@ -79,7 +79,7 @@
         $.ajax({
             type: "POST",
             async:true,
-            url:"users/refresh_captcha_code",
+            url:"../users/refresh_captcha_code",
             beforeSend: function (xhr) { // Add this line
                 xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
             },

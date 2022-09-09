@@ -18,7 +18,8 @@
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-md-12 mb-2">
-						<?php echo $this->Html->link('Back', array('controller' => 'dashboard', 'action'=>'home'),array('class'=>'add_btn btn btn-secondary float-right')); ?>
+						<!-- added action code-master-home by shankhpal shende on 06/09/2022 -->
+						<?php echo $this->Html->link('Back', array('controller' => 'master', 'action'=>'code-master-home'),array('class'=>'add_btn btn btn-secondary float-right')); ?>
 						<?php echo $this->Html->link('Add New', array('controller' => 'master', 'action'=>'new_commodity'),array('class'=>'add_btn btn btn-primary float-left')); ?>
 					</div>
 					<div class="col-md-12">
@@ -28,14 +29,15 @@
 								<div class="form-horizontal">
 									<div class="card-body">
 										<div class="panel panel-primary filterable">
-											<table id="pages_list_table" class="table table-bordered table-striped table-hover">
+											<table id="pages_list_table" class="table table-bordered table-striped table-hover ">
 												<thead class="tablehead">
 													<tr>
 														<th>SR.No</th>
 														<th>Commodity</th>
 														<th>Commodity (हिन्दी)</th>
 														<th>Category</th>
-														<th>Action</th>
+														<!-- <th>Action</th> --> 
+														<!-- This field commented by shankhpal shende on 05/09/02022 for user can not be update any commodity -->
 													</tr>
 												</thead>
 												<tbody>
@@ -49,10 +51,11 @@
 																<td><?php echo $com_name = $each['commodity_name']; ?></td>
 																<td><?php echo $each['l_commodity_name'];  ?></td>
 																<td><?php echo $each['category_name']; ?></td>
-																<td>
-																	<?php echo $this->Html->link('', array('controller' => 'master', 'action'=>'fetch_commodity', $each['commodity_code']),array('class'=>'glyphicon glyphicon-edit','title'=>'Edit')); ?> |
-																	<?php echo $this->Html->link('', array('controller' => 'master', 'action'=>'delete_commodity', $each['commodity_code']),array('class'=>'glyphicon glyphicon-trash','title'=>'Delete','id'=>'delete_record')); ?>
-																</td>
+																<!-- <td class="text-center"> -->
+																	<?php //echo $this->Html->link('', array('controller' => 'master', 'action'=>'fetch_commodity', $each['commodity_code']),array('class'=>'glyphicon glyphicon-edit ','title'=>'Edit')); ?> 
+																	<?php //echo $this->Html->link('', array('controller' => 'master', 'action'=>'delete_commodity', $each['commodity_code']),array('class'=>'glyphicon glyphicon-trash','title'=>'Delete','id'=>'delete_record')); ?>
+																     <!-- commented by shankhpal shende on 02/09/2022  -->
+																<!-- </td> -->
 															</tr>
 
 													<?php $sr_no++; } } ?>
