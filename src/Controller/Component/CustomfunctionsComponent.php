@@ -6,7 +6,7 @@
 	use Cake\ORM\Table;
 	use Cake\ORM\TableRegistry;
 	use Cake\Datasource\EntityInterface;
-
+	use QRcode;
 	class CustomfunctionsComponent extends Component {
 
 		public $components= array('Session','PaymentDetails');
@@ -788,7 +788,6 @@
 
 
 /***************************************************************************************************************************************************************************************************/
-
 	// get_sms_id
 	// Author : Akash Thakre
 	// Description : This will return the SMS ID for sending the message.
@@ -812,8 +811,56 @@
 		return array('from_user'=>$sendingTo,'from_sms_id'=>$from_id,'to_user'=>$receiver,'to_sms_id'=>$to_id);
 	}
 
+/***************************************************************************************************************************************************************************************************/
+		
+	//Get QR Code for Sample Test Report
+	// Author : Shankhpal Shende
+	// Description : This will return QR code for Sample Test Report
+	// Date : 01/09/2022
+
+	public function getQrCodeSampleTestReport($Sample_code_as,$sample_forwarded_office,$test_report){
+			  
+		$LimsReportsQrcodes = TableRegistry::getTableLocator()->get('LimsReportsQrcodes'); //initialize model in component
+		
+		require_once(ROOT . DS .'vendor' . DS . 'phpqrcode' . DS . 'qrlib.php');
+
+		// $data = "MECARD:N:".'Certificate No:'.$result[0].";EMAIL:".'Grant Date:'.$result[1]." Valid up to date:".$result[2][0].";";
+		$data = "Name of customer:".$sample_forwarded_office[0]['user_flag'].",".$sample_forwarded_office[0]['ro_office']."##"."Address of customer :".$sample_forwarded_office[0]['ro_office']."##"."Sample Code No :".$Sample_code_as."##"."Commodity of Sample :".$test_report[0]['commodity_name']."##"."Grade:".$test_report[0]['grade_desc'];
+		
+		$qrimgname = rand();
+		
+		$server_imagpath = '/writereaddata/LIMS/QRCodes/'.$qrimgname.".png";
+		
+		$file_path = $_SERVER["DOCUMENT_ROOT"].'/writereaddata/LIMS/QRCodes/'.$qrimgname.".png";
+		
+		$file_name = $file_path;
+		
+		QRcode::png($data,$file_name);
+				
+		$date = date('Y-m-d H:i:s');
+		
+		$workflow = TableRegistry::getTableLocator()->get('workflow');
+		
+		//$sample_code = $workflow->find('all',array(,'conditions'=>array('org_sample_code'=>$Sample_code_as),'order'=>'id asc'))->toArray();
+		$sample_code = $workflow->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('stage_smpl_cd IS'=>$Sample_code_as)))->first();
+		
+		$stage_smpl_code = $sample_code['org_sample_code'];
+		
+		$SampleReportAdd = $LimsReportsQrcodes->newEntity([
+			'sample_code'=>$stage_smpl_code,
+			'qr_code_path'=>$server_imagpath,
+			'created'=>$date,
+			'modified'=>$date
+		]);
+
+			$LimsReportsQrcodes->save($SampleReportAdd);
+			
+			$qrimage = $LimsReportsQrcodes->find('all',array('field'=>'qr_code_path','conditions'=>array('sample_code'=>$stage_smpl_code),'order'=>'id desc'))->first();
+		
+			return $qrimage;
+
+	}
+
 
 }
-
-
 ?>

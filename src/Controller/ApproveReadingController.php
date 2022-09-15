@@ -31,8 +31,8 @@ class ApproveReadingController extends AppController
 			//proceed
 		} else {
 
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -398,9 +398,11 @@ class ApproveReadingController extends AppController
 
 		$conn->execute("UPDATE sample_inward SET status_flag='SR' WHERE org_sample_code='$ogrsample_code'");
 
-		//call to the common SMS/Email sending method
-		$this->loadModel('DmiSmsEmailTemplates');
-		//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code);
+		#SMS - Retest
+		//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code); # sender
+
+		#Action
+		$this->LimsUserActionLogs->saveActionLog('Sample Sent for Retest','Success'); 
 
 	  	echo '#1#';
 	  	exit;
@@ -739,10 +741,12 @@ class ApproveReadingController extends AppController
 		$this->ActualTestData->updateAll(array('status_flag' => 'G'),array('sample_code'=>$sample_code,'display'=>'Y'));
 		$this->CodeDecode->updateAll(array('status_flag' => 'G'),array('sample_code'=>$sample_code,'display'=>'Y'));
 
-		//call to the common SMS/Email sending method
-		$this->loadModel('DmiSmsEmailTemplates');
+		#SMS - Forward To RAL
 		//$this->DmiSmsEmailTemplates->sendMessage(2037,$sample_code,$_SESSION["posted_ro_office"]);
 		//$this->DmiSmsEmailTemplates->sendMessage(2038,$sample_code,$_SESSION["user_code"]);
+
+		#Action
+		$this->LimsUserActionLogs->saveActionLog('Sample Sent Back to RAL','Success');
 
 
 		echo  '#'.json_encode($office_name).'#';
@@ -834,9 +838,12 @@ class ApproveReadingController extends AppController
 		$this->actual_test_data->updateAll(array('status_flag' => 'G'),array('sample_code'=>$sample_code,'display'=>'Y'));
 		$this->CodeDecode->updateAll(array('status_flag' => 'G'),array('sample_code'=>$sample_code,'display'=>'Y'));
 
-		//call to the common SMS/Email sending method
-		$this->loadModel('DmiSmsEmailTemplates');
+		#SMS - Forward to OIC
 		//$this->DmiSmsEmailTemplates->sendMessage(2015,$sample_code);
+		//$this->DmiSmsEmailTemplates->sendMessage(2015,$sample_code);
+
+		#Action
+		$this->LimsUserActionLogs->saveActionLog('Sample Sent to OIC','Success');
 
 		echo  '#'.json_encode($org_sample_code).'#';
 
@@ -860,6 +867,19 @@ class ApproveReadingController extends AppController
 		$res = $conn->execute("SELECT  * FROM workflow WHERE stage_smpl_cd='$sample_code' AND stage_smpl_flag='AR' ");
 		$res = $res->fetchAll('assoc');
 
+		//added for re-testing could not finalize samples 
+		//on 12-09-2022 by shreeya
+		if(count($res)>0)
+		{
+			$this->loadModel('Workflow');
+			$checkRFlag = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_flag'=>'R','stage_smpl_cd IS'=>$sample_code,'id >'=>$res[0]['id'])))->first();
+			if(!empty($checkRFlag))
+			{
+				$res = array();
+			}
+			
+		}
+		
 		if(count($res)>0)
 		{
 			echo "#Exists#";

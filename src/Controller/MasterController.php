@@ -131,7 +131,6 @@ class MasterController extends AppController {
 			$postData = $this->request->getData();
 
 			// html encode the each post inputs
-
 			foreach ($postData as $key => $value) {
 
 				$postData[$key] = htmlentities($postData[$key], ENT_QUOTES);
@@ -156,6 +155,7 @@ class MasterController extends AppController {
 
 				if ($isExist!='0') {
 
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
 					$category_nm = $this->request->getData('category_name');
 					$this->set('message',  $category_nm . ' record already exist, Please contact administrator to delete it!');
 					$this->set('message_theme','failed');
@@ -169,16 +169,17 @@ class MasterController extends AppController {
 
 				if ($recordPush) {
 
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
 					$message = 'Successfully added new category!';
 					$message_theme = 'success';
 					$redirect_to = 'saved_category';
 
 				} else {
 
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
 					$message = 'Problem in saving new category, try again later!';
 					$message_theme = 'failed';
 					$redirect_to = 'saved_category';
-
 				}
 
 				// set variables to show popup messages FROM view file
@@ -196,7 +197,8 @@ class MasterController extends AppController {
 				$isExist = $this->MCommodityCategory->find('all', array('conditions'=> array('UPPER(TRIM(category_name))'=>$category_name_upper, 'category_code !='=>$category_code_post, 'display'=>'Y')))->count();
 
 				if ($isExist!='0') {
-
+					
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$category_nm = $this->request->getData('category_name');
 					$this->set('message',  $category_nm . ' record already exist, Please contact administrator to delete it!');
 					$this->set('redirect_to', 'category');
@@ -214,13 +216,15 @@ class MasterController extends AppController {
 				$recordUpdate = $this->MCommodityCategory->save($categoryEntity);
 
 				if ($recordUpdate) {
-
+					
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Success'); #Action
 					$message = 'Successfully update category!';
 					$message_theme = 'success';
 					$redirect_to = 'saved_category';
 
 				} else {
-
+					
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$message = 'Problem in updation, try again later!';
 					$message_theme = 'failed';
 					$redirect_to = 'saved_category';
@@ -249,7 +253,8 @@ class MasterController extends AppController {
 		$inUsed = $this->MCommodity->find('all', array('conditions'=> array('category_code IS'=>$id, 'display'=>'Y')))->count();
 
 		if ($inUsed!='0') {
-
+			
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
             $this->set('message',  'Already in use, could not deleted!');
             $this->set('message_theme','failed');
             $this->set('redirect_to', '../saved_category');
@@ -262,13 +267,15 @@ class MasterController extends AppController {
 			$recordDelete = $this->MCommodityCategory->save($categoryEntity);
 
 			if ($recordDelete) {
-
+				
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Success'); #Action
 				$message = 'Successfully delete category!';
 				$message_theme = 'success';
 				$redirect_to = '../saved_category';
 
 			} else {
-
+				
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 				$message = 'Problem in deleting, try again later!';
 				$message_theme = 'failed';
 				$redirect_to = '../saved_category';
@@ -374,7 +381,8 @@ class MasterController extends AppController {
 				if ($isExist!='0') {
 
 					$commodity_nm = $postData['commodity_name'];
-			
+					
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
 					$this->set('message',  $commodity_nm . ' record for this category already exists! Please Contact to Administrator');
 					$this->set('message_theme','failed');
 					$this->set('redirect_to', 'commodity');
@@ -396,13 +404,14 @@ class MasterController extends AppController {
 				$recordPush = $this->MCommodity->save($commodityEntity);
 
 				if ($recordPush) {
-
+					
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
 					$message = 'Successfully added new commodity!';
                     $message_theme = 'success';
 					$redirect_to = 'saved_commodity';
 					
 				} else {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
 					$message = 'Problem in saving new commodity, try again later!';
                     $message_theme = 'failed';
 					$redirect_to = 'saved_commodity';
@@ -424,7 +433,7 @@ class MasterController extends AppController {
 				$isExist = $this->MCommodity->find('all', array('conditions'=> array('UPPER(TRIM(commodity_name))'=>$commodity_name_upper, 'commodity_code !='=>$commodity_code_post, 'display'=>'Y')))->count();
 
 				if ($isExist!='0') {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$commodity_nm = $postData['commodity_name'];
 					$this->set('message',  $commodity_nm . ' already exists !');
 					$this->set('redirect_to', 'commodity');
@@ -442,12 +451,12 @@ class MasterController extends AppController {
 				$recordUpdate = $this->MCommodity->save($commodityEntity);
 
 				if ($recordUpdate) {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Success'); #Action
 					$message = 'Successfully update commodity!';
 					$message_theme = 'success';
 					$redirect_to = 'saved_commodity';
 				} else {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$message = 'Problem in updation, try again later!';
 					$message_theme = 'failed';
 					$redirect_to = 'saved_commodity';
@@ -476,7 +485,7 @@ class MasterController extends AppController {
 		$inUsedSampleInward = $this->SampleInward->find('all', array('conditions'=> array('commodity_code IS'=>$id, 'display'=>'Y')))->count();
 
 		if ($inUsedTest!='0' || $inUsedSampleInward!='0') {
-
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 			$message = 'Commodity already in used, could not be deleted';
 			$redirect_to = '../saved_commodity';
 
@@ -491,12 +500,12 @@ class MasterController extends AppController {
 			$recordDeleted = $this->MCommodity->save($commodityEntity);
 
 			if ($recordDeleted) {
-
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Success'); #Action
 				$message = 'Successfully deleted commodity!';
 				$redirect_to = '../saved_commodity';
 
 			} else {
-
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 				$message = 'Problem in deleting, try again later!';
 				$redirect_to = '../saved_commodity';
 			}
@@ -623,14 +632,14 @@ class MasterController extends AppController {
 				$isExist = $this->$table->find('all', array('conditions'=> array('UPPER(TRIM('.$textbox_1.'))'=>$textbox_one_upper, 'display'=>'Y')))->count();
 
 				if ($isExist!='0') {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
 					$textbox_one_nm = $postData[$textbox_1];
 					$this->set('message', 'Record for this ' . $textbox_one_nm . ' already exists');
 					$this->set('redirect_to', '../phy-appear/' .  $action);
 					return null;
 				}
 
-					$phyAppearData = array(
+				$phyAppearData = array(
 					$textbox_1=>$postData[$textbox_1],
 					$textbox_2=>$postData[$textbox_2],
 					'user_code'=>$user_code
@@ -641,19 +650,23 @@ class MasterController extends AppController {
 
 				if ($recordPush) {
 
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
 					$message = 'Successfully added new ' . $title . ' record!';
+					$message_theme = 'success';
 					$redirect_to = '../saved-phy-appear/' . $action;
 
 				} else {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
 					$message = 'Problem in saving ' . $title . ', try again later!';
+					$message_theme = 'failed';
 					$redirect_to = '../saved-phy-appear/' . $action;
 
 				}
 
-			// set variables to show popup messages FROM view file
-			$this->set('message', $message);
-			$this->set('redirect_to', $redirect_to);
+				// set variables to show popup messages FROM view file
+				$this->set('message', $message);
+				$this->set('message_theme',$message_theme);
+				$this->set('redirect_to', $redirect_to);
 
 			}
 
@@ -666,7 +679,7 @@ class MasterController extends AppController {
 					$isEditableStatus = $this->$table->find('all', array('conditions'=> array($phy_appear_code_name=>$phy_appear_code, 'iseditable'=>'N')))->count();
 
 					if ($isEditableStatus!='0') {
-
+						$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 						$textbox_one_nm = $postData[$textbox_1];
 						$this->set('message', 'Not allow to modify ' . $textbox_one_nm . ' record');
 						$this->set('redirect_to', '../saved-phy-appear/' .  $action);
@@ -680,7 +693,7 @@ class MasterController extends AppController {
 				$isExist = $this->$table->find('all', array('conditions'=> array('UPPER(TRIM('.$textbox_1.'))'=>$textbox_one_upper, $phy_appear_code_name.' !='=>$phy_appear_code, 'display'=>'Y')))->count();
 
 				if ($isExist!='0') {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$textbox_one_nm = $postData[$textbox_1];
 					$this->set('message', 'Record for this ' . $textbox_one_nm . ' already exists');
 					$this->set('redirect_to', '../phy-appear/' .  $action);
@@ -698,19 +711,22 @@ class MasterController extends AppController {
 				$recordUpdate = $this->$table->save($phyAppearEntity);
 
 				if ($recordUpdate) {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Success'); #Action
 					$message = 'Successfully update ' . $title . '!';
+					$message_theme = 'success';
 					$redirect_to = '../saved-phy-appear/' . $action;
 
 				} else {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$message = 'Problem in updation, try again later!';
+					$message_theme = 'failed';
 					$redirect_to = '../saved-phy-appear/' . $action;
 				}
 
-			// set variables to show popup messages from view file
-			$this->set('message', $message);
-			$this->set('redirect_to', $redirect_to);
+				// set variables to show popup messages from view file
+				$this->set('message', $message);
+				$this->set('message_theme', $message_theme);
+				$this->set('redirect_to', $redirect_to);
 			}
 
 		}
@@ -739,8 +755,9 @@ class MasterController extends AppController {
 		}
 
 		if ($inUsed!='0') {
-
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 			$message = 'Record already in use, could not be deleted!';
+			$message_theme = 'failed';
 			$redirect_to = '../../../../saved-phy-appear/' . $action;
 
 		} else {
@@ -751,13 +768,15 @@ class MasterController extends AppController {
 			$recordDeleted = $this->$table->save($phyAppearEntity);
 
 			if ($recordDeleted) {
-
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Success'); #Action
 				$message = 'Successfully delete record!';
+				$message_theme = 'success';
 				$redirect_to = '../../../../saved-phy-appear/' . $action;
 
 			} else {
-
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 				$message = 'Problem in deleting, try again later!';
+				$message_theme = 'failed';
 				$redirect_to = '../../../../saved-phy-appear/' . $action;
 
 			}
@@ -768,6 +787,7 @@ class MasterController extends AppController {
 
 		// set variables to show popup messages from view file
 		$this->set('message', $message);
+		$this->set('message_theme', $message_theme);
 		$this->set('redirect_to', $redirect_to);
 	}
 
@@ -864,116 +884,120 @@ class MasterController extends AppController {
 
 		if ($this->request->is('post')) {
 
-				$postData = $this->request->getData();
+			$postData = $this->request->getData();
 
-				// html encode the each post inputs
-				foreach ($postData as $key => $value) {
+			// html encode the each post inputs
+			foreach ($postData as $key => $value) {
 
-					$postData[$key] = htmlentities($postData[$key], ENT_QUOTES);
-				}
+				$postData[$key] = htmlentities($postData[$key], ENT_QUOTES);
+			}
 
 
 			// check post data validation
 			$validate_err = $this->Inputvalidation->homoValuePostValidations($postData);
 
-				if ($validate_err != '') {
+			if ($validate_err != '') {
 
-					$this->set('validate_err', $validate_err);
-					return null;
-				}
+				$this->set('validate_err', $validate_err);
+				return null;
+			}
 
-				$user_code = $this->Session->read('user_code');
-				$val_type = $postData['val_type'];
-				$old_val_type = $postData['old_val_type'];
-				$m_sample_obs_type_code = $postData['m_sample_obs_type_code'];
-				$m_sample_obs_code = $postData['m_sample_obs_code'];
-				$m_sample_obs_type_value = $postData['m_sample_obs_type_value'];
+			$user_code = $this->Session->read('user_code');
+			$val_type = $postData['val_type'];
+			$old_val_type = $postData['old_val_type'];
+			$m_sample_obs_type_code = $postData['m_sample_obs_type_code'];
+			$m_sample_obs_code = $postData['m_sample_obs_code'];
+			$m_sample_obs_type_value = $postData['m_sample_obs_type_value'];
 
 				// saving new record
 			if (null!==($postData['save'])) {
 
-					//to check if same homo with same value exist, if yes then validate
-					$existCount = $this->MSampleObsType->find('all', array('conditions'=> array('m_sample_obs_code'=>$m_sample_obs_code, 'm_sample_obs_type_value'=>$m_sample_obs_type_value, 'display'=>'Y')))->count();
+				//to check if same homo with same value exist, if yes then validate
+				$existCount = $this->MSampleObsType->find('all', array('conditions'=> array('m_sample_obs_code'=>$m_sample_obs_code, 'm_sample_obs_type_value'=>$m_sample_obs_type_value, 'display'=>'Y')))->count();
 
-					if ($existCount == '0') {
+				if ($existCount == '0') {
 
-						// get count record exist for the SELECTed Homo
-						$for_value_type = $this->MSampleObsType->find('all', array('conditions'=> array('m_sample_obs_code IS'=>$m_sample_obs_code, 'display'=>'Y')))->first();
+					// get count record exist for the SELECTed Homo
+					$for_value_type = $this->MSampleObsType->find('all', array('conditions'=> array('m_sample_obs_code IS'=>$m_sample_obs_code, 'display'=>'Y')))->first();
 
-						if ($for_value_type['m_sample_obs_type_value']=='Yes') {
+					if ($for_value_type['m_sample_obs_type_value']=='Yes') {
 
-							$existed_value_type = 'yesno';
+						$existed_value_type = 'yesno';
 
-						} else {
-
-							$existed_value_type = 'single';
-						}
-
-						if ($val_type != $existed_value_type) {
-
-							$this->set('message',  'Sorry. The Selected value type do not matched with previous records.');
-							$this->set('redirect_to', 'saved-homo-value');
-							return null;
-						}
-
-							if ($val_type=='single') {
-
-								$homoValueRecord = array(
-									'm_sample_obs_type_code'=>$sampleObsCodeCurr,
-									'm_sample_obs_code'=>$m_sample_obs_code,
-									'm_sample_obs_type_value'=>$m_sample_obs_type_value,
-									'user_code'=>$user_code,
-									'login_timestamp'=>$postData['login_timestamp']
-								);
-
-								$homoValueEntity = $this->MSampleObsType->newEntity($homoValueRecord);
-								$recordPush = $this->MSampleObsType->save($homoValueEntity);
-
-							} else {
-
-								$homoValueRecordOne = array(
-									'm_sample_obs_type_code'=>$sampleObsCodeCurr,
-									'm_sample_obs_code'=>$m_sample_obs_code,
-									'm_sample_obs_type_value'=>'Yes',
-									'user_code'=>$user_code,
-									'login_timestamp'=>$postData['login_timestamp']
-								);
-
-								$sampleObsCodeCurrent = $sampleObsCodeCurr + 1;
-								$homoValueRecordTwo= array(
-									'm_sample_obs_type_code'=>$sampleObsCodeCurrent,
-									'm_sample_obs_code'=>$m_sample_obs_code,
-									'm_sample_obs_type_value'=>'No',
-									'user_code'=>$user_code,
-									'login_timestamp'=>$postData['login_timestamp']
-								);
-
-								$homoValueEntityOne = $this->MSampleObsType->newEntity($homoValueRecordOne);
-								$homoValueEntityTwo = $this->MSampleObsType->newEntity($homoValueRecordTwo);
-								$recordPush = $this->MSampleObsType->save($homoValueEntityOne);
-								$recordPushTwo = $this->MSampleObsType->save($homoValueEntityTwo);
-
-							}
-
-							if ($recordPush) {
-
-								$message = 'Successfully added new homogenization value!';
-								$redirect_to = 'saved-homo-value';
-							} else {
-								$message = 'Problem in saving homogenization value, try again later!';
-								$redirect_to = 'saved-homo-value';
-
-							}
 					} else {
 
-							$message = 'Record Already Exists';
-							$redirect_to = 'saved-homo-value';
+						$existed_value_type = 'single';
+					}
 
+					if ($val_type != $existed_value_type) {
+						$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+						$this->set('message',  'Sorry. The Selected value type do not matched with previous records.');
+						$this->set('redirect_to', 'saved-homo-value');
+						return null;
+					}
+
+					if ($val_type=='single') {
+
+						$homoValueRecord = array(
+							'm_sample_obs_type_code'=>$sampleObsCodeCurr,
+							'm_sample_obs_code'=>$m_sample_obs_code,
+							'm_sample_obs_type_value'=>$m_sample_obs_type_value,
+							'user_code'=>$user_code,
+							'login_timestamp'=>$postData['login_timestamp']
+						);
+
+						$homoValueEntity = $this->MSampleObsType->newEntity($homoValueRecord);
+						$recordPush = $this->MSampleObsType->save($homoValueEntity);
+
+					} else {
+
+						$homoValueRecordOne = array(
+							'm_sample_obs_type_code'=>$sampleObsCodeCurr,
+							'm_sample_obs_code'=>$m_sample_obs_code,
+							'm_sample_obs_type_value'=>'Yes',
+							'user_code'=>$user_code,
+							'login_timestamp'=>$postData['login_timestamp']
+						);
+
+						$sampleObsCodeCurrent = $sampleObsCodeCurr + 1;
+						$homoValueRecordTwo= array(
+							'm_sample_obs_type_code'=>$sampleObsCodeCurrent,
+							'm_sample_obs_code'=>$m_sample_obs_code,
+							'm_sample_obs_type_value'=>'No',
+							'user_code'=>$user_code,
+							'login_timestamp'=>$postData['login_timestamp']
+						);
+
+						$homoValueEntityOne = $this->MSampleObsType->newEntity($homoValueRecordOne);
+						$homoValueEntityTwo = $this->MSampleObsType->newEntity($homoValueRecordTwo);
+						$recordPush = $this->MSampleObsType->save($homoValueEntityOne);
+						$recordPushTwo = $this->MSampleObsType->save($homoValueEntityTwo);
 
 					}
 
+					if ($recordPush) {
+						$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
+						$message = 'Successfully added new homogenization value!';
+						$message_theme = 'success';
+						$redirect_to = 'saved-homo-value';
+					} else {
+						$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+						$message = 'Problem in saving homogenization value, try again later!';
+						$message_theme = 'failed';
+						$redirect_to = 'saved-homo-value';
+
+					}
+
+				} else {
+					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$message = 'Record Already Exists';
+					$message_theme = 'failed';
+					$redirect_to = 'saved-homo-value';
+				}
+
 				// set variables to show popup messages from view file
 				$this->set('message', $message);
+				$this->set('message_theme', $message_theme);
 				$this->set('redirect_to', $redirect_to);
 
 			}
@@ -987,7 +1011,7 @@ class MasterController extends AppController {
 				$isExist = $this->MSampleObsType->find('all', array('conditions'=> array('UPPER(TRIM(m_sample_obs_type_value))'=>$homo_value_upper, 'm_sample_obs_code'=>$m_sample_obs_code, 'm_sample_obs_type_code !='=>$m_sample_obs_type_code, 'display'=>'Y')))->count();
 
 				if ($isExist!='0') {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$this->set('message',  'Homogenization value already exists !');
 					$this->set('redirect_to', 'homo-value');
 					return null;
@@ -995,76 +1019,79 @@ class MasterController extends AppController {
 
 				$this->MSampleObsType->find('all', array('conditions'=> array('UPPER(TRIM(m_sample_obs_type_value))'=>$homo_value_upper, 'm_sample_obs_code'=>$m_sample_obs_code, 'm_sample_obs_type_code !='=>$m_sample_obs_type_code, 'display'=>'Y')))->count();
 
-					if ($old_val_type != $val_type) {
+				if ($old_val_type != $val_type) {
 
-						// disable previous value type under same homo field, added on 17-09-2020 by Aniket
-						$MSampleObsType = TableRegistry::getTableLocator()->get('MSampleObsType');
-						$deactivePreviousValType = $MSampleObsType->query();
-						$deactivePreviousValType->update()->set(array('display'=>'N'))->where(array('m_sample_obs_code'=>$m_sample_obs_code))->execute();
+					// disable previous value type under same homo field, added on 17-09-2020 by Aniket
+					$MSampleObsType = TableRegistry::getTableLocator()->get('MSampleObsType');
+					$deactivePreviousValType = $MSampleObsType->query();
+					$deactivePreviousValType->update()->set(array('display'=>'N'))->where(array('m_sample_obs_code'=>$m_sample_obs_code))->execute();
 
-						if ($val_type=='yesno') {
+					if ($val_type=='yesno') {
 
-							$homoValueRecordOne = array(
-								'm_sample_obs_type_code'=>$updateMSampleObsTypeCode,
-								'm_sample_obs_code'=>$m_sample_obs_code,
-								'm_sample_obs_type_value'=>'Yes',
-								'user_code'=>$user_code,
-								'login_timestamp'=>$postData['login_timestamp']
-							);
+						$homoValueRecordOne = array(
+							'm_sample_obs_type_code'=>$updateMSampleObsTypeCode,
+							'm_sample_obs_code'=>$m_sample_obs_code,
+							'm_sample_obs_type_value'=>'Yes',
+							'user_code'=>$user_code,
+							'login_timestamp'=>$postData['login_timestamp']
+						);
 
-							$homoValueRecordTwo = array(
-								'm_sample_obs_type_code'=>$updateMSampleObsTypeCode,
-								'm_sample_obs_code'=>$m_sample_obs_code,
-								'm_sample_obs_type_value'=>'No',
-								'user_code'=>$user_code,
-								'login_timestamp'=>$postData['login_timestamp']
-							);
+						$homoValueRecordTwo = array(
+							'm_sample_obs_type_code'=>$updateMSampleObsTypeCode,
+							'm_sample_obs_code'=>$m_sample_obs_code,
+							'm_sample_obs_type_value'=>'No',
+							'user_code'=>$user_code,
+							'login_timestamp'=>$postData['login_timestamp']
+						);
 
-							$homoValueEntityOne = $this->MSampleObsType->newEntity($homoValueRecordOne);
-							$homoValueEntityTwo = $this->MSampleObsType->newEntity($homoValueRecordTwo);
-							$recordUpdated = $this->MSampleObsType->save($homoValueEntityOne);
-							$recordUpdatedTwo = $this->MSampleObsType->save($homoValueEntityTwo);
-
-						} else {
-
-							$homoValueRecord = array(
-								'm_sample_obs_type_code'=>$updateMSampleObsTypeCode,
-								'm_sample_obs_code'=>$m_sample_obs_code,
-								'm_sample_obs_type_value'=>$m_sample_obs_type_value,
-								'user_code'=>$user_code,
-								'login_timestamp'=>$postData['login_timestamp']
-							);
-
-							$homoValueEntity = $this->MSampleObsType->newEntity($homoValueRecord);
-							$recordUpdated = $this->MSampleObsType->save($homoValueEntity);
-
-						}
+						$homoValueEntityOne = $this->MSampleObsType->newEntity($homoValueRecordOne);
+						$homoValueEntityTwo = $this->MSampleObsType->newEntity($homoValueRecordTwo);
+						$recordUpdated = $this->MSampleObsType->save($homoValueEntityOne);
+						$recordUpdatedTwo = $this->MSampleObsType->save($homoValueEntityTwo);
 
 					} else {
 
-						$homoValueModifiedData = array(
-							'm_sample_obs_type_code'=>$m_sample_obs_type_code,
-							'm_sample_obs_type_value'=>$m_sample_obs_type_value
+						$homoValueRecord = array(
+							'm_sample_obs_type_code'=>$updateMSampleObsTypeCode,
+							'm_sample_obs_code'=>$m_sample_obs_code,
+							'm_sample_obs_type_value'=>$m_sample_obs_type_value,
+							'user_code'=>$user_code,
+							'login_timestamp'=>$postData['login_timestamp']
 						);
 
-						$homoValueEntity = $this->MSampleObsType->newEntity($homoValueModifiedData);
+						$homoValueEntity = $this->MSampleObsType->newEntity($homoValueRecord);
 						$recordUpdated = $this->MSampleObsType->save($homoValueEntity);
 
 					}
 
-				if ($recordUpdated) {
+				} else {
 
+					$homoValueModifiedData = array(
+						'm_sample_obs_type_code'=>$m_sample_obs_type_code,
+						'm_sample_obs_type_value'=>$m_sample_obs_type_value
+					);
+
+					$homoValueEntity = $this->MSampleObsType->newEntity($homoValueModifiedData);
+					$recordUpdated = $this->MSampleObsType->save($homoValueEntity);
+
+				}
+
+				if ($recordUpdated) {
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Success'); #Action
 					$message = 'Successfully update homogenization value!';
+					$message_theme = 'success';
 					$redirect_to = 'saved-homo-value';
 
 				} else {
-
+					$this->LimsUserActionLogs->saveActionLog('Master Update','Failed'); #Action
 					$message = 'Problem in updation of homogenization value, try again later!';
+					$message_theme = 'failed';
 					$redirect_to = 'saved-homo-value';
 				}
 
 				// set variables to show popup messages from view file
 				$this->set('message', $message);
+				$this->set('message_theme', $message_theme);
 				$this->set('redirect_to', $redirect_to);
 
 			}
@@ -3055,7 +3082,7 @@ public function createFormula(){
 					$newEntity = $this->MReport->newEntity(array(
 						'report_desc'=>$report_name,
 						'user_code'=>$_SESSION['user_code'],
-						'label_code' =>$report_label,								   
+						'label_code' =>$report_label,
 						'display'=>'Y',
 						'login_timestamp'=>date('Y-m-d H:i:s'),
 						'created'=>date('Y-m-d H:i:s'),
@@ -3156,14 +3183,21 @@ public function createFormula(){
 				$modifiedData = 'true';
 			}
 
-			foreach($selreports as $val){
+			//added new if condn to check no report selected from list 
+			//on 15-09-2022 by shreeya while testing
+			if(empty($selreports)){
+				$modifiedData = 'true';
+			}else{
+				foreach($selreports as $val){
 
-				if(!is_numeric($val)){
-					$modifiedData = 'true';
+					if(!is_numeric($val)){
+						$modifiedData = 'true';
+					}
 				}
 			}
-
+			
 			$oldsetreports = array();
+
 			if($modifiedData == 'false'){
 
 				$selectedReports = $conn->execute("select report_label_code, report_code from m_reportlabel as r where role_code='".$role_code."' and label_code='".$label_code."'")->fetchAll('assoc');
@@ -3174,7 +3208,6 @@ public function createFormula(){
 
 				$tsetreports = array_unique(array_merge($selreports,$oldsetreports));
 				$array_flip = array_flip($oldsetreports);
-
 
 				foreach($tsetreports as $fval){
 

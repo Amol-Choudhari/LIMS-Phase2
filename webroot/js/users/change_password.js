@@ -46,11 +46,23 @@ $('#confpass').focusout(function(){
     var NewPassword = $("#Newpassword").val();
     var ConfirmedPassword = $('#confpass').val();
     if (NewPassword != '') {
-        
         if (NewPassword != ConfirmedPassword) {
-            $.alert('Confirm Password not matched!!');
+            $.alert("Confirm password doesn't match with New password");
             $('#confpass').val('');
         }
     }
+});
 
+
+//FOR CHECKING THE OLD AND NEW PASSWORD - AKASH [09-09-2022]
+$('#Newpassword').focusout(function(){
+
+    var NewPassword = $("#Newpassword").val();
+    var Oldpassword = $("#Oldpassword").val();
+    if (NewPassword != '') {
+        if (NewPassword == Oldpassword) {
+            $.alert('The New password cannot be the same as the Old password');
+            $('#Newpassword').val('');
+        }
+    }
 });

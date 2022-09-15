@@ -18,8 +18,6 @@ class AuthenticationComponent extends Component {
     public $controller = null;
     public $session = null;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     public function initialize(array $config):void{
         parent::initialize($config);
         $this->Controller = $this->_registry->getController();
@@ -62,87 +60,9 @@ class AuthenticationComponent extends Component {
         return $result;
     }
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>------[Forgot Password Library]------>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-   
-    //FORGOT PASSWORD LIBRARY 
-    public function forgotPasswordLib($table,$emailforrecovery,$customer_id=null) {
-
-        $Dmitable = TableRegistry::getTableLocator()->get($table);
-        
-        if (!empty($customer_id)) {
-
-            $get_record_details = $Dmitable->find('all', array('conditions'=> array('email IS' => $emailforrecovery, 'customer_id IS'=>$customer_id)))->first();
-
-        } else {
-
-            $get_record_details = $Dmitable->find('all', array('conditions'=> array('email IS' => $emailforrecovery)))->first();
-        }
-
-        if ($get_record_details == null) {
-
-            return 1;
-
-        } else {
-
-            if ($table=='DmiCustomers' || $table=='DmiFirms') {
-
-                $key_id = md5($get_record_details['id'].time().rand());
-
-                // Added the urlencode funtion to fix the issue of +,<,# etc issue in gettin through get parameter
-                $encrypted_user_id = urlencode($this->encrypt($get_record_details['customer_id']));
-                $controller = 'customers';
-
-            } elseif ($table=='DmiUsers') {
-
-                $key_id = md5($get_record_details['id'].time().rand());
-
-                // Added the urlencode funtion to fix the issue of +,<,# etc issue in gettin through get parameter
-                $encrypted_user_id = urlencode($this->encrypt($emailforrecovery));
-                $controller = 'users';
-            }
-
-            $url = 'home.?'.'$key='.$key_id.'&'.'$id='.$encrypted_user_id;
-            $host_path = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-            $sendlink = "<html><body><a href='$host_path/DMI/$controller/reset_password/$url'>Please click here to set Password</a></body></html>";
-            $to = base64_encode($emailforrecovery); //for email encoding
-            $subject = 'DMI AGMARK Set Password Link';
-           
-            $txt = 	'Hello' .
-                "<html><body><br></body></html>".'Click the below link OR copy it to browser address bar:' .
-                "<html><body><br></body></html>" .$host_path.'/DMI/'.$controller.'/reset_password/'.$url.
-                "<html><body><br></body></html>".'Above link will be active only for 24 hours. If expired, then try to set your password from forgot Password option on DMI portal'.
-                "<html><body><br></body></html>".'Thanks & Regards,' .
-                "<html><body><br></body></html>" .'Directorate of Marketing & Inspection,' .
-                "<html><body><br></body></html>" .'Ministry of Agriculture and Farmers Welfare,' .
-                "<html><body><br></body></html>" .'Government of India.';
-
-            //	$txt = $sendlink;
-            $headers = 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-            $headers .= "From: dmiqc@nic.in";
-            //	mail($to,$subject,$txt,$headers, '-f dmiqc@nic.in'); //added new parameter '-f dmiqc@nic.in' on 08-12-2018 by Amol
-            //commented for testing mode
-
-            //store reset password link keys in DB
-            if ($table=='DmiCustomers' || $table=='DmiFirms') {
-                $DmiApplicantsResetpassKeys = TableRegistry::getTableLocator()->get('DmiApplicantsResetpassKeys');
-                $DmiApplicantsResetpassKeys->saveKeyDetails($get_record_details['customer_id'],$key_id);
-
-            } elseif ($table=='DmiUsers') {
-
-                $DmiUsersResetpassKeys = TableRegistry::getTableLocator()->get('DmiUsersResetpassKeys');
-                $DmiUsersResetpassKeys->saveKeyDetails($emailforrecovery,$key_id);
-            }
-
-            //$this->Session->write('username',$emailforrecovery);
-            return 2;
-        }
-
-    }
-
 
 /***************************************************************************************************************************************************************************************************/
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-------[Change Password Library]--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
     //CHANGE PASSWORD LIBRARY
     public function changePasswordLib($table,$username,$oldpassdata,$newpassdata,$confpassdata,$randsalt) {
@@ -165,164 +85,46 @@ class AuthenticationComponent extends Component {
             if ($table == 'DmiUsers') { 
 
                 $PassFromdb = $Dmitable->find('all', array('fields'=>'password','conditions'=> array('email IS' => $username)))->first();
-                
-            //Customers  
-            } elseif ($table == 'DmiCustomers' || $table == 'Dmi_firm') {
-
-                $PassFromdb = $Dmitable->find('all', array('fields'=>'password','conditions'=> array('customer_id IS' => $username)))->first();
             }
 
             $passarray = $PassFromdb['password'];
             $PassFromdbsalted = $randsalt . $passarray;
             $Dbpasssaltedsha512 = hash('sha512',$PassFromdbsalted);
 
-				if ($oldpassdata == $Dbpasssaltedsha512) {
+            if ($oldpassdata == $Dbpasssaltedsha512) {
 
-                    $Removesaltnewpass = substr($newpassdata,strlen($randsalt));
-                    
-                    //For Admin Users
-                    if ($table == 'DmiUsers') { 
+                $Removesaltnewpass = substr($newpassdata,strlen($randsalt));
+                
+                //For Admin Users
+                if ($table == 'DmiUsers') { 
 
-                        $Dmitable_id = $Dmitable->find('all',array('fields'=>'id','conditions'=>array('email IS'=>$username),'order'=>array('id desc')))->first();
-                    
-                    //For Customers
-                    } elseif ($table == 'DmiCustomers' || $table == 'DmiFirms') {
+                    $Dmitable_id = $Dmitable->find('all',array('fields'=>'id','conditions'=>array('email IS'=>$username),'order'=>array('id desc')))->first();
+                } 
+                
+                if ($Dmitable_id) {
 
-                        $Dmitable_id = $Dmitable->find('all',array('fields'=>'id','conditions'=>array('customer_id IS'=>$username),'order'=>array('id desc')))->first();
-                    }
+                    $DmitableEntity = $Dmitable->newEntity(['id'=>$Dmitable_id['id'],'password'=>$Removesaltnewpass,'modified'=>date('Y-m-d H:i:s')]);
+                    $Dmitable->save($DmitableEntity);
+                    // MAINTAIN PASSWORD LOGS FOR RESTRICT BRUTE FORCE ATTACK By Aniket Ganvir dated 16th NOV 2020
+                    $DmiPasswordLogs->savePasswordLogs($username, $table, $Removesaltnewpass);
 
-                    if ($Dmitable_id) {
-
-                        $DmitableEntity = $Dmitable->newEntity(['id'=>$Dmitable_id['id'],'password'=>$Removesaltnewpass,'modified'=>date('Y-m-d H:i:s')]);
-                        $Dmitable->save($DmitableEntity);
-                        // MAINTAIN PASSWORD LOGS FOR RESTRICT BRUTE FORCE ATTACK By Aniket Ganvir dated 16th NOV 2020
-                        $DmiPasswordLogs->savePasswordLogs($username, $table, $Removesaltnewpass);
-
-                    } else {
-
-                        $this->userActionPerformLog("Password Changed","Failed");
-                        return 1;
-                    }
                 } else {
+                    return 1;
+                }
 
-                    $this->userActionPerformLog("Password Changed","Failed");
-                    return 2;
-			    }
+            } else {
+                return 2;
+            }
+
         } else {
-
-            $this->userActionPerformLog("Password Changed","Failed");
             return 3;
         }
     
     }
 
-/***************************************************************************************************************************************************************************************************/
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-------<Reset Password Library>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-
-    //RESET PASSWORD LIBRARY
-    public function resetPasswordLib($table,$username,$newpassdata,$randsalt) {
-
-        $Dmitable = TableRegistry::getTableLocator()->get($table);
-        // CHECK LAST THREE PASSWORD WITH NEW PASSWORD IF FOUND, THROW ERROR FOR RESTRICT BRUTE FORCE ATTACK UNDER SECURITY AUDIT // By Aniket Ganvir date 16th NOV 2020
-        $newpassdataEncoded = htmlentities($newpassdata, ENT_QUOTES);
-        $passwordWithoutSalt = substr($newpassdataEncoded,strlen($randsalt));
-        $DmiPasswordLogs = TableRegistry::getTableLocator()->get('DmiPasswordLogs');
-        $checkPastThreePassword = $DmiPasswordLogs->checkPastThreePassword($username, $table, $passwordWithoutSalt);
-
-        if ($checkPastThreePassword == 'found') {
-            return 4;
-        }
-
-        //this condition added on 14-02-2018 by Amol
-        if ($table=='DmiFirms' || $table=='DmiCustomers') {
-
-            $form_name = TableRegistry::getTableLocator()->get('DmiCustomers');
-
-            /* Update the last logs user entery with 'Success' status - Change on 05-12-2018 - By Pravin Bhakare - Suggested by Navin Sir */
-            /* Why Change :- If user lock by three consecutive unsuccessful login and if user change the password successfuly then system automatically unlock the user */
-            $log_table = TableRegistry::getTableLocator()->get('DmiCustomerLogs');
-        } else {
-
-            $form_name = TableRegistry::getTableLocator()->get('DmiUsers');
-            /* Update the last logs user entery with 'Success' status - Change on 05-12-2018 - By Pravin Bhakare - Suggested by Navin Sir */
-            /* Why Change :- If user lock by three consecutive unsuccessful login and if user change the password successfuly then system automatically unlock the user */
-            $log_table = TableRegistry::getTableLocator()->get('DmiUserLogs');
-        }
-
-        $Dmilogtable = $log_table;
-
-        if ($newpassdata == $this->request->getData('confirm_password')) {
-
-            if ($this->request->getData('captcha') !="" && $_SESSION["code"] == $this->request->getData('captcha')) {
-
-                $Removesaltnewpass = substr($newpassdata,strlen($randsalt)) ;
-
-                //For Admin Users
-                if ($table == 'DmiUsers') { 
-
-                    $Dmitable_id = $Dmitable->find('all',array('fields'=>'id','conditions'=>array('email IS'=>$username),'order'=>array('id desc')))->first();
-                    /* Update the last logs user entery with 'Success' status - Change on 05-12-2018 - By Pravin Bhakare - Suggested by Navin Sir */
-                    /* Why Change :- If user lock by three consecutive unsuccessful login and if user change the password successfuly then system automatically unlock the user */
-                    $log_ids = $Dmilogtable->find('all',array('fields'=>'id','conditions'=>array('email_id IS'=>$username),'order'=>array('id desc')))->first();
-                    
-                //For Customers
-                } elseif ($table == 'DmiCustomers' || $table == 'DmiFirms') {
-
-                    $Dmitable_id = $Dmitable->find('all',array('fields'=>'id','conditions'=>array('customer_id IS'=>$username),'order'=>array('id desc')))->first();
-                    /* Update the last logs user entery with 'Success' status - Change on 05-12-2018 - By Pravin Bhakare - Suggested by Navin Sir */
-                    /* Why Change :- If user lock by three consecutive unsuccessful login and if user change the password successfuly then system automatically unlock the user */
-                    $log_ids = $Dmilogtable->find('all',array('fields'=>'id','conditions'=>array('customer_id IS'=>$username),'order'=>array('id desc')))->first();
-
-                }
-
-                    if ($Dmitable_id) {
-
-                        $DmitableEntity = $Dmitable->newEntity(['id'=>$Dmitable_id['id'],'password'=>$Removesaltnewpass,'modified'=>date('Y-m-d H:i:s')]);
-                        $Dmitable->save($DmitableEntity);
-
-                        // MAINTAIN PASSWORD LOGS FOR RESTRICT BRUTE FORCE ATTACK By Aniket Ganvir dated 16th NOV 2020
-                        $DmiPasswordLogs->savePasswordLogs($username, $table, $Removesaltnewpass);
-
-                        /* Update the last logs user entery with 'Success' status - Change on 05-12-2018 - By Pravin Bhakare - Suggested by Navin Sir */
-                        /* Why Change :- If user lock by three consecutive unsuccessful login and if user change the password successfuly then system automatically unlock the user */
-                    
-                        if (!empty($log_ids['id'])) {
-
-                            $log_id = $log_ids['id'];
-                            $log_tableEntity = $log_table->newEntity(['id'=>$log_id,
-                                'ip_address'=>$this->request->clientIp(),
-                                'date'=>date('Y-m-d'),
-                                'time_in'=>date('H:i:s'),
-                                'remark'=>'Success',
-                                'unlock'=>'by_login_user']);
-                        
-                                $log_table->save($log_tableEntity);
-                        }
-
-                    } else {
-
-                        $this->userActionPerformLog("Password Reset","Failed");
-                        return 1;
-                    }
-            } else {
-
-              $this->userActionPerformLog("Password Reset","Failed");
-                return 2;
-            }
-
-        } else {
-
-            $this->userActionPerformLog("Password Reset","Failed");
-            return 3;
-        }
-
-
-    }
 
 /***************************************************************************************************************************************************************************************************/
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-------<User Login Library>------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
     //USER LOGIN LIBRARY
     public function userLoginLib($table_name,$username,$password,$randsalt) {
@@ -417,7 +219,6 @@ class AuthenticationComponent extends Component {
 
     }
 
-/*----------------------------------------------------------------/User Login Library function ends/---------------------------------------------------------------------------------*/
 
 
 /***************************************************************************************************************************************************************************************************/
@@ -529,35 +330,8 @@ class AuthenticationComponent extends Component {
             $_SESSION['browser_session_d'] = $sessionid;
     }
 
+
 /***************************************************************************************************************************************************************************************************/
-      
-    //Make an user action entry in user action log table, Done by pravin bhakare, 11-02-2021 // Added from DMI AUDIT on 27-04-2021 by Akash.
-    public function userActionPerformLog($userAction,$status){
-
-        $username = $this->Session->read('customer_id');
-        $user_id = $this->Session->read('username');
-        $DmiUserActionLogs = TableRegistry::getTableLocator()->get('DmiUserActionLogs');
-
-        $current_ip = $_SERVER['REMOTE_ADDR'];
-
-        if($current_ip == '::1'){ $current_ip = '127.0.0.1'; }
-
-        $user_id = $_SESSION['username'];
-
-        $DmiUserActionLog = $DmiUserActionLogs->newEntity(['customer_id'=>$username,
-                            'user_id'=>$user_id,
-                            'action_perform'=>$userAction,
-                            'ipaddress'=>$current_ip,
-                            'status'=>$status,
-                            'created'=>date('Y-m-d H:i:s')]);
-                            
-        $DmiUserActionLogs->save($DmiUserActionLog);
-
-
-    }
-
-
-
 
     //created/updated/added on 25-06-2021 for multiple logged in check security updates, by Amol
     //this function contains the login logic for Authorized user
@@ -645,7 +419,7 @@ class AuthenticationComponent extends Component {
     }
 
 
-
+/***************************************************************************************************************************************************************************************************/
 
     //this function is created from the function created in customerscontroller "already_logged_in()"
     //now the call from customercontroller through ajax call is depricated, as need to check after matching user details
@@ -678,6 +452,11 @@ class AuthenticationComponent extends Component {
         return  $result;        
         
     }
+
+
+
+
+
 
 }
 

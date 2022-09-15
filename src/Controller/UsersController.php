@@ -11,6 +11,19 @@ class UsersController extends AppController{
 
 	var $name = 'Users';
 
+	public function beforeFilter($event) {
+		parent::beforeFilter($event);
+
+		$this->viewBuilder()->setLayout('form_layout');
+		$this->viewBuilder()->setHelpers(['Form','Html']);
+		$this->loadComponent('Createcaptcha');
+		$this->loadComponent('Customfunctions');
+		$this->loadComponent('Authentication');
+		
+
+	}
+
+
 	//To create captcha code, called from component on 14-07-2017 by Amol
 	public function createCaptcha() {
         $this->autoRender = false;
@@ -24,21 +37,6 @@ class UsersController extends AppController{
 		$this->autoRender = false;
 		$this->Createcaptcha->refreshCaptchaCode();
 	}
-
-
-/************************************************************************************************************************************************************************************************************************/
-
-	public function beforeFilter($event) {
-		parent::beforeFilter($event);
-
-		$this->viewBuilder()->setLayout('form_layout');
-		$this->viewBuilder()->setHelpers(['Form','Html']);
-		$this->loadComponent('Createcaptcha');
-		$this->loadComponent('Customfunctions');
-		$this->loadComponent('Authentication');
-
-	}
-
 
 /************************************************************************************************************************************************************************************************************************/
 
@@ -58,9 +56,6 @@ class UsersController extends AppController{
 
 
 /************************************************************************************************************************************************************************************************************************/
-
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-|LOGIN USER|->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	//Login admin user method start
 	public function loginUser() {
@@ -166,8 +161,8 @@ class UsersController extends AppController{
 
 		if ($this->Session->read('username') == null) {
 
-			echo "Sorry You are not authorized to view this page..'<a href='login_user'>'Please login'</a>'";
-			exit();
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 
 		} else {
 
@@ -224,8 +219,8 @@ class UsersController extends AppController{
 			
 			} else {
 
-				echo "Sorry You are not authorized to view this page..'<a href='login_user'>'Please login'</a>'";
-				exit();
+				echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+				exit;
 			}
 		}
 
@@ -238,8 +233,6 @@ class UsersController extends AppController{
 
 /************************************************************************************************************************************************************************************************************************/
 
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-|FORGOT PASSWORD|->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	// forgot password for admin user method start
 	public function forgotPassword() {
@@ -293,8 +286,6 @@ class UsersController extends AppController{
 /************************************************************************************************************************************************************************************************************************/
 
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-|RESET PASSWORD|->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-
 	// reset password for admin user method start
 	public function resetPassword() {
 
@@ -309,8 +300,8 @@ class UsersController extends AppController{
 
 		if	(empty($_GET['$key']) || empty($_GET['$id'])) {
 
-			echo "Sorry You are not authorized to view this page..'<a href='../'>'Please login'</a>'";
-			exit();
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 
 		} else {
 
@@ -322,19 +313,6 @@ class UsersController extends AppController{
 			$valid_key_result = $this->DmiUsersResetpassKeys->checkValidKey($user_id,$key_id);
 
 			if ($valid_key_result == 1) {
-
-				///////////////////////////////////////////////////////////////////////////////////////////////////
-				//commented on 18-06-2018, Now no provision to store aadhar no. so no need to autheticate.		//
-				/*	//check aadhar authentication already done or not											//
-				//	$already_aadhar_auth = $this->DmiUsersResetpassKeys->checkAadharAuth($user_id);				//
-				//	if ($already_aadhar_auth==2) {																//
-				//																								//
-				//		$this->Session->write('user_id',$user_id);												//
-				//		$this->Session->write('key_id',$key_id);												//
-				//		$this->redirect('aadhar_auth_on_pass_reset');											//
-				//	}																							//
-				//*/																							//
-				//////////////////////////////////////////////////////////////////////////////////////////////////
 
 				$user_data = $this->DmiUsers->find('all',array('conditions'=>array('email IS'=>$user_id)))->first();
 				$record_id = $user_data['id'];
@@ -402,9 +380,6 @@ class UsersController extends AppController{
 
 
 /************************************************************************************************************************************************************************************************************************/
-
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-|COMMON USER REDIRECT LOGIN|->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	//created on 13-05-2017 by Amol
 	//method for login redirect for common user(DMI/LMIS)
@@ -558,8 +533,8 @@ class UsersController extends AppController{
 
         if ($this->request->getSession()->read('username') == null) {
 
-            echo "Sorry You are not authorized to view this page..'<a href='login_user'>'Please login'</a>'";
-            exit();
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 
         }
         //Set the Layout
@@ -573,6 +548,7 @@ class UsersController extends AppController{
     }
 
 /************************************************************************************************************************************************************************************************************************/
+	
 	// USER ACTION HISTORY
     // @AUTHOR : Akash Thakre (Common/Migration/Upatation)
     // #Contributer : 
@@ -582,83 +558,14 @@ class UsersController extends AppController{
 
         $userId = $this->Session->read('username');
 		$this->viewBuilder()->setLayout('admin_dashboard');
-        $this->loadModel('LimsUserActionLogs');
 		$get_user_actions = $this->LimsUserActionLogs->getActionLog($userId);
 		$this->set('get_user_actions', $get_user_actions);
-   	}				  
-   /*
-	//Show users action history logs, 11-02-2021, Done by pravin bhakare
-	public function userActionHistory() {
+   	}
 
-		$this->viewBuilder()->setLayout('admin_dashboard');
-		$conn = ConnectionManager::get('default');
-
-		if ($this->Session->read('username') == null) {
-
-			echo "Sorry You are not authorized to view this page..'<a href='login_user'>'Please login'</a>'";
-			exit();
-		}
-
-		$actionPoints = array('SI'=>'Sample Inward','SD'=>'Sample Inward','HF'=>'Sample Forwarded','OF'=>'Sample Forwarded','HS'=>'Sample Accept','AS'=>'Sample Accept',
-								'IF'=>'Sample Allocated','TA'=>'Sample Allocated','TABC'=>'Sample Accept','FR'=>'Sample Forward To RL','FO'=>'Sample Forward To OIC',
-								'AR'=>'Reading Approved','R'=>'Sample send for retest','BI'=>'Sample Finalize','FS'=>'Sample Finalize','FC'=>'Sample Finalize','VS'=>'Sample Finalize',
-								'RIF'=>'Sample Allocated For Retest','NABC'=>'sample allocation cancel','FT'=>'Finalize Sample Result','FGIO'=>'Sample Finalize','FG'=>'Sample Finalize',
-							);
-
-		$userId = $this->Session->read('username');
-		$userCode = $this->Session->read('user_code');
-
-		$this->loadModel('Workflow');
-		$this->loadModel('DmiUserLogs');
-		$this->loadModel('DmiPasswordLogs');
-		$this->loadModel('DmiUsers');
-
-		$query = $conn->execute("select workflow.src_usr_cd,workflow.stage_smpl_flag,workflow.created,users.email,users.f_name,users.l_name from workflow as workflow inner join dmi_users as users on users.id = workflow.src_usr_cd where workflow.src_usr_cd='$userCode' order by workflow.id DESC limit 100");
-
-		$userActionHistory = $query->fetchAll('assoc');
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/*$userActionHistory = $this->Workflow->find('all',array('fields'=>array('workflow.src_usr_cd','workflow.stage_smpl_flag','workflow.created','users.email','users.f_name','users.l_name'), //
-		//									'joins'=>array(array('table' => 'dmi_users','alias' => 'users','type' => 'INNER','conditions' => array('users.id = Workflow.src_usr_cd'))),			   //
-		//									'conditions'=>array('workflow.src_usr_cd'=>$userCode),																								   //
-		//									'order'=>'workflow.id desc',																														   //
-		//									'limit'=>'100'));*/																																	   //
-		//																																														   //
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/*
-		$i = 0;		$result = array();
-
-		foreach ($userActionHistory as $eachrow) {
-
-			$dateExplode = explode(' ',$eachrow['created']);
-			$date = $dateExplode[0];
-			$time = $dateExplode[1];
-			$ipaddress = $this->DmiUserLogs->find('all', array('conditions'=>array('email_id IS'=>$userId,'date IS'=>$date)))->first();
-
-			if ($ipaddress != null) {
-
-				$ipaddressid =  $ipaddress['ip_address'];
-			} else {
-				$ipaddressid = '';
-			}
-
-			$result[$i]['srno'] = $i+1;
-			$result[$i]['userid'] = $eachrow['email'];
-			$result[$i]['ip_address'] = $ipaddressid;
-			$result[$i]['created'] = $eachrow['created'];
-			$result[$i]['action'] = $actionPoints[trim($eachrow['stage_smpl_flag'])];
-			$result[$i]['status'] = 'success';
-
-			$i++;
-		}
-
-		$this->set('result',$result);
-
-	}
-	*/
 
 /************************************************************************************************************************************************************************************************************************/
-
+	
+	
 	//added the all user logs function on 29-11-2021 by Amol starts	-> updated on 29-04-2021 by Akash starts
 	public function allUsersLogs() {
 
@@ -670,10 +577,10 @@ class UsersController extends AppController{
 
 		if ($username == null) {
 
-			echo "Sorry You are not authorized to view this page..'<a href='login_user'>'Please login'</a>'";
-			exit();
-
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 		}
+
 		//by default
 		$to_dt = date('Y-m-d');
 		$from_dt = date('Y-m-d',strtotime('-1 month'));
@@ -690,7 +597,7 @@ class UsersController extends AppController{
 				return null;
 			}
 			$this->set(compact('to_dt','from_dt'));
-		}
+		
 
 
 			if (!empty($from_dt) || !empty($to_dt)) {
@@ -723,16 +630,16 @@ class UsersController extends AppController{
 
 		}
 
+	}
+
 /************************************************************************************************************************************************************************************************************************/
 
 	//added the function on 12-11-2020 by Amol
 	public function adminLogs() {
 
 		if ($this->Session->read('username') == null) {
-
-			echo "Sorry You are not authorized to view this page..'<a href='login_user'>'Please login'</a>'";
-			exit();
-
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 		}
 
 		$this->viewBuilder()->setLayout('admin_dashboard');
@@ -782,8 +689,8 @@ class UsersController extends AppController{
 			
 			} else {
 	
-				echo "Sorry You are not authorized to view this page..'<a href='login_user'>'Please login'</a>'";
-				exit();
+				echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+				exit;
 			}
 		
 		} else {
@@ -923,8 +830,8 @@ class UsersController extends AppController{
 
 		} else {
 
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 		}
 
 		//Set variables to show popup messages from view file

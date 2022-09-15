@@ -112,10 +112,20 @@ $(document).ready(function(){
 					return;
 
 				}else{
-					//alert(resArray);
-					window.location = 'available_for_grading_to_inward';
+					
+					$.alert({
+						content: resArray,
+						closeIcon: true,
+						buttons: {
+							Okay: {
+								btnClass: 'btn-blue',
+								action: function () {
+									window.location = 'available_for_grading_to_inward';
+								}
+							}
+						}
+					});
 				}
-
 			}
 		});
 

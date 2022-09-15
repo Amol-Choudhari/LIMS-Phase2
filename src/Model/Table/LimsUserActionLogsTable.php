@@ -13,9 +13,7 @@ class LimsUserActionLogsTable extends Table{
 
 
     public function getActionLog($userId){
-
-        $get_user_actions = $this->find('all', array('conditions' => array('user_id IS' => $userId,'action_perform IS NOT NULL'), 'order' => array('id desc'), 'limit' => '100'))->toArray();
-        return $get_user_actions;
+        return  $get_user_actions = $this->find('all', array('conditions' => array('user_id IS' => $userId,'action_perform IS NOT NULL'), 'order' => array('id desc'), 'limit' => '100'))->toArray();
     }
 
 
@@ -39,7 +37,7 @@ class LimsUserActionLogsTable extends Table{
                             'status'=>$status,
                             'created'=>date('Y-m-d H:i:s')]);
 
-        if($this->save($newEntity)){  return true; }		
+        if($this->save($newEntity)){  return true; }
 	}
 
 }

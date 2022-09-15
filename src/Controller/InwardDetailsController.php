@@ -10,17 +10,15 @@ class InwardDetailsController extends AppController {
 
 	var $name 		= 'InwardDetails';
 
-		public function initialize(): void {
+	public function initialize(): void {
 
-			parent::initialize();
-			$this->viewBuilder()->setLayout('admin_dashboard');
-			$this->viewBuilder()->setHelpers(['Form','Html']);
-			$this->loadComponent('Customfunctions');
-			$this->loadComponent('Paymentdetails');
-			$this->loadModel('LimsUserActionLogs');
-			$this->loadModel('LimsSamplePaymentDetails');
-			$this->loadModel('DmiSmsEmailTemplates');
-		}
+		parent::initialize();
+		$this->viewBuilder()->setLayout('admin_dashboard');
+		$this->viewBuilder()->setHelpers(['Form','Html']);
+		$this->loadComponent('Customfunctions');
+		$this->loadComponent('Paymentdetails');
+		$this->loadModel('LimsSamplePaymentDetails');
+	}
 
 /****************************************************************************************************************************************************************************************************************************************************************/
 
@@ -58,12 +56,9 @@ class InwardDetailsController extends AppController {
 		$this->redirect('/InwardDetails/sample_inward_details');
 	}
   
-																																																																   
+
 
 /****************************************************************************************************************************************************************************************************************************************************************/
-
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>----------<Sample Inward Details>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 
 	//SAMPLE INWARD DETAILS METHOD
@@ -301,9 +296,9 @@ class InwardDetailsController extends AppController {
 						'user_code'=>$_SESSION["user_code"],
 						'created'=>date('Y-m-d H:i:s'),
 						'is_payment_applicable'=>$isPaymentApplicable,
-						'inward_section'=>$inward_section, 
-						'details_section'=>'Y',
-						'payment_section'=>$payment_section
+						'inward_section'=>$inward_section,  # New Field - To Store Status - Akash - 10-08-2022
+						'details_section'=>'Y',			    # New Field - To Store Status - Akash - 10-08-2022
+						'payment_section'=>$payment_section # New Field - To Store Status - Akash - 10-08-2022
 
 
 					);
@@ -348,11 +343,17 @@ class InwardDetailsController extends AppController {
 							$sampDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code'),'conditions'=>array('org_sample_code'=>$org_sample_code),'order'=>'id desc'))->first();
 							$_SESSION["org_sample_code"] =$sampDetails['org_sample_code'];//store in session to use in edit mode
 
+							#Action
+							$this->LimsUserActionLogs->saveActionLog('Sample Details Saved','Success');
+
 							$message = 'You have successfully saved Sample details. Please note Sample Code is '.$org_sample_code;
 							$message_theme = 'success';
 							$redirect_to = 'sample_inward_details';
 
 						} else {
+
+							#Action
+							$this->LimsUserActionLogs->saveActionLog('Sample Details Save','Failed');
 
 							$message = 'Invalid parameters while saving workflow data, Please check parameters.';
 							$message_theme = 'failed';
@@ -362,6 +363,9 @@ class InwardDetailsController extends AppController {
 
 
 					} else {
+
+						#Action
+						$this->LimsUserActionLogs->saveActionLog('Sample Details Save','Failed');
 
 						$message = 'Sorry... The sample details did not saved properly.';
 						$message_theme = 'failed';
@@ -451,9 +455,9 @@ class InwardDetailsController extends AppController {
 					'replica_serial_no'=>$postData['replica_serial_no'],
 					'modified'=>date('Y-m-d H:i:s'),
 					'is_payment_applicable'=>$isPaymentApplicable,
-					'inward_section'=>$inward_section, 
-					'details_section'=>'Y',
-					'payment_section'=>$payment_section
+					'inward_section'=>$inward_section,  # New Field - To Store Status - Akash - 10-08-2022
+					'details_section'=>'Y',				# New Field - To Store Status - Akash - 10-08-2022
+					'payment_section'=>$payment_section # New Field - To Store Status - Akash - 10-08-2022
 
 				);
 
@@ -461,12 +465,18 @@ class InwardDetailsController extends AppController {
 
 				if ($this->SampleInwardDetails->save($SampleInwardDetailsEntity)) {
 
+					#Action
+					$this->LimsUserActionLogs->saveActionLog('Sample Details Update','Success');
+
 					$message = 'Sample details has been updated';
 					$message_theme = 'success';
 					$redirect_to = 'sample_inward_details';
 
 
 				} else {
+
+					#Action
+					$this->LimsUserActionLogs->saveActionLog('Sample Details Update','Failed');
 
 					$message = 'Sorry... The sample details did not updated properly.';
 					$message_theme = 'failed';
@@ -484,14 +494,14 @@ class InwardDetailsController extends AppController {
 
 				$org_sample_code = $this->Session->read('org_sample_code');
 
-				$user_role = $this->SampleInward->find('all',array('fields'=>array('loc_id','users'),'conditions'=>array('org_sample_code'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
+				$user_role = $this->SampleInward->find('all',array('fields'=>array('loc_id','users','sample_type_code'),'conditions'=>array('org_sample_code'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
 
 				$usercode = $user_role['users'];
 
 				$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
 
 				//update status for payment sample
-				if ($_SESSION['sample'] == 3) {
+				if ($user_role['sample_type_code'] == '3') {
 					$this->SampleInward->updateAll(array('status_flag'=>'PV'),array('org_sample_code'=>$org_sample_code));
 				} else {
 					$this->SampleInward->updateAll(array('status_flag'=>'S'),array('org_sample_code'=>$org_sample_code));
@@ -508,11 +518,8 @@ class InwardDetailsController extends AppController {
 
 				$get_info = $query->fetchAll('assoc');
 	
-				// For Maintaining Action Log by Akash (26-04-2022)
-				$this->LimsUserActionLogs->saveActionLog('New Sample Registered','Success');
-
 				// for commercial sample
-				if ($_SESSION['sample'] == 3) {
+				if ($user_role['sample_type_code'] == '3') {
 
 					$confirm = $this->Paymentdetails->confirmSampleDetails();
 					$org_sample_code = $_SESSION['org_sample_code'];
@@ -528,38 +535,48 @@ class InwardDetailsController extends AppController {
 						$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
 						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
 						
-						$message = 'Note :
-						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
-						</br> '.base64_decode($user['email']).'  ('.$office[0].')</b>
-						for payment verification, 
-						</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
-						</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
+						$message_variable = 'Note :
+											</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
+											</br> '.base64_decode($user['email']).'  ('.$office[0].')</b>
+											for payment verification, 
+											</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
+											</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
+
+						#SMS
+						#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #Inward
+						#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #DDO 
+						#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #RO
+
+						#Action
+						$this->LimsUserActionLogs->saveActionLog('Sample Sent to DDO','Success');
 					}
 
 				} else {
 					
-					//Sample Registration SMS/EMAIL
-					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[1]['src_usr_cd']); #sender
-					$message = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
+					#SMS
+					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #source user
+					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #destination user
+
+					#Action
+					$this->LimsUserActionLogs->saveActionLog('Sample Confirmed','Success');
+
+					$message_variable = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				
+				$message = $message_variable;
 				$message_theme = 'success';
 				$redirect_to = '../inward/confirmed_samples';
 
-			}
-
 			//to fetch common details for current location to prefilled the common fields
-			elseif (null!==($this->request->getData('fetch_common_details'))) {
+			} elseif (null!==($this->request->getData('fetch_common_details'))) {
 
 				$loc_id = $this->Session->read('posted_ro_office');
 
-				//get laat sample details filled by this office
+				//get last sample details filled by this office
 				$sample_Details_data = $this->SampleInwardDetails->find('all',array('conditions'=>array('loc_id IS'=>$loc_id),'order'=>'id desc'))->first();
 
 				if (!empty($sample_Details_data)) {
-
 					$this->set('sample_Details_data',$sample_Details_data);
-
 				} else {
 
 					$message = 'Sorry.. Currently there is no previous data available.';

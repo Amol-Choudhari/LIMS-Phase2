@@ -1,64 +1,5 @@
 
 
-//This function is used for applicant login validations.
-function login_customer_validations(){
-
-	var customer_id=$("#customer_id").val();
-	var password=$("#passwordValidation").val();
-	var captchacode=$("#captchacode").val();
-
-	var value_return = 'true';
-
-	if(customer_id==""){
-
-		$("#error_customer_id").show().text("Please Enter First Name");
-		$("#customer_id").addClass("is-invalid");
-		$("#customer_id").click(function(){$("#error_customer_id").hide().text;$("#customer_id").removeClass("is-invalid");});
-		value_return = 'false';
-	}
-
-	if(password==""){
-
-		$("#error_password").show().text("Please Enter First Name");
-		$("#passwordValidation").addClass("is-invalid");
-		$("#passwordValidation").click(function(){$("#error_password").hide().text;$("#passwordValidation").removeClass("is-invalid");});
-		value_return = 'false';
-
-	}
-
-	if(captchacode==""){
-
-		$("#error_captchacode").show().text("Please Enter First Name");
-		$("#captchacode").addClass("is-invalid");
-		$("#captchacode").click(function(){$("#error_captchacode").hide().text;$("#captchacode").removeClass("is-invalid");});
-		value_return = 'false';
-	}
-
-	if(value_return == 'false'){
-
-		var msg = "Please Check Some Fields are Missing or not Proper.";
-		renderToast('error', msg);
-		return false;
-	
-	}else{
-
-		var PasswordValue = document.getElementById('passwordValidation').value;
-		var SaltValue = document.getElementById('hiddenSaltvalue').value;
-		var EncryptPass = sha512(PasswordValue);
-
-		var SaltedPass = SaltValue.concat(EncryptPass);
-
-		var Saltedsha512pass = sha512(SaltedPass);
-
-		document.getElementById('passwordValidation').value = Saltedsha512pass;
-
-		exit();
-	}
-
-
-}
-
-
 	//This function is used for change password input validations.
 	function change_password_validations(){
 
@@ -136,9 +77,10 @@ function login_customer_validations(){
 					columnClass: 'medium',
 					content	:'Password length should be min. 8 character, min. 1 number, min. 1 Special char. and min. 1 Capital Letter'
 				});
-				var oldpass=$("#Oldpassword").val();
-				var newpass=$("#Newpassword").val();
-				var confpass=$("#confpass").val();
+
+				$("#Oldpassword").val('');
+				$("#Newpassword").val('');
+				$("#confpass").val('');
 
 				return false;
 

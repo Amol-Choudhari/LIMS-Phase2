@@ -31,8 +31,8 @@ class FinalGradingController extends AppController
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -48,7 +48,6 @@ class FinalGradingController extends AppController
 
 /********************************************************************************************************************************************************************************/
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>--------<Get Sample To Grade By Inward>-------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	//created common function to fetch list , to be used for dashboard counts also, on 28-04-2021 by Amol
 	public function getSampleToGradeByInward() {
@@ -67,7 +66,6 @@ class FinalGradingController extends AppController
 								  GROUP BY ft.sample_code ");
 
 		$final_result_details = $query->fetchAll('assoc');
-		//print_r($final_result_details); exit;
 
 		//Conditions to check wheather stage sample code is final graded or not.
 		$final_result = array();
@@ -125,9 +123,6 @@ class FinalGradingController extends AppController
 	}
 
 /**************************************************************************************************************************************************************************/
-
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>--------<Grading By Inward>-------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	public function gradingByInward(){
 
@@ -270,9 +265,12 @@ class FinalGradingController extends AppController
 						$conn->execute("UPDATE sample_inward SET remark ='$remark', status_flag ='R', grade ='$grade_code_vs', grading_date ='$date', inward_grading_date = '$date', sub_grad_check_iwo = '$subGradeChecked', inward_grade = '$grade_code_vs'
 										WHERE category_code = '$category_code' AND commodity_code = '$commodity_code' AND org_sample_code = '$ogrsample_code' AND display = 'Y' ");
 
-						//call to the common SMS/Email sending method
-						$this->loadModel('DmiSmsEmailTemplates');
+						#SMS - Marked For Retest
+						//$this->DmiSmsEmailTemplates->sendMessage(2016,$sample_code); 
 						//$this->DmiSmsEmailTemplates->sendMessage(2016,$sample_code);
+
+						#Action
+						$this->LimsUserActionLogs->saveActionLog('Sample Sent For Retest','Success');
 
 						echo '#The sample is marked for retest and re-sent to '.$abc2.'#';
 
@@ -392,10 +390,10 @@ class FinalGradingController extends AppController
 														grade_user_flag='".$_SESSION['user_flag']."',
 														grade_user_loc_id='".$_SESSION['posted_ro_office']."',
 														ral_anltc_rslt_rcpt_dt='$tran_date'
-														WHERE category_code= '$category_code'
-														AND commodity_code = '$commodity_code'
-														AND org_sample_code = '$ogrsample_code'
-														AND display = 'Y' ");
+												WHERE category_code= '$category_code'
+												AND commodity_code = '$commodity_code'
+												AND org_sample_code = '$ogrsample_code'
+												AND display = 'Y' ");
 
 							} else {
 
@@ -412,10 +410,10 @@ class FinalGradingController extends AppController
 														grade_user_flag='".$_SESSION['user_flag']."',
 														grade_user_loc_id='".$_SESSION['posted_ro_office']."',
 														ral_anltc_rslt_rcpt_dt='$tran_date'
-														WHERE category_code= '$category_code'
-														AND commodity_code = '$commodity_code'
-														AND org_sample_code = '$ogrsample_code'
-														AND display = 'Y' ");
+												WHERE category_code= '$category_code'
+												AND commodity_code = '$commodity_code'
+												AND org_sample_code = '$ogrsample_code'
+												AND display = 'Y' ");
 							}
 
 						} elseif ($_SESSION['user_flag']=='CAL') {
@@ -435,10 +433,10 @@ class FinalGradingController extends AppController
 														grade_user_flag='".$_SESSION['user_flag']."',
 														grade_user_loc_id='".$_SESSION['posted_ro_office']."',
 														ral_anltc_rslt_rcpt_dt='$tran_date'
-														WHERE category_code= '$category_code'
-														AND commodity_code = '$commodity_code'
-														AND org_sample_code = '$ogrsample_code'
-														AND display = 'Y' ");
+												WHERE category_code= '$category_code'
+												AND commodity_code = '$commodity_code'
+												AND org_sample_code = '$ogrsample_code'
+												AND display = 'Y' ");
 
 							} else {
 
@@ -455,30 +453,26 @@ class FinalGradingController extends AppController
 														grade_user_flag='".$_SESSION['user_flag']."',
 														grade_user_loc_id='".$_SESSION['posted_ro_office']."',
 														cal_anltc_rslt_rcpt_dt='$tran_date'
-														WHERE category_code= '$category_code'
-														AND commodity_code = '$commodity_code'
-														AND org_sample_code = '$ogrsample_code'
-														AND display = 'Y' ");
+												WHERE category_code= '$category_code'
+												AND commodity_code = '$commodity_code'
+												AND org_sample_code = '$ogrsample_code'
+												AND display = 'Y' ");
 							}
 						}
 
-						//call to the common SMS/Email sending method
-						$this->loadModel('DmiSmsEmailTemplates');
+						#SMS - Finalized by Inward
+						//$this->DmiSmsEmailTemplates->sendMessage(2017,$sample_code);
 						//$this->DmiSmsEmailTemplates->sendMessage(2017,$sample_code);
 
-						/* Change forward to RAL officer flash message,*/
+						#Action
+						$this->LimsUserActionLogs->saveActionLog('Sample Finalized','Success');
 
 						if ($_SESSION['user_flag']=='RAL') {
-
 							echo '#The results have been finalized and forwarded to RAL,Office Incharge#';
 							exit;
-
 						} elseif ($_SESSION['user_flag']=='CAL') {
-
 							echo '#The results have been finalized and forwarded to CAL,Office Incharge#';
-							/* To disaply the message, after save the grading by inward officer.*/
 							exit;
-
 						} else {
 							echo '#Record Save Sucessfully!#';
 							exit;
@@ -588,7 +582,7 @@ class FinalGradingController extends AppController
 
 							if($grade_order==1){
 
-								if ( $result>= $grade_value ) {
+								if ($result>= $grade_value) {
 
 										$grd_desc1	= $grade_desc;
 										break;
@@ -596,7 +590,6 @@ class FinalGradingController extends AppController
 									$grd_desc1	= 'Fail';
 									break;
 								}
-
 							}
 						}
 
@@ -612,7 +605,6 @@ class FinalGradingController extends AppController
 									$grd_desc1	= 'Fail';
 									break;
 								}
-
 							}
 						}
 
@@ -1016,15 +1008,15 @@ class FinalGradingController extends AppController
 										AND org_sample_code = '$ogrsample_code'
 										AND display = 'Y' ");
 
+						#SMS - Sample For Retest
+						//$this->DmiSmsEmailTemplates->sendMessage(2018,$sample_code);
+						//$this->DmiSmsEmailTemplates->sendMessage(2018,$sample_code);
 
+						#Action
+						$this->LimsUserActionLogs->saveActionLog('Sample Sent For Retest','Success');
 
-
-						 //call to the common SMS/Email sending method
-							$this->loadModel('DmiSmsEmailTemplates');
-							//$this->DmiSmsEmailTemplates->sendMessage(2018,$sample_code);
-
-						 echo '#0#';  // return 0 value to show conformation message
-						 exit;
+						echo '#0#';  // return 0 value to show conformation message
+						exit;
 
 					} else {
 						//code moved to below new function save grading
@@ -1167,16 +1159,18 @@ class FinalGradingController extends AppController
 		$this->Session->delete('post_category_code');
 		$this->Session->delete('post_commodity_code');
 
-		//call to the common SMS/Email sending method
-		$this->loadModel('DmiSmsEmailTemplates');
+		#SMS - Final Graded By OIC
 		//$this->DmiSmsEmailTemplates->sendMessage(2019,$sample_code);
+		//$this->DmiSmsEmailTemplates->sendMessage(2019,$sample_code);
+		//$this->DmiSmsEmailTemplates->sendMessage(2019,$sample_code);
+
+		#Action
+		$this->LimsUserActionLogs->saveActionLog('Sample Finalized','Success');
 
 		$message = 'Records has been Finalized and Sent to respective RO/SO/RAL!!';
 		$message_theme = 'success';
 		$redirect_to = 'available_for_grading_to_oic';
-		//$this->view = '/Element/message_boxes';
-
-
+		
 		// set variables to show popup messages from view file
 		$this->set('message',$message);
 		$this->set('message_theme',$message_theme);
@@ -1266,7 +1260,7 @@ class FinalGradingController extends AppController
 		}
 
 		$this->set('final_sample_reports',$final_reports);
-
+		
 		return $final_reports;
 	}
 
@@ -1396,7 +1390,7 @@ class FinalGradingController extends AppController
 		//new queries and conditions added on 03-02-2022 by Amol
 		//to print NABL logo and ULR no. on final test report
 				
-		$showNablLogo = ''; $urlNo='';		
+		$showNablLogo = ''; $urlNo=''; $certNo='';
 		//get NABL commosity and test details if exist
 		$this->loadModel('LimsLabNablCommTestDetails');
 		$NablTests = $this->LimsLabNablCommTestDetails->find('all',array('fields'=>'tests','conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office'],'commodity IS'=>$commodity_code),'order'=>'id desc'))->first();		
@@ -1405,8 +1399,8 @@ class FinalGradingController extends AppController
 			//get NABL certifcate details
 			$this->loadModel('LimsLabNablDetails');
 			$NablDetails = $this->LimsLabNablDetails->find('all',array('fields'=>array('accreditation_cert_no','valid_upto_date'), 'conditions'=>array('lab_id IS'=>$_SESSION['posted_ro_office']),'order'=>'id desc'))->first();
-			//check validity
-			$validUpto = strtotime($NablDetails['valid_upto_date']);
+			//check validity //added str_replace on 14-09-2022 by Amol
+			$validUpto = strtotime(str_replace('/','-',$NablDetails['valid_upto_date']));
 			$curDate = strtotime(date('d-m-Y'));
 			
 			if($validUpto > $curDate){
@@ -1437,7 +1431,6 @@ class FinalGradingController extends AppController
 				$result=array_diff($test_string,$NablTests);
 				if(!empty($result)){$F_or_P = 'P';}else{$F_or_P = 'F';}
 
-				//$urlNo = 'ULR-'.$certNo.'/'.$curYear.'/'.$labNo.'/'.$NoOfReport.'/'.$F_or_P;
 				$urlNo = 'ULR-'.$certNo.$curYear.$labNo.$NoOfReport.$F_or_P;
 
 				//to get tests with accreditation
@@ -1459,9 +1452,9 @@ class FinalGradingController extends AppController
 					$i++;
 				}
 			}
-
 		}
-		$this->set(compact('showNablLogo','urlNo'));
+
+		$this->set(compact('showNablLogo','urlNo','certNo'));
 
 		foreach($test_string as $row1) {
 
@@ -1749,12 +1742,12 @@ class FinalGradingController extends AppController
 
 
 			$query = $conn->execute("SELECT t.test_name,tm.method_name
-										 FROM comm_grade AS cg
-										 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
-										 INNER JOIN m_test AS t ON t.test_code = cg.test_code
-										 INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
-										 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
-										 ORDER BY t.test_name ASC");
+									 FROM comm_grade AS cg
+									 INNER JOIN m_test_method AS tm ON tm.method_code = cg.method_code
+									 INNER JOIN m_test AS t ON t.test_code = cg.test_code
+									 INNER JOIN test_formula AS tf ON tf.test_code = cg.test_code AND tm.method_code = cg.method_code
+									 WHERE cg.commodity_code = '$commodity_code' AND cg.test_code = '$row' AND cg.display = 'Y'
+									 ORDER BY t.test_name ASC");
 
 			$data1 = $query->fetchAll('assoc');
 
@@ -2029,11 +2022,12 @@ class FinalGradingController extends AppController
 			} else {
 				$customer_details = null;
 			}
-			
+		
 			$this->set('sample_final_date',$sample_final_date['tran_date']);
 			$this->set('sample_forwarded_office',$sample_forwarded_office);
 			$this->set('test_report',$test_report);
 			$this->set('customer_details',$customer_details);
+			
 			// Call to function for generate pdf file,
 			// change generate pdf file name,
 			$current_date = date('d-m-Y');
@@ -2045,8 +2039,14 @@ class FinalGradingController extends AppController
 
 			$this->Session->write('pdf_file_name',$test_report_name);
 
-			//call to the pdf creaation common method
-		
+			//Send parameter for Sample Test Report to getQrCodeSampleTestReport function
+			// Author : Shankhpal Shende
+			// Description : This will send parameter for QR code for Sample Test Report
+			// Date : 01/09/2022
+			$result_for_qr = $this->Customfunctions->getQrCodeSampleTestReport($Sample_code_as,$sample_forwarded_office,$test_report);			
+			$this->set('result_for_qr',$result_for_qr);
+
+			//call to the pdf creation common method	
 			if($this->request->is('ajax')){//on consent check box click
 				$this->EsigncallTcpdf($this->render(),'F',$test_report_name);//to save and store
 			

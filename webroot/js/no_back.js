@@ -33,7 +33,7 @@ $(document).ready(function(){
 	$('input').attr('autocomplete', 'off');
 	
 	// SET MAXIMUM LENGTH FOR ALL INPUTS
-	$("input[type='text']").attr('maxlength', '150');
+	$("input[type='text']").attr('maxlength', '50');
 	$("#mobileno").attr('maxlength', '10');
 	$("textarea").attr('maxlength', '500');
 	$("input[type='password']").attr('maxlength', '20'); // password field used in login, reset password
@@ -43,8 +43,15 @@ $(document).ready(function(){
 	$("input[name='data[customer_id]']").attr('maxlength', '50'); // company id / premises id
 	$("#captchacode").attr('maxlength', '6'); // captcha
 	
+	$("#mobileno").attr('maxlength', '10');
+	$("#mobile").attr('maxlength', '10'); 	 //added on 09-09-2022 for security reasons
+	$("#mobile_no").attr('maxlength', '10'); //added on 09-09-2022 for security reasons
+	$("#customer_mobile_no").attr('maxlength', '10'); //added on 09-09-2022 for security reasons
+	$("#email").attr('maxlength', '50'); //added on 09-09-2022 for security reasons
+
+	$("#postal_code").attr('maxlength', '6'); //added on 09-09-2022 for security reasons
+
 	// CLEAR INPUT FIELDS ON PAGE LOAD
-	//$("input[name='data[Dmi_user][email]']").val('');
 	$("#passwordValidation").val('');
 	$("#captchacode").val('');
 	$("input[name='data[mobileno]']").val('');

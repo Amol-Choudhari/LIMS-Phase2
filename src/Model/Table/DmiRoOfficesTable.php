@@ -119,34 +119,36 @@ class DmiRoOfficesTable extends Table{
 
 
 	public function getSrChemist($username) {
-
+		
 		$posted_ro_office = $this->getOfficeDetails($username);
 		$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
 
 		$get_user_details = $DmiUsers->find('all')->where(['posted_ro_office IS' => $posted_ro_office[3],'status !='=>'disactive'])->toArray();
-
+		
 		if(!empty($get_user_details)){
-
+			
 			$i = 0;
 			foreach($get_user_details as $each){
-
+				
 				$check_user_role = $DmiUsers->find('all')->where(['email IS'=> $each['email']])->first();
-
+			 
 				if(!empty($check_user_role)){
 
 					if($check_user_role['role'] == 'Sr Chemist') {
-
+						
 						$sr_chemist_details = $DmiUsers->find('all',array('conditions'=>array('email IS'=> $each['email'], 'status !=' =>'disactive')))->first();
 
 						$sr_chemist[$i] = array('sr_chemist_name' => $sr_chemist_details['f_name'].' '.$sr_chemist_details['l_name'], 'sr_chemist_email' => $sr_chemist_details['email']);
-
+						
 						$i = $i + 1;
+					} else {
+						$sr_chemist = array();
 					}
-				}
+				} 
 			}
 
 		}else{
-
+			
 			$sr_chemist = array();
 		}
 

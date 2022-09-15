@@ -544,6 +544,7 @@ class DashboardController extends AppController{
 
 			$getJrChemist = $this->DmiRoOffices->getJrChemist($username);
 			$getSrChemist = $this->DmiRoOffices->getSrChemist($username);
+			
 			$getInward = $this->DmiRoOffices->getInward($username);
 			$getLabIncharge = $this->DmiRoOffices->getLabIncharge(); 
 			$postedRoOfficeId = $this->DmiUsers->getPostedOffId($username);

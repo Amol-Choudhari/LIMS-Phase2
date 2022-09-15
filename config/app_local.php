@@ -38,7 +38,7 @@ return [
         'default' => [
 
              # LOCALHOST - DEFAULT
-
+            
             'host' => 'localhost',
              #'port' => 'non_standard_port_number',
             'username' => 'postgres',
