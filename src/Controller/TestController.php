@@ -1425,6 +1425,82 @@ class TestController extends AppController {
 	
 	
 	
+	
+	// This function is used for to genrate chemist test report,
+	public function chemistTestReport_BAK() {
+
+		$this->viewBuilder()->setLayout('pdf_layout');
+		$this->loadModel('ActualTestData');
+		$this->loadModel('TestFormula');
+		$this->loadModel('TestFields');
+		$this->loadModel('Workflow');
+		$this->loadModel('MSampleAllocate');
+		$conn = ConnectionManager::get('default');
+
+		$chemist_code = $this->Session->read('ABchmist_sample_code12');
+		$commodity_code = $this->Session->read('ABcommodity_code12');
+
+		$alloc_user1 = $_SESSION['user_code'];
+
+		$query = $conn->execute("SELECT wf.stage_smpl_cd,
+										usr.f_name,
+										usr.l_name,
+										mcc.category_name,
+										mc.commodity_name,
+										mst.sample_type_desc,
+										msa.recby_ch_date,
+										usr.role,
+										roo.ro_office FROM sample_inward AS si
+								INNER JOIN workflow AS wf ON wf.org_sample_code=si.org_sample_code
+								INNER JOIN m_commodity_category AS mcc ON mcc.category_code = si.category_code
+								INNER JOIN m_commodity AS mc ON mc.commodity_code = si.commodity_code
+								INNER JOIN m_sample_type AS mst ON mst.sample_type_code = si.sample_type_code
+								INNER JOIN m_sample_allocate AS msa ON msa.chemist_code = wf.stage_smpl_cd
+								INNER JOIN dmi_users AS usr ON usr.id = wf.src_usr_cd
+								INNER JOIN dmi_ro_offices AS roo ON roo.id = usr.posted_ro_office
+								WHERE wf.stage_smpl_cd='$chemist_code' AND wf.stage_smpl_flag='FT'");
+
+		$sample_details = $query->fetchAll('assoc');
+		$sample_details = $sample_details[0];
+
+
+		$test_finalized_date = $this->Workflow->find('all',array('fields'=>array('tran_date'),'conditions'=>array('stage_smpl_cd IS'=>$chemist_code,'stage_smpl_flag'=>'FT')))->first();
+
+		$sample_allocated_test = $this->chemistAllocatedTests($chemist_code,$commodity_code,$alloc_user1);
+
+		foreach ($sample_allocated_test as $each_test_code) {
+
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			/*	$test_fields[] = $this->TestFields->find('all',array('JOINs' =>array(array('table' =>'m_fields','alias' =>'mf','type' =>'INNER','conditions' =>array('mf.field_code=TestFields.field_code'))),	//
+			//																	'fields' => array('TestFields.field_value','mf.field_name','TestFields.field_unit','TestFields.test_code'),						//
+			//																	'conditions'=>array('TestFields.test_code' =>$each_test_code['test_code'])));*/													//
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			$query = $conn->execute("SELECT tf.field_value,mf.field_name,tf.field_unit,tf.test_code
+										FROM test_fields AS tf
+										INNER JOIN m_fields AS mf ON mf.field_code=tf.field_code
+										WHERE tf.test_code =".$each_test_code['test_code']);
+
+			$test_fields[] = $query->fetchAll('assoc');
+
+			$filled_test_values[] = $this->ActualTestData->find('all',array('conditions'=>array('test_code IS' =>$each_test_code['test_code'],'chemist_code'=>$chemist_code)))->toArray();
+
+		}
+
+		$this->set('test_finalized_date',$test_finalized_date['tran_date']);
+		$this->set('sample_details',$sample_details);
+		$this->set('sample_allocated_test',$sample_allocated_test);
+		$this->set('test_fields',$test_fields);
+		$this->set('filled_test_values',$filled_test_values);
+		$current_date = date('d/m/Y');
+		$pdfname = $sample_details['f_name'].'-'.$current_date.'-'.$chemist_code;
+
+		//$final_reports = $this->download_report_pdf('chemist_test_report',$pdfname);
+
+		//call to the pdf creaation common method
+		$this->callTcpdf($this->render(),'I');
+
+	}
 
 
 }

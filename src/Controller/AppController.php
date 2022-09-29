@@ -67,9 +67,9 @@ class AppController extends Controller
 	    define('reporticoReport', $_SERVER['DOCUMENT_ROOT']."/LIMS/vendor/reportico");
 	    define("ForReportsUserName", "postgres");
 		define("ForReportsPassword", "123");
-		define("ForReportsConnection", "localhost");
+		define("ForReportsConnection", "10.158.81.41");
 		define("ForReportsDatabaseInterfade", "PostgreSQL");
-		define('ForReportsDB','dmi');
+		define('ForReportsDB','testmigration1');
 
 		//below headers are set for "Content-Security-Policy", to allow inline scripts from same origin and report the outer origin scripts calls.
 		//the "Content-Security-Policy" header is commmented from httpd.conf file now and set here.

@@ -11,9 +11,10 @@
                 $match = preg_match('~[0-9]~', $string);
         }
         if($match == 1 ){
-            $string = substr($string, 0, 6);//string should not more than 5 length
-            $code=$string;
-            $_SESSION["code"]=$code;
-		}
+                $string = substr($string, 0, 6);//string should not more than 5 length
+                $code=$string;
+                $_SESSION["code"]=$code;
+
+        }
     }
 ?>

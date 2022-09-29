@@ -421,8 +421,8 @@ if (!defined('_ADODB_LAYER')) {
 	//
 	var $dataProvider = 'native';
 	var $databaseType = 'postgres';		/// RDBMS currently in use, eg. odbc, mysql, mssql
-	var $database = 'dmi';			/// Name of database to be used.
-	var $host = 'localhost';				/// The hostname of the database server
+	var $database = 'testmigration1';			/// Name of database to be used.
+	var $host = '10.158.81.41';				/// The hostname of the database server
 	var $port = '5432';				/// The port of the database server
 	var $user = 'postgres';				/// The username which is used to connect to the database server.
 	var $password = '123';			/// Password for the username. For security, we no longer store it.

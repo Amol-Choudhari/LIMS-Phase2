@@ -17,25 +17,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <?= $this->Html->charset() ?>
-    <title>
-        <?= $this->fetch('title') ?>
-    </title>
-    <?= $this->Html->meta('icon') ?>
-
-    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
-
-    <?= $this->Html->css(['normalize.min', 'milligram.min', 'cake']) ?>
-
-    <?= $this->fetch('meta') ?>
-    <?= $this->fetch('css') ?>
-    <?= $this->fetch('script') ?>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+    <?php 
+	echo $this->fetch('css');
+	echo $this->Html->css('my_custom_error'); ?>
 </head>
 <body>
     <div class="error-container">
-        <?= $this->Flash->render() ?>
-        <?= $this->fetch('content') ?>
-        <?= $this->Html->link(__('Back'), 'javascript:history.back()') ?>
+        <div class="myerrorclass">
+		
+			<h3>Oops!</h3>
+			<h4>Something Wrong Happened.. Please Try Again</h4>
+			<p><a href="/"> Way to Home Page</a></p>
+		
+		</div>
     </div>
 </body>
 </html>
