@@ -5603,7 +5603,7 @@ class Reportico extends ReporticoObject
         $this->template->assign('ASSETS_INIT', $this->assetManager->event("init"));
         $this->template->assign('ASSETS_RUNTIME', $this->assetManager->event("runtime"));
 
-        Authenticator::flag("run-mode-" . strtolower($this->execute_mode));
+        Authenticator::flag("run-mode-" . strtolower($this->execute_mode ?? ''));
 
         $this->template->assign('ASSETS_MODALS', $this->assetManager->render("modal"));
         $this->template->assign('CRITERIA_BLOCK', $criteriaRenders);

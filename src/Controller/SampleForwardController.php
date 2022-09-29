@@ -34,8 +34,9 @@ class SampleForwardController extends AppController {
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+
+			echo "Sorry.. You don't have permission to view this page"; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -254,6 +255,7 @@ class SampleForwardController extends AppController {
 					
 				} else {
 
+					$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed'); #Action
 					$message = 'Sorry... Please select proper inputs';
 					$message_theme = 'warning';
 					$redirect_to = 'available_to_forward_list';
@@ -443,7 +445,6 @@ class SampleForwardController extends AppController {
 
 							// For Maintaining Action Log by Akash (26-04-2022)
 							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
-
 							$message = 'The sample with registration code '.$this->request->getData('stage_sample_code').' is forwarded to '.$user_flag_new.' '.$ro_office_new.' with code as '.$new_sample_code;
 							$message_theme = 'success';
 							$redirect_to = 'forwarded_list';
@@ -617,6 +618,8 @@ class SampleForwardController extends AppController {
 
 				} else {
 					
+					$this->LimsUserActionLogs->saveActionLog('Sample Reject at Forward Stage','Failed');
+
 					$message = 'Please enter sample rejection reason.';
 					$message_theme = 'warning';
 					$redirect_to = 'available_to_forward_list';

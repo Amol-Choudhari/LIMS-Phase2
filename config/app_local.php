@@ -38,13 +38,13 @@ return [
         'default' => [
 
              # LOCALHOST - DEFAULT
-            
+            /*
             'host' => 'localhost',
              #'port' => 'non_standard_port_number',
             'username' => 'postgres',
             'password' => '123',
             'database' => 'dmi',
-
+            */
 
             # 41 - NEW PHASE II DB
             /*
@@ -56,13 +56,13 @@ return [
             */
 
             # 41 - Test Migration
-            /*
+            
             'host' => '10.158.81.41',
                 #'port' => 'non_standard_port_number',
             'username' => 'postgres',
             'password' => '123',
-            'database' => 'newphaseIIdb',
-            */
+            'database' => 'testmigration1',
+            
 
             'url' => env('DATABASE_URL', null),
         ],

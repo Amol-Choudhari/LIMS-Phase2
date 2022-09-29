@@ -35,8 +35,8 @@ class PaymentController extends AppController{
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry.. You don't have permission to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -71,6 +71,7 @@ class PaymentController extends AppController{
 
 		if ($sample_inward_data == null) {
 
+			$this->LimsUserActionLogs->saveActionLog('Save Payment','Failed'); #Action
 			$message = 'Please fill the Sample Inward and Sample Details Section first.';
 			$message_theme = 'failed';
 			$redirect_to = '../inward/sample_inward';
@@ -90,20 +91,27 @@ class PaymentController extends AppController{
 					
 
 					if ($savePaymentDetails == true){
-	
-						$message_theme = 'success';
+						
+						
+						
 						if ($sample['payment_confirmation']=='replied') {
+
+							$this->LimsUserActionLogs->saveActionLog('Replied Payment','Success'); #Action
 							$message = 'Your Reply Saved Successfully & Forwared to DDO for further process.';
 						} else {
+
+							$this->LimsUserActionLogs->saveActionLog('Save Payment','Success'); #Action
 							$message = 'Payment Section Saved Successfully';
 						}
-						
+
+						$message_theme = 'success';
 						$redirect_to = 'payment_details';
 	
 					} else {
-	
-						$message_theme = 'success';
-						$message = 'Payment Section Saved Successfully';
+						
+						$this->LimsUserActionLogs->saveActionLog('Save Payment','Failed'); #Action
+						$message = 'Payment Section Not Saved.';
+						$message_theme = 'failed';
 						$redirect_to = 'payment_details';
 					}
 	
@@ -121,6 +129,13 @@ class PaymentController extends AppController{
 						$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
 						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
 						
+						#SMS - Payment Confirmed
+						//$this->DmiSmsEmailTemplates->sendMessage(); #Inward
+						//$this->DmiSmsEmailTemplates->sendMessage(); #DDO
+						//$this->DmiSmsEmailTemplates->sendMessage(); #RO
+
+						$this->LimsUserActionLogs->saveActionLog('Payment Section Confirm','Success'); #Action
+
 						$message = 'Note :
 						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
 						</br> '.base64_decode($user['email']).'  ('.$office[0].')</b>

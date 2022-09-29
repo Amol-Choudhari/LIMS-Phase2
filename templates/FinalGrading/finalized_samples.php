@@ -57,4 +57,4 @@
 	</section>
 </div>
 
-<?php echo $this->Html->Script('finalGrading/finalized_sample_list'); ?>
+<?php echo $this->Html->script('finalGrading/finalized_sample_list'); ?>

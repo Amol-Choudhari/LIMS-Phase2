@@ -12,7 +12,7 @@ class SampleAcceptController extends AppController
 
 	var $name 		= 'SampleAccept';
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	
 	public function initialize(): void
 	{
@@ -20,8 +20,6 @@ class SampleAcceptController extends AppController
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
-		$this->loadModel('DmiSmsEmailTemplates');
-		$this->loadModel('LimsUserActionLogs');
 	}
 
 /********************************************************************************************************************************************************************************************************************************/
@@ -35,8 +33,8 @@ class SampleAcceptController extends AppController
 		if(!empty($user_access)){
 			//proceed
 		}else{
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry You don't have permission to view this page.."; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -252,6 +250,7 @@ class SampleAcceptController extends AppController
 
 					} else {
 
+						$this->LimsUserActionLogs->saveActionLog('Sample Accept','Failed'); #Action
 						$message = 'Sorry.. There is some technical issues. please check';
 						$message_theme = 'failed';
 						$redirect_to = 'available_to_accept_list';
@@ -259,8 +258,9 @@ class SampleAcceptController extends AppController
 				
 				} else {
 					
+					$this->LimsUserActionLogs->saveActionLog('Sample Accept','Failed'); #Action
 					$message = 'Sorry.. No officer selected';
-					$message_theme = 'warning';
+					$message_theme = 'failed';
 					$redirect_to = 'available_to_accept_list';
 				}
 

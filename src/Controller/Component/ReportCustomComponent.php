@@ -32,7 +32,7 @@ class ReportCustomComponent extends Component
                 Inner Join m_commodity AS mc ON mc.commodity_code=si.commodity_code And si.display='Y' AND si.acc_rej_flg='R'
                 WHERE date(si.received_date) BETWEEN '$from_date' AND '$to_date'");
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
         $query->closeCursor();
         if (!empty($records)) {
             foreach ($records as $record) {
@@ -91,7 +91,7 @@ class ReportCustomComponent extends Component
 
         $query = $con->execute($str);
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+    
         $query->closeCursor();
         if (!empty($records)) {
             foreach ($records as $record) {
@@ -148,7 +148,7 @@ class ReportCustomComponent extends Component
                 GROUP BY mll.ro_office,r.user_flag,si.grading_date,si.remark,si.grade,u.f_name,u.l_name,mc.commodity_name,si.grade,sd.pckr_nm,pckr_addr,si.received_date,sd.lot_no,sd.pack_size,sd.tbl,sd.shop_name,sd.shop_address,si.parcel_size,sd.smpl_drwl_dt, si.org_sample_code,si.dispatch_date,si.ral_lab_code,si.ral_anltc_rslt_rcpt_dt,si.anltc_rslt_chlng_flg,si.misgrd_param_value,si.misgrd_report_issue_dt, si.misgrd_reason,si.chlng_smpl_disptch_cal_dt,si.cal_anltc_rslt_rcpt_dt
                 ORDER BY sd.smpl_drwl_dt DESC");
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
         $query->closeCursor();
         if (!empty($records)) {
             foreach ($records as $record) {
@@ -216,7 +216,7 @@ class ReportCustomComponent extends Component
 
         $query = $con->execute($str);
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
         $query->closeCursor();
         if (!empty($records)) {
             foreach ($records as $record) {
@@ -352,7 +352,7 @@ class ReportCustomComponent extends Component
                 INNER JOIN dmi_users AS du ON du.id=msa.alloc_to_user_code
                 INNER JOIN dmi_user_roles AS r ON r.user_email_id=du.email 
                 WHERE  msa.display='Y' AND msa.acptnce_flag='Y' AND DATE(si.received_date) BETWEEN '$from_date' AND '$to_date' AND msa.lab_code='$ral_lab_no' AND r.user_flag='$ral_lab_name' AND msa.alloc_to_user_code='$user'");
-        // print_r($query);exit;
+        
         $records = $query->fetchAll('assoc');
 
         $query->closeCursor();
@@ -398,7 +398,7 @@ class ReportCustomComponent extends Component
                 Inner Join dmi_user_roles AS r On r.user_email_id=du.email
                 Inner Join m_commodity AS mc ON mc.commodity_code=si.commodity_code And si.display='Y' AND si.acc_rej_flg='R'
                 WHERE date(si.received_date) BETWEEN '$from_date' AND '$to_date'");
-        // print_r($query);exit;
+    
         $records = $query->fetchAll('assoc');
         $query->closeCursor();
         if (!empty($records)) {
@@ -444,7 +444,7 @@ class ReportCustomComponent extends Component
                 GROUP BY mll.ro_office,si.acc_rej_flg,r.user_flag,si.org_sample_code,mc.commodity_name,si.received_date,mst.sample_type_desc
                 ORDER BY si.received_date ASC");
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
         $query->closeCursor();
         if (!empty($records)) {
             foreach ($records as $record) {
@@ -489,7 +489,7 @@ class ReportCustomComponent extends Component
                 GROUP BY mll.ro_office,mst.sample_type_desc,mc.commodity_name
                 ORDER BY mc.commodity_name ASC");
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
         $query->closeCursor();
         if (!empty($records)) {
             foreach ($records as $record) {
@@ -533,7 +533,7 @@ class ReportCustomComponent extends Component
                 GROUP BY mll.ro_office,mc.commodity_name,w.tran_date,si.stage_sample_code,si.received_date,si.sample_total_qnt,muw.unit_weight,mst.sample_type_desc,si.remark
                 ORDER BY mc.commodity_name ASC");
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
         $query->closeCursor();
         if (!empty($records)) {
             foreach ($records as $record) {
@@ -588,7 +588,7 @@ class ReportCustomComponent extends Component
 
         $query = $con->execute($str);
 
-        // print_r($query);exit;
+        
         $records = $query->fetchAll('assoc');
 
         $query->closeCursor();
@@ -644,7 +644,7 @@ class ReportCustomComponent extends Component
 
         $query = $con->execute($str);
 
-        //  print_r($query);exit;
+        
         $records = $query->fetchAll('assoc');
 
         $query->closeCursor();
@@ -782,7 +782,7 @@ class ReportCustomComponent extends Component
                 INNER JOIN dmi_users AS du ON du.id=sa.alloc_to_user_code AND DATE(sa.alloc_date) BETWEEN '$from_date' AND '$to_date' AND sa.chemist_code='$chemist_code'
                 WHERE atd.chemist_code='$chemist_code' AND sa.sample_code='$sample_code' AND cd.status_flag in('C','G') AND sa.chemist_code='$chemist_code'
                 GROUP BY du.role,sa.chemist_code,sa.recby_ch_date,sa.sample_code,c.commodity_name,du.f_name,du.l_name,t.test_name,atd.result");
-        // print_r($query);exit;
+        
         $records = $query->fetchAll('assoc');
 
         $query->closeCursor();
@@ -834,7 +834,7 @@ class ReportCustomComponent extends Component
                 INNER JOIN m_commodity AS mc ON mc.commodity_code=si.commodity_code 
                 where DATE(si.received_date) BETWEEN '$from_date' AND '$to_date' aND si.display='Y' AND msa.display='Y' AND msa.test_n_r='R' 
                 GROUP BY msa.sample_code,mc.commodity_name,mst.sample_type_desc,si.received_date,ml.ro_office,du.f_name,du.l_name");
-        // print_r($query);exit;
+        
         $records = $query->fetchAll('assoc');
 
         $query->closeCursor();
@@ -1413,7 +1413,7 @@ class ReportCustomComponent extends Component
                 GROUP BY r.user_flag,drf.id,drf.ro_office
                 ORDER BY drf.ro_office ASC
                 ");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         // print_r($records);exit;
 
@@ -1495,9 +1495,9 @@ class ReportCustomComponent extends Component
                 INNER JOIN dmi_ro_offices drf ON u.posted_ro_office=drf.id
                 WHERE u.posted_ro_office= '$ral_lab_no' AND u.role IN('Jr Chemist','Sr Chemist','Cheif Chemist') AND u.STATUS = 'active' AND u.id = '$user'
                 ");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
 
         $query->closeCursor();
         if (!empty($records)) {
@@ -1558,7 +1558,7 @@ class ReportCustomComponent extends Component
                 WHERE commodity_code='$commodity'
                 ");
         $records = $query->fetchAll('assoc');
-        // print_r($records);exit;
+        
 
         $query->closeCursor();
         if (!empty($records)) {
@@ -3032,7 +3032,7 @@ class ReportCustomComponent extends Component
                 GROUP BY r.user_flag,drf.id,drf.ro_office
                 ORDER BY drf.ro_office ASC
                 ");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         // print_r($records);exit;
 
@@ -5123,7 +5123,7 @@ class ReportCustomComponent extends Component
         INNER JOIN dmi_ro_offices drf ON u.posted_ro_office=drf.id
         WHERE u.posted_ro_office= '$ral_lab_no' AND u.role IN('Jr Chemist','Sr Chemist','Cheif Chemist') AND u.STATUS = 'active' AND u.id = '$user'
         ");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         // print_r($records);exit;
 
@@ -5363,7 +5363,7 @@ class ReportCustomComponent extends Component
                 GROUP BY r.user_flag,drf.id,drf.ro_office
                 ORDER BY drf.ro_office ASC
                 ");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         // print_r($records);exit;
 
@@ -7085,7 +7085,7 @@ class ReportCustomComponent extends Component
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                 FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
                 GROUP BY si.remark,u.role");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         $query->closeCursor();
         if (!empty($records)) {
@@ -7163,7 +7163,7 @@ class ReportCustomComponent extends Component
                     FROM si.received_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM si.received_date):: INTEGER = '$year' AND si.commodity_code = $commodity_code
                     GROUP BY si.stage_sample_code,mc.commodity_name,si.received_date,si.dispatch_date,si.commodity_code,si.remark");
-            // pr($query);exit;
+           
             $records = $query->fetchAll('assoc');
             $query->closeCursor();
             if (!empty($records)) {
@@ -7374,7 +7374,7 @@ class ReportCustomComponent extends Component
                     FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM sa.alloc_date):: INTEGER = '$year' AND sa.commodity_code='$commodity_code'
                     GROUP BY sa.commodity_code,si.remark, si.sample_type_code, mc.commodity_name, mst.sample_type_desc");
-            // pr($query);exit;
+           
             $records = $query->fetchAll('assoc');
             $query->closeCursor();
             if (!empty($records)) {
@@ -9812,7 +9812,7 @@ class ReportCustomComponent extends Component
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                 FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
                 GROUP BY si.remark,u.role");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         $query->closeCursor();
         if (!empty($records)) {
@@ -9891,7 +9891,7 @@ class ReportCustomComponent extends Component
                     FROM si.received_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM si.received_date):: INTEGER = '$year' AND si.commodity_code = $commodity_code
                     GROUP BY si.stage_sample_code,mc.commodity_name,si.received_date,si.dispatch_date,si.commodity_code,si.remark");
-            // pr($query);exit;
+           
             $records = $query->fetchAll('assoc');
             $query->closeCursor();
             if (!empty($records)) {
@@ -10103,7 +10103,7 @@ class ReportCustomComponent extends Component
                     FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM sa.alloc_date):: INTEGER = '$year' AND sa.commodity_code='$commodity_code'
                     GROUP BY sa.commodity_code,si.remark, si.sample_type_code, mc.commodity_name, mst.sample_type_desc");
-            // pr($query);exit;
+           
             $records = $query->fetchAll('assoc');
             $query->closeCursor();
             if (!empty($records)) {
@@ -11413,7 +11413,7 @@ class ReportCustomComponent extends Component
                 GROUP BY r.user_flag,drf.id,drf.ro_office
                 ORDER BY drf.ro_office ASC
                 ");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         // print_r($records);exit;
 
@@ -13254,7 +13254,7 @@ class ReportCustomComponent extends Component
                 FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                 FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
                 GROUP BY si.remark,u.role");
-        // pr($query);exit;
+       
         $records = $query->fetchAll('assoc');
         $query->closeCursor();
         if (!empty($records)) {
@@ -13332,7 +13332,7 @@ class ReportCustomComponent extends Component
                     FROM si.received_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM si.received_date):: INTEGER = '$year' AND si.commodity_code = $commodity_code
                     GROUP BY si.stage_sample_code,mc.commodity_name,si.received_date,si.dispatch_date,si.commodity_code,si.remark");
-            // pr($query);exit;
+           
             $records = $query->fetchAll('assoc');
             $query->closeCursor();
             if (!empty($records)) {
@@ -13543,7 +13543,7 @@ class ReportCustomComponent extends Component
                     FROM sa.alloc_date):: INTEGER = '$month' AND EXTRACT(YEAR
                     FROM sa.alloc_date):: INTEGER = '$year' AND sa.commodity_code='$commodity_code'
                     GROUP BY sa.commodity_code,si.remark, si.sample_type_code, mc.commodity_name, mst.sample_type_desc");
-            // pr($query);exit;
+           
             $records = $query->fetchAll('assoc');
             $query->closeCursor();
             if (!empty($records)) {

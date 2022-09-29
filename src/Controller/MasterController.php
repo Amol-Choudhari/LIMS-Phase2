@@ -52,8 +52,8 @@ class MasterController extends AppController {
 			//proceed
 		} else {
 
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry.. You don't have permission to view this page";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -155,7 +155,7 @@ class MasterController extends AppController {
 
 				if ($isExist!='0') {
 
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$category_nm = $this->request->getData('category_name');
 					$this->set('message',  $category_nm . ' record already exist, Please contact administrator to delete it!');
 					$this->set('message_theme','failed');
@@ -169,14 +169,14 @@ class MasterController extends AppController {
 
 				if ($recordPush) {
 
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 					$message = 'Successfully added new category!';
 					$message_theme = 'success';
 					$redirect_to = 'saved_category';
 
 				} else {
 
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$message = 'Problem in saving new category, try again later!';
 					$message_theme = 'failed';
 					$redirect_to = 'saved_category';
@@ -248,7 +248,9 @@ class MasterController extends AppController {
 	public function deleteCategory($id){
 
 		//$this->autoRender = false;
-
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
 		// checking category code already in use or not
 		$inUsed = $this->MCommodity->find('all', array('conditions'=> array('category_code IS'=>$id, 'display'=>'Y')))->count();
 
@@ -382,7 +384,7 @@ class MasterController extends AppController {
 
 					$commodity_nm = $postData['commodity_name'];
 					
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$this->set('message',  $commodity_nm . ' record for this category already exists! Please Contact to Administrator');
 					$this->set('message_theme','failed');
 					$this->set('redirect_to', 'commodity');
@@ -405,13 +407,13 @@ class MasterController extends AppController {
 
 				if ($recordPush) {
 					
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 					$message = 'Successfully added new commodity!';
                     $message_theme = 'success';
 					$redirect_to = 'saved_commodity';
 					
 				} else {
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$message = 'Problem in saving new commodity, try again later!';
                     $message_theme = 'failed';
 					$redirect_to = 'saved_commodity';
@@ -480,6 +482,10 @@ class MasterController extends AppController {
 
 		$this->autoRender = false;
 
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
+
 		// check commodity code already in use
 		$inUsedTest = $this->CommodityTest->find('all', array('conditions'=> array('commodity_code IS'=>$id, 'display'=>'Y')))->count();
 		$inUsedSampleInward = $this->SampleInward->find('all', array('conditions'=> array('commodity_code IS'=>$id, 'display'=>'Y')))->count();
@@ -502,11 +508,13 @@ class MasterController extends AppController {
 			if ($recordDeleted) {
 				$this->LimsUserActionLogs->saveActionLog('Master Delete','Success'); #Action
 				$message = 'Successfully deleted commodity!';
+				$message_theme = 'success';
 				$redirect_to = '../saved_commodity';
 
 			} else {
 				$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 				$message = 'Problem in deleting, try again later!';
+				$message_theme = 'failed';
 				$redirect_to = '../saved_commodity';
 			}
 
@@ -515,6 +523,7 @@ class MasterController extends AppController {
 		$this->redirect("/master/saved_commodity");
 		// set variables to show popup messages FROM view file
 		$this->set('message', $message);
+		$this->set('message_theme', $message_theme);
 		$this->set('redirect_to', $redirect_to);
 
 	}
@@ -583,6 +592,11 @@ class MasterController extends AppController {
 	public function phyAppear($module){
 
 		$this->authenticateUser();
+
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
+
 		// load records if session is set
 		if ($this->Session->read('phy_appear_data')!=null) {
 
@@ -632,7 +646,7 @@ class MasterController extends AppController {
 				$isExist = $this->$table->find('all', array('conditions'=> array('UPPER(TRIM('.$textbox_1.'))'=>$textbox_one_upper, 'display'=>'Y')))->count();
 
 				if ($isExist!='0') {
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$textbox_one_nm = $postData[$textbox_1];
 					$this->set('message', 'Record for this ' . $textbox_one_nm . ' already exists');
 					$this->set('redirect_to', '../phy-appear/' .  $action);
@@ -650,13 +664,13 @@ class MasterController extends AppController {
 
 				if ($recordPush) {
 
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 					$message = 'Successfully added new ' . $title . ' record!';
 					$message_theme = 'success';
 					$redirect_to = '../saved-phy-appear/' . $action;
 
 				} else {
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$message = 'Problem in saving ' . $title . ', try again later!';
 					$message_theme = 'failed';
 					$redirect_to = '../saved-phy-appear/' . $action;
@@ -742,6 +756,10 @@ class MasterController extends AppController {
 
 		// $this->autoRender=false;
 		// check phy appear already in use or not
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
+
 		$inUsed = '0';
 		$this->loadModel($table);
 
@@ -868,6 +886,10 @@ class MasterController extends AppController {
 		$sampleObsCode = $this->MSampleObsType->find('all',array('fields'=>'m_sample_obs_type_code','order'=>'m_sample_obs_type_code desc'))->first();
 		$sampleObsCodeCurr =  $sampleObsCode['m_sample_obs_type_code']+1;
 
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
+
 		// load records if session is set
 		if ($this->Session->read('homo_value_data')!=null) {
 
@@ -930,7 +952,7 @@ class MasterController extends AppController {
 					}
 
 					if ($val_type != $existed_value_type) {
-						$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 						$this->set('message',  'Sorry. The Selected value type do not matched with previous records.');
 						$this->set('redirect_to', 'saved-homo-value');
 						return null;
@@ -976,12 +998,12 @@ class MasterController extends AppController {
 					}
 
 					if ($recordPush) {
-						$this->LimsUserActionLogs->saveActionLog('Master Save','Success'); #Action
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 						$message = 'Successfully added new homogenization value!';
 						$message_theme = 'success';
 						$redirect_to = 'saved-homo-value';
 					} else {
-						$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 						$message = 'Problem in saving homogenization value, try again later!';
 						$message_theme = 'failed';
 						$redirect_to = 'saved-homo-value';
@@ -989,7 +1011,7 @@ class MasterController extends AppController {
 					}
 
 				} else {
-					$this->LimsUserActionLogs->saveActionLog('Master Save','Failed'); #Action
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$message = 'Record Already Exists';
 					$message_theme = 'failed';
 					$redirect_to = 'saved-homo-value';
@@ -1088,15 +1110,13 @@ class MasterController extends AppController {
 					$message_theme = 'failed';
 					$redirect_to = 'saved-homo-value';
 				}
-
-				// set variables to show popup messages from view file
-				$this->set('message', $message);
-				$this->set('message_theme', $message_theme);
-				$this->set('redirect_to', $redirect_to);
-
 			}
-
 		}
+
+		// set variables to show popup messages from view file
+		$this->set('message', $message);
+		$this->set('message_theme', $message_theme);
+		$this->set('redirect_to', $redirect_to);
 
 	}
 
@@ -1105,6 +1125,10 @@ class MasterController extends AppController {
 
 	// delete homo value record
 	public function deleteHomoValue($homo_type_code, $homo_code, $val_type, $homo_value){
+
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
 
 		if ($val_type=='yesno') {
 
@@ -1128,10 +1152,14 @@ class MasterController extends AppController {
 		}
 
 		if ($recordDeleted) {
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Success'); #Action
 			$message = 'Successfully deleted homogenization value!';
+			$message_theme = 'success';
 			$redirect_to = '../../../../saved-homo-value';
 		} else {
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 			$message = 'Problem in deleting, try again later!';
+			$message_theme = 'failed';
 			$redirect_to = '../../../../saved-homo-value';
 		}
 
@@ -1139,6 +1167,7 @@ class MasterController extends AppController {
 
 		// set variables to show popup messages from view file
 		$this->set('message', $message);
+		$this->set('message_theme',$message_theme);
 		$this->set('redirect_to', $redirect_to);
 
 	}
@@ -1191,27 +1220,38 @@ class MasterController extends AppController {
 		$this->Session->write('homocommodity', $commodity);
 		$this->redirect('/master/assign-homo');
 	}
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
+
 	// save or update assign homo
 	public function assignHomo(){
 
 		$this->authenticateUser();
 		error_reporting('0');
 
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
+		
 		$sessionArray = $this->Session->read();
 
-	  if (array_key_exists("homocategory",$sessionArray) && array_key_exists("homocommodity",$sessionArray))
-	  {
+	  	if (array_key_exists("homocategory",$sessionArray) && array_key_exists("homocommodity",$sessionArray)) {
+
 			$homocategory = 	$this->Session->read('homocategory');
 			$homocommodity = 	$this->Session->read('homocommodity');
 			$categories = $this->MCommodityCategory->find('all', array('conditions'=> array('category_code'=>$homocategory,'display'=>'Y'), 'order'=> array('category_name'=>'ASC')));
 			$mcommodity = $this->MCommodity->find('all', array('conditions'=> array('category_code'=>$homocategory,'commodity_code'=>$homocommodity,'display'=>'Y'), 'order'=> array('commodity_name'=>'ASC')));
 
 		}else{
+
 			$homocategory = 	'';
 			$homocommodity = 	'';
 			$categories = $this->MCommodityCategory->find('all', array('conditions'=> array('display'=>'Y'), 'order'=> array('category_name'=>'ASC')));
 			$mcommodity = array();
 		}
+
 		$this->set(compact('categories'));
 		$this->set(compact('mcommodity'));
 		$this->set(compact('homocategory'));
@@ -1232,28 +1272,33 @@ class MasterController extends AppController {
 
 			foreach ($homochecks as $key => $value) {
 
-					$homovalue = htmlentities($value);
+				$homovalue = htmlentities($value);
 
-					$ModelEntity = $this->MCommodityObs->newEntity(array(
-						'm_sample_obs_code'=>$homovalue,
-						'category_code'=>$category_code,
-						'commodity_code'=>$commodity_code,
-						'user_code'=>$_SESSION['user_code'],
-						'display'=>'Y',
-						'created'=>date('Y-m-d H:i:s'),
-						'modified'=>date('Y-m-d H:i:s'),
-					));
+				$ModelEntity = $this->MCommodityObs->newEntity(array(
+					'm_sample_obs_code'=>$homovalue,
+					'category_code'=>$category_code,
+					'commodity_code'=>$commodity_code,
+					'user_code'=>$_SESSION['user_code'],
+					'display'=>'Y',
+					'created'=>date('Y-m-d H:i:s'),
+					'modified'=>date('Y-m-d H:i:s'),
+				));
 
-					$this->MCommodityObs->save($ModelEntity);
+				$this->MCommodityObs->save($ModelEntity);
 			}
 
+			$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 			$message = 'Assign the homogenization values Successfully !';
+			$message_theme = 'success';
 			$redirect_to = 'saved-assign-homo';
 
-			$this->set('message', $message);
-			$this->set('redirect_to', $redirect_to);
-
+			
 		}
+
+		$this->set('message', $message);
+		$this->set('message_theme',$message_theme);
+		$this->set('redirect_to', $redirect_to);
+
 	}
 
 
@@ -1340,7 +1385,7 @@ class MasterController extends AppController {
 																							'fields'=> array('MTest.test_name', 'MTest.test_code','MTest.l_test_name','mtt.test_type_name'), 'conditions'=> array('MTest.display'=>'Y')))->toArray();
 		
 		$this->set(compact('tests', $tests));
-	 }
+	}
 
 
 /******************************************************************************************************************************************************************************************************************************************************/
@@ -1368,6 +1413,7 @@ class MasterController extends AppController {
 		$test_type_code = '';
 		$testcodeid = '';
 		$message = '';
+		$message_theme = '';
 		$redirect_to = '';
 
 
@@ -1385,8 +1431,7 @@ class MasterController extends AppController {
 	  	}
 		
 
-		$test_types  = $this->MTestType->find('list',array('keyField'=>'test_type_code','valueField'=>'test_type_name'
-																	,'conditions' => array('display' => 'Y'),'order' => array('test_type_name' => 'ASC')))->toArray();
+		$test_types  = $this->MTestType->find('list',array('keyField'=>'test_type_code','valueField'=>'test_type_name','conditions' => array('display' => 'Y'),'order' => array('test_type_name' => 'ASC')))->toArray();
         
 		
 		if (null!==($this->request->getData('save'))){
@@ -1423,18 +1468,23 @@ class MasterController extends AppController {
 					
 				if($this->MTest->save($entityRecord)){
 
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 					$message = 'Test record saved Successfully';
+					$message_theme = 'success';
 					$redirect_to = '../master/saved-test-type';
 			
 				}else{
-
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$message = 'Test record not saved, something went wrong';
+					$message_theme = 'failed';
 					$redirect_to = '../master/saved-test-type';
 				}	
 
 			}else{
 
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 				$message = 'Something went wrong in form data, please check and resubmit again';
+				$message_theme = 'failed';
 				$redirect_to = '../master/add-test';
 			}
 
@@ -1448,6 +1498,7 @@ class MasterController extends AppController {
         $this->set('test_type_code', $test_type_code);
         $this->set('title',$title);
         $this->set('message',$message);
+		$this->set('message_theme',$message_theme);
         $this->set('redirect_to',$redirect_to);
 	}
 
@@ -1462,10 +1513,15 @@ class MasterController extends AppController {
 		// checking category code already in use or not
 		$inUsed = $this->Mtest->find('all', array('conditions'=> array('test_code IS'=>$id, 'display'=>'Y')))->count();
 
-		if ($inUsed!='0') {
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
 
-				$message = 'Already in use, could not deleted!';
-				$redirect_to = '../saved_test_type';
+		if ($inUsed!='0') {
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
+			$message = 'Already in use, could not deleted!';
+			$message_theme = 'failed';
+			$redirect_to = '../saved_test_type';
 
 		} else {
 
@@ -1476,16 +1532,24 @@ class MasterController extends AppController {
 
 			if ($recordDelete) {
 
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Success'); #Action
 				$message = 'Successfully delete category!';
+				$message_theme = 'success';
 				$redirect_to = '../saved_test_type';
 
 			} else {
-
+				$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 				$message = 'Problem in deleting, try again later!';
+				$message_theme = 'failed';
 				$redirect_to = '../saved_category';
 
 			}
 		}
+		
+		$this->set('message', $message);
+		$this->set('message_theme', $message_theme);
+		$this->set('redirect_to', $redirect_to);
+
 	}
 
 
@@ -1525,6 +1589,10 @@ class MasterController extends AppController {
 
 	 }
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
 	 public function editAssignTestFields($test_code,$status){
 
 	 	$this->authenticateUser();
@@ -1533,6 +1601,10 @@ class MasterController extends AppController {
 	 	$this->redirect('/master/assign-test-fields');
 
 	 }
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
 
 	 public function assignTestFields(){
 
@@ -1571,7 +1643,10 @@ class MasterController extends AppController {
         $this->set('test_names',$test_names);
         $this->set('test_fields',$test_fields);
         $this->set('test_code',$test_code);
-	 }
+	}
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 	 public function savedAssignedTestFields() {
@@ -1708,7 +1783,10 @@ class MasterController extends AppController {
 		}
 
 
-	 }
+	}
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 
@@ -1729,6 +1807,8 @@ class MasterController extends AppController {
 		
     }
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	public function getTestFieldsData() {
 		
@@ -1769,6 +1849,7 @@ class MasterController extends AppController {
 
 		$str1="";
 		$message = '';
+		$message_theme = '';
 		$redirect_to = '';
 
 		$this->loadModel('MCommodityCategory');
@@ -1853,10 +1934,15 @@ class MasterController extends AppController {
 
 				}
 
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 				$message = 'Something went wrong, please checked properly forms value and then resubmit again';
+				$message_theme = 'failed';
+				
 
 			}else{
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 				$message = "Grade and grade order not selected";
+				$message_theme = 'failed';
 				$modifiedData = 'true';
 			}
 
@@ -1884,8 +1970,9 @@ class MasterController extends AppController {
 							break;
 
 						} else {
-
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 							$message = 'More than one methods are defined for this test. So, The test method can not be changed.';
+							$message_theme = 'failed';
 							break;
 
 						}
@@ -1940,7 +2027,9 @@ class MasterController extends AppController {
 
 					}
 
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 					$message = 'Records has been Saved!';
+					$message_theme = 'success';
 				}
 
 			}
@@ -1949,11 +2038,13 @@ class MasterController extends AppController {
 
  		$redirect_to = 'commodityGrade';
  		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
  		$this->set('redirect_to',$redirect_to);
 
 	}
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	public function getCommodity(){
 
@@ -1994,6 +2085,9 @@ class MasterController extends AppController {
 	}
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
 	public function getTestByCommodityId()
 	{
 			
@@ -2025,6 +2119,9 @@ class MasterController extends AppController {
 		exit;
 	}
 
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	//below function is added on 21-12-2019 by Amol to get method list on test select
 	//called through ajax code
@@ -2070,6 +2167,10 @@ class MasterController extends AppController {
 	}
 
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
 	public function getTestType(){
 		
 		$conn = ConnectionManager::get('default');
@@ -2091,6 +2192,8 @@ class MasterController extends AppController {
 	}
 
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	public function viewCommGradeList()
 	{
@@ -2128,7 +2231,7 @@ class MasterController extends AppController {
 /******************************************************************************************************************************************************************************************************************************************************/
 
 
-public function createFormula(){
+	public function createFormula(){
 
 		$this->authenticateUser();
 		$this->loadModel('MTest');
@@ -2136,6 +2239,9 @@ public function createFormula(){
 		$this->loadModel('CommodityTest');
 		$this->loadModel('MTestMethod');
 
+		$message = '';
+		$message_theme = '';
+		$redirect_to = '';
 
 		$flag = false;
 		$conn = ConnectionManager::get('default');
@@ -2180,11 +2286,12 @@ public function createFormula(){
 			$startdate = $this->request->getData('start_date');
 
 
-       		if(!is_numeric($test_code) || !is_numeric($method_code)
-					||  $start_date == ''){
+       		if(!is_numeric($test_code) || !is_numeric($method_code) ||  $start_date == ''){
 
-					$message = 'Invalid form data, please checked properly and resubmit';
-					$redirect_to = 'create-formula';
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
+				$message = 'Invalid form data, please checked properly and resubmit';
+				$message_theme = 'failed';
+				$redirect_to = 'create-formula';
 			}else{
 
 				$dStart = new DateTime(date('Y-m-d H:i:s'));
@@ -2197,7 +2304,9 @@ public function createFormula(){
 
 	 			if ($rttttttv1==0) {
 
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$message ='Please enter a validation range in proper format';
+					$message_theme = 'failed';
 					$redirect_to = 'create-formula';
 				}
 
@@ -2213,7 +2322,9 @@ public function createFormula(){
 
 				if($field_validation == '' || $unit == '' || $formula == ''){
 
+					$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 					$message = 'Invalid form data, please checked properly and resubmit';
+					$message_theme = 'failed';
 					$redirect_to = 'create-formula';
 				}
 				
@@ -2294,7 +2405,9 @@ public function createFormula(){
 								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range,unit)VALUES($test_code,$method_code,'$start_date',
 													 Null,'$formula1','$formula','$field_validation','$unit')");
 
+								$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 		                		$message = 'The formula has been added!';
+								$message_theme = 'success';
 								$redirect_to = 'create-formula';
 
 							} else {
@@ -2302,22 +2415,29 @@ public function createFormula(){
 								$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range,unit)
 													VALUES($test_code,$method_code,'$start_date',
 													Null,'$formula1','$formula','$field_validation','$unit')");
+
+								$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 								$message = 'The formula has been added!';
+								$message_theme = 'success';
 								$redirect_to = 'create-formula';
 							}
 
 						}else{
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range,unit)VALUES($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation','$unit')");
-
+							
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 
 						}
 
               		}else{
 
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
               			$message = 'Incorrect formula,Please check formula for operands AND operator precedence';
+						$message_theme = 'failed';
 						$redirect_to = 'create-formula';
 					}
 				}
@@ -2368,7 +2488,9 @@ public function createFormula(){
 												 VALUES($test_code,$method_code,'$start_date',
 												 Null,'$formula1','$formula','$field_validation')");
 
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 
 						} else {
@@ -2377,7 +2499,9 @@ public function createFormula(){
 													 VALUES($test_code,$method_code,'$start_date'
 													 Null,'$formula1','$formula','$field_validation')");
 
+								$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
                         		$message = 'The formula has been added!';
+								$message_theme = 'success';
 								$redirect_to = 'create-formula';
 						}
 
@@ -2387,7 +2511,9 @@ public function createFormula(){
 											 VALUES($test_code,$method_code,'$start_date',
 											 Null,'$formula1','$formula','$field_validation')");
 
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
                 		$message = 'The formula has been added!';
+						$message_theme = 'success';
 						$redirect_to = 'create-formula';
 					}
 
@@ -2446,23 +2572,30 @@ public function createFormula(){
 							}
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+							
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 
 						} else {
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-
+							
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 						}
 
 					} else {
 
 						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-
+						
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 						$message = 'The formula has been added!';
+						$message_theme = 'success';
 						$redirect_to = 'create-formula';
 					}
 					
@@ -2515,14 +2648,18 @@ public function createFormula(){
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 							
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 
 						} else {
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 						}
 
@@ -2530,7 +2667,9 @@ public function createFormula(){
 
 						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 						$message = 'The formula has been added!';
+						$message_theme = 'success';
 						$redirect_to = 'create-formula';
 					}
 
@@ -2557,14 +2696,18 @@ public function createFormula(){
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 							
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 
 						} else {
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
-									
+								
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 						}
 
@@ -2572,7 +2715,9 @@ public function createFormula(){
 
 						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 						$message = 'The formula has been added!';
+						$message_theme = 'success';
 						$redirect_to = 'create-formula';
 
 					}
@@ -2600,27 +2745,45 @@ public function createFormula(){
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 
 						} else {
 
 							$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
 
+							$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 							$message = 'The formula has been added!';
+							$message_theme = 'success';
 							$redirect_to = 'create-formula';
 						}
 
 					} else {
 
 						$this->MTest->query("INSERT INTO test_formula (test_code,method_code,start_date,end_date,test_formulae,test_formula1,res_validation_range)values($test_code,$method_code,'$start_date',Null,'$formula1','$formula','$field_validation')");
+						
+						$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 						$message = 'The formula has been added!';
+						$message_theme = 'success';
 						$redirect_to = 'create-formula';
 					}
 				}	
 			}
 		}
+
+		$this->set('message', $message);
+		$this->set('message_theme', $message_theme);
+		$this->set('redirect_to', $redirect_to);
+
 	}
+
+
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
 
 
 	function getRecord(){
@@ -2661,6 +2824,12 @@ public function createFormula(){
 
 
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
+
+
 	public function getFormula() {
 
         $conn = ConnectionManager::get('default');
@@ -2686,17 +2855,18 @@ public function createFormula(){
 		 						LEFT Join test_formula as a ON a.test_code = mt.test_code and a.method_code = $method_code and a.end_date IS NULL
 		 						Inner Join m_test_type as b ON b.test_type_code = mt.test_type_code
 		 						where mt.test_code = $test_code")->fetchAll('assoc');
-        /*print_r("select b.test_type_name,a.test_formula1,a.res_validation_range 
-								from m_test as mt
-		 						LEFT Join test_formula as a ON a.test_code = mt.test_code and a.method_code = $method_code and a.end_date IS NULL
-		 						Inner Join m_test_type as b ON b.test_type_code = mt.test_type_code
-		 						where mt.test_code = $test_code"); exit;*/
+       
         echo json_encode($test);
         exit;
     }
 
 
-    public function getFormulaStatus() {
+
+/******************************************************************************************************************************************************************************************************************************************************/
+   
+
+
+	public function getFormulaStatus() {
 
         $this->loadModel('TestFormula');
 
@@ -2709,6 +2879,10 @@ public function createFormula(){
         ))->count();
 		echo($count);exit;
     }
+
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 
@@ -2730,8 +2904,11 @@ public function createFormula(){
 			exit;
 		}
 
-        $test = $conn->execute("select mtm.method_code,tf.start_date,tf.end_date,tf.unit from 								test_formula as tf
-								Inner Join m_test_method as mtm on mtm.method_code=tf.method_code and tf.test_code=$test_code and tf.method_code=$method_code")->fetchAll('assoc');
+        $test = $conn->execute("SELECT mtm.method_code,tf.start_date,tf.end_date,tf.unit 
+								FROM test_formula AS tf
+								INNER JOIN m_test_method AS mtm ON mtm.method_code=tf.method_code 
+								AND tf.test_code=$test_code 
+								AND tf.method_code=$method_code")->fetchAll('assoc');
 
 		if(isset($test)){
 			echo json_encode($test);
@@ -2739,6 +2916,10 @@ public function createFormula(){
 		}
 	
     }
+
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 
@@ -2755,10 +2936,11 @@ public function createFormula(){
 		}
 
 		
-		$test = $conn->execute("select tf.id,mt.field_name from test_fields tf
-		Inner Join m_fields as mt on mt.field_code = tf.field_code
-		where tf.test_code = $test_code
-		ORDER by mt.field_name")->fetchAll('assoc');
+		$test = $conn->execute("SELECT tf.id,mt.field_name 
+								FROM test_fields tf
+								INNER JOIN m_fields AS mt ON mt.field_code = tf.field_code
+								WHERE tf.test_code = $test_code
+								ORDER BY mt.field_name")->fetchAll('assoc');
 
 		foreach($test as $key => $value){
 			$test_fields[$value['id']] = $value['field_name'];
@@ -2768,6 +2950,9 @@ public function createFormula(){
         exit;
     }
 
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
     public function testFormula() {
@@ -2831,6 +3016,9 @@ public function createFormula(){
     }
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
 
     public function hasMatchedParenthesis($string) {
         $len = strlen($string);
@@ -2856,7 +3044,11 @@ public function createFormula(){
     }
 
 
-    public function multiexplode($delimiters, $string) {
+
+/******************************************************************************************************************************************************************************************************************************************************/
+    
+
+	public function multiexplode($delimiters, $string) {
 
         $ready = str_replace($delimiters, $delimiters[0], $string);
         $launch = explode($delimiters[0], $ready);
@@ -2865,7 +3057,7 @@ public function createFormula(){
 
 
 
-
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 
@@ -2880,6 +3072,7 @@ public function createFormula(){
 		$conn = ConnectionManager::get('default');
 
 		$message = '';
+		$message_theme = '';
 		$redirect_to = '';
 
 		//tests list
@@ -2913,8 +3106,10 @@ public function createFormula(){
 			$test_code = $this->request->getData("test_code");			
 
 			if(!is_numeric($commodity_code) && !is_numeric($test_code)){
-			
+				
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 				$message = "Invalid selection of commodity or test, Please check";
+				$message_theme = 'failed';
 				$redirect_to = "assign-test-to-commodity";
 
 			}else{
@@ -2942,7 +3137,9 @@ public function createFormula(){
 
 				$conn->execute("insert into commodity_test(commodity_code,test_code)values($commodity_code,$test_code)");
 
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 				$message = "The Test has been saved successfully";
+				$message_theme = 'success';
 				$redirect_to = "assign-test-to-commodity";
 			}
 
@@ -2950,9 +3147,14 @@ public function createFormula(){
 
 
 		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
 		$this->set('redirect_to',$redirect_to);
 
 	}
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
 
 	public function getListUnassignedTestToComm(){
 
@@ -2974,6 +3176,7 @@ public function createFormula(){
 	}
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	public function getListAssignedTestToComm(){
 
@@ -3010,6 +3213,10 @@ public function createFormula(){
 	}
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
+
 	// get assigned homogenization fields values, done by pravin bhakare 8-11-2021
 	public function getHomogenizationFields(){
 
@@ -3030,8 +3237,9 @@ public function createFormula(){
 	}
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
 
-	//////////////////////////////////////////////////////Master Reports Management///////////////////////////////////////
+	//////////////////////////////////////////////////////{ Master Reports Management }///////////////////////////////////////////////////////
 
 
 	public function allReports() {
@@ -3049,6 +3257,8 @@ public function createFormula(){
     }
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
+
 	public function addReports(){
 
 		$this->authenticateUser();
@@ -3057,6 +3267,7 @@ public function createFormula(){
 		$this->loadModel('MReport');
 
 		$message = '';
+		$message_theme = '';
 		$redirect_to = '';
 
 		$label = $this->MLabel->find('list',array('keyField'=>'label_code','valueField'=>'label_desc','conditions'=>array('display'=>'Y')))->toArray();
@@ -3070,7 +3281,9 @@ public function createFormula(){
 
 			if(!isset($report_label) || !is_numeric($report_label)){
 				$modifiedData = 'true';
+				$this->LimsUserActionLogs->saveActionLog('Report Master Add','Failed'); #Action
 				$message = 'Something went wrong, please checked properly forms value and then resubmit';
+				$message_theme = 'failed';
 			}
 
 			if($modifiedData == 'false'){
@@ -3091,19 +3304,23 @@ public function createFormula(){
 					));
 
 					if($this->MReport->save($newEntity)){
-
+						
+						$this->LimsUserActionLogs->saveActionLog('Report Master Add','Success'); #Action
 						$message = 'New Report Save Sucessfully';
+						$message_theme = 'success';
 						$redirect_to = 'all-reports';
+
 					}else{
+						$this->LimsUserActionLogs->saveActionLog('Report Master Add','Failed'); #Action
 						$message = 'New Report Not Save Sucessfully';
+						$message_theme = 'failed';
 						$redirect_to = 'add-reports';
 					}
 
-					
-
 				}else{
-
+					$this->LimsUserActionLogs->saveActionLog('Report Master Add','Failed'); #Action
 					$message = 'Report already exists';
+					$message_theme = 'failed';
 					$redirect_to = 'add-reports';
 				}
 
@@ -3112,9 +3329,13 @@ public function createFormula(){
 		}
 
 		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
 		$this->set('redirect_to',$redirect_to);
 
 	}
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 	public function deleteReport(){
@@ -3135,7 +3356,7 @@ public function createFormula(){
 	}
 
 
-	//////////////////////////////////////////////////////Master Reports Management///////////////////////////////////////
+/******************************************************************************************************************************************************************************************************************************************************/	
 
 
 	public function setReport(){
@@ -3145,6 +3366,7 @@ public function createFormula(){
 		$this->loadModel('MReportlabel');
 
 		$message = '';
+		$message_theme = '';
 		$redirect_to = '';
 
 		$conn = ConnectionManager::get('default');
@@ -3244,22 +3466,33 @@ public function createFormula(){
 					$this->MReportlabel->save($newEntity);
 				}
 
+				$this->LimsUserActionLogs->saveActionLog('Report Set','Success'); #Action
 				$message = 'Report Save Sucessfully';
+				$message_theme = 'success';
 				$redirect_to = 'set-report';
 
 			}else{
 
+				$this->LimsUserActionLogs->saveActionLog('Report Set','Failed'); #Action
 				$message = 'Please select proper inputs';
+				$message_theme = 'failed';
 				$redirect_to = 'set-report';
 			}
 
 		}
 
-		$this->set('message',$message);
-		$this->set('redirect_to',$redirect_to);
 		$this->set('user_roles',$user_roles);
 		$this->set('report_category',$report_category);
+		$this->set('message',$message);
+		$this->set('message_theme',$message_theme);
+		$this->set('redirect_to',$redirect_to);
+		
 	}
+
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
 
 
 	public function getSetReportNames(){
@@ -3322,6 +3555,11 @@ public function createFormula(){
 	}
 
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
+
+
 	function getAlreadySetReports() {
 
 		$conn = ConnectionManager::get('default');
@@ -3348,6 +3586,9 @@ public function createFormula(){
 	}
 
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
     ///////////////////////////////////////////////// NEW MASTERS [DDO FOR LABS] //////////////////////////////////////////////////////
 
     //fetch_edit_id_for_ddo
@@ -3362,7 +3603,7 @@ public function createFormula(){
     }
 
 
-
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 	public function addDdoToRalOffice(){
@@ -3379,7 +3620,7 @@ public function createFormula(){
 		$get_labs = $this->DmiRoOffices->getLabs();
 		
 		$getlistfromddo = $this->LimsDdoDetails->find('all')->select(['lab_id'])->combine('id','lab_id')->toArray();
-		pr($getlistfromddo); exit;
+	
 		$ddolist = $this->DmiPaoDetails->getAllDdoList();
 
 		
@@ -3389,7 +3630,7 @@ public function createFormula(){
 	}
 
 
-
+/******************************************************************************************************************************************************************************************************************************************************/
 
     //edit_ddo_to_ral_office
     //Description : This function created to serve the master for DDO that are used to decide PAO officer for LABS
@@ -3447,13 +3688,15 @@ public function createFormula(){
 					$message = 'You have selected the DDO <b>: '.base64_decode($ddoname).'for the Labarotory : <b>'.$ral_office[0]."</b>";
 				}
 
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 				$message_theme = 'success';
 				$redirect_to = 'ddo_for_labs';
 			
 			} else {
 
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 				$message = 'Failed to save the Record';
-				$message_theme = 'success';
+				$message_theme = 'failed';
 				$redirect_to = 'ddo_for_labs';
 			}
 		
@@ -3465,6 +3708,10 @@ public function createFormula(){
 
 
     }
+
+
+/******************************************************************************************************************************************************************************************************************************************************/
+
 
     //ddo_for_labs
     //Description : This function created to list all the DDO for labs
@@ -3481,7 +3728,7 @@ public function createFormula(){
     }
 
 
-
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 
@@ -3498,6 +3745,8 @@ public function createFormula(){
 
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
+
 	//delete_id_for_charge
     //Description : This function created to list all the sample commercial charges
     //Author : Akash Thakre
@@ -3509,6 +3758,8 @@ public function createFormula(){
         $this->redirect('/Master/delete_commercial_charges');
     }
 
+
+/******************************************************************************************************************************************************************************************************************************************************/
 
 
 	//Commercial Sample Charges
@@ -3554,6 +3805,7 @@ public function createFormula(){
     }
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	//addCommercialCharges
     //Description : This function created to list all the sample commercial charges
@@ -3583,10 +3835,12 @@ public function createFormula(){
 			$saveCharges = $this->LimsCommercialCharges->saveCharges($postData);
 
 			if ($saveCharges == true) {
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Success'); #Action
 				$message = 'Commercial Charges Added successfully';
 				$message_theme = 'success';
 				$redirect_to = 'commercial_charges';
 			} else {
+				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 				$message = 'Error Occured!!';
 				$message_theme = 'failed';
 				$redirect_to = 'commercial_charges';
@@ -3600,6 +3854,7 @@ public function createFormula(){
 	}
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	//addCommercialCharges
     //Description : This function created to list all the sample commercial charges
@@ -3643,10 +3898,12 @@ public function createFormula(){
 			$saveCharges = $this->LimsCommercialCharges->saveCharges($postData,$record_id);
 
 			if ($saveCharges == true) {
+				$this->LimsUserActionLogs->saveActionLog('Master Edit','Success'); #Action
 				$message = 'Commercial Charges edited successfully';
 				$message_theme = 'success';
 				$redirect_to = 'commercial_charges';
 			} else {
+				$this->LimsUserActionLogs->saveActionLog('Master Edit','Failed'); #Action
 				$message = 'Error Occured !!';
 				$message_theme = 'failed';
 				$redirect_to = 'commercial_charges';
@@ -3659,6 +3916,7 @@ public function createFormula(){
 	}
 
 
+/******************************************************************************************************************************************************************************************************************************************************/
 
 	//DELETE MASTER RECORD CALL
 	public function deleteCommercialCharges() {
@@ -3672,12 +3930,14 @@ public function createFormula(){
         $this->loadModel('LimsCommercialCharges');
 
 		if($this->LimsCommercialCharges->deleteChargeById($record_id) == true) {
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Success'); #Action
 			$message = 'Commercial Charges Deleted successfully';
 			$message_theme = 'success';
 			$redirect_to = 'commercial_charges';
 		} else {
+			$this->LimsUserActionLogs->saveActionLog('Master Delete','Failed'); #Action
 			$message = 'Error Occured !!';
-			$message_theme = 'success';
+			$message_theme = 'failed';
 			$redirect_to = 'commercial_charges';
 		}
 

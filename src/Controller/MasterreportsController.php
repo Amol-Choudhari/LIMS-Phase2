@@ -51,8 +51,8 @@ class MasterController extends AppController {
 			//proceed
 		} else {
 
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry.. You don't have permission to view this page"; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -300,7 +300,7 @@ class MasterController extends AppController {
 	public function fetchCommodity($id){
 
 		$commodity_data = $this->MCommodity->find('all', array('conditions'=> array('commodity_code IS'=>$id)))->first();
-		//print_r($commodity_data); exit;
+		
 
 		$this->Session->write('commodity_code', $id);
 		$this->Session->write('commodity_data', $commodity_data);
@@ -487,7 +487,7 @@ class MasterController extends AppController {
 
 		$textbox_1 = $phy_appear_record['textbox_1'];
 		$table = $phy_appear_record['table_name'];
-		//print_r($table); exit;
+		
 
 		// all records under SELECTed module
 		$this->loadModel($table);
@@ -1085,7 +1085,7 @@ class MasterController extends AppController {
 										WHERE a.display='Y'");
 
 		$assign_homo_result = $assign_homos->fetchAll('assoc');
-		//print_r($assign_homo_result); exit;
+		
 		$this->set('assignHomosArray', $assign_homo_result);
 
 	}
@@ -1279,7 +1279,7 @@ class MasterController extends AppController {
 		$this->authenticateUser();
 		$this->loadModel('MFields');
 		$testFields = $this->MFields->find('all', array('fields'=> array('field_name', 'l_field_name'), 'conditions'=> array('display'=>'Y')));
-		//print_r($testFields); exit;
+		
 		$this->set(compact('testFields', $testFields));
 	 }
 
@@ -1444,7 +1444,7 @@ class MasterController extends AppController {
 						$sr_no=$this->CommGrade->find('all',array('fields' => array('sr_no',	'sr_no'),'conditions' => array('category_code' => $category_code,'commodity_code'=>$commodity_code,'test_code'=>$tests)));
 						
 						$postData['sr_no']=$sr_no['0']['Comm_Grade']['sr_no'];
-						//pr($postData);  exit;
+				
 						
 						if (!$this->CommGrade->save($postData)) {
 

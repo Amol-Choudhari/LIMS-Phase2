@@ -25,7 +25,7 @@ class MissingTemplateException extends CakeException
     /**
      * @var string
      */
-    protected $file;
+    protected string $file;
 
     /**
      * @var string[]

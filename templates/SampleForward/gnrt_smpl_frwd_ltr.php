@@ -75,4 +75,4 @@
 				</div>
 		</section>
 	</div>
-<?php echo $this->Html->script("sampleForward/gnrt_smpl_frwd_ltr") ?>
+<?php echo $this->Html->script("sampleForward/gnrt_smpl_frwd_ltr"); ?>

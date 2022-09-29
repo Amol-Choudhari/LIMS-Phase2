@@ -285,7 +285,7 @@ class DmiUsersTable extends Table
 				WHERE du.status !='disactive'
 				GROUP BY du.id,du.f_name,du.l_name ORDER BY du.f_name ASC ";
 
-		pr($users);exit;
+	
 		$q = $conn->execute($users);
 
 		$records = $q->fetchAll('assoc');

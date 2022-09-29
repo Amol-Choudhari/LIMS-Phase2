@@ -33,7 +33,7 @@
 		echo $this->Html->css('jquery-confirm.min');
 
 		//echo $this->Html->script('jquery.min');
-		echo $this->Html->script('jquery-3.5.1.min'); //newly added on 24-08-2020 updated js
+		echo $this->Html->script('jquery_main.min'); //newly added on 24-08-2020 updated js
 		echo $this->Html->script('bootstrap.min');
 		echo $this->Html->script('sha512.min');
 		echo $this->Html->script('validation');

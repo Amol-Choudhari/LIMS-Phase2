@@ -23,8 +23,8 @@ class NablAccreditationController extends AppController{
 		//check masters role given
 		if (empty($user_access)) {
 
-			echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">Please Login</a><?php
-			exit();
+			echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -166,7 +166,6 @@ public function addNabl(){
 	$this->loadModel('LimsLabNablCommTestDetails');
 	$this->loadModel('MCommodity');
 
-	// print_r($_SESSION);exit;
 	$commodity_category = $this->MCommodityCategory->find('list',array('valueField'=>'category_name','conditions'=>array('display'=>'Y'),'order'=>'category_name'))->toArray();
 
 	$office = $this->DmiRoOffices->find('list',array('valueField'=>'ro_office','conditions'=>array('office_type IN'=>array('RAL','CAL'),'delete_status IS NULL'),'order'=>'ro_office'))->toArray();
@@ -178,6 +177,7 @@ public function addNabl(){
 	$test_list = array();
 
 	$message = '';
+	$message_theme = '';
 	$redirect_to = '';
 
 	$label = $this->MLabel->find('list',array('keyField'=>'label_code','valueField'=>'label_desc','conditions'=>array('display'=>'Y')))->toArray();
@@ -236,7 +236,7 @@ public function addNabl(){
 		$nabl_certificate = htmlentities($this->request->getData("nabl_certificate"),ENT_QUOTES);
 		$date_validity = htmlentities($this->request->getData("date_validity"),ENT_QUOTES);
 		$category_code = $this->request->getData("category_code");
-		$commodity_code = $this->request->getData("commodity_code");//print_r($this->request->getData("test_parameters"));exit;
+		$commodity_code = $this->request->getData("commodity_code");
 		$test_parameters = implode(',',$this->request->getData("test_parameters"));//converting with , sepearated value
 		$office = htmlentities($this->request->getData("office"),ENT_QUOTES);
 		
@@ -299,12 +299,14 @@ public function addNabl(){
 		));
 		$this->LimsLabNablLogs->save($NablLogsEntity);
 		
-
+		$this->LimsUserActionLogs->saveActionLog('NABL Accreditation Add','Success');
 		$message = 'The NABL Accreditation is added successfully.';
+		$message_theme = 'success';
 		$redirect_to = 'nabldetailList';
 	}
 
 	$this->set('message',$message);
+	$this->set('message_theme',$message_theme);
 	$this->set('redirect_to',$redirect_to);
 
 }

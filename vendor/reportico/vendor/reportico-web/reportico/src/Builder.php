@@ -611,7 +611,7 @@ class Builder extends ReporticoObject implements \ArrayAccess, \Iterator, \Seria
         
         return $this;
     }
-    
+    #[\ReturnTypeWillChange] 
     public function offsetSet($offset, $value) {
         if (is_null($offset)) {
             $this->value[] = $value;
@@ -619,35 +619,35 @@ class Builder extends ReporticoObject implements \ArrayAccess, \Iterator, \Seria
             $this->value[$offset] = $value;
         }
     }
-    
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset) {
         return isset($this->value[$offset]);
     }
-    
+    #[\ReturnTypeWillChange] 
     public function offsetUnset($offset) {
         unset($this->value[$offset]);
     }
-    
+    #[\ReturnTypeWillChange] 
     public function offsetGet($offset) {
         return isset($this->value[$offset]) ? $this->value[$offset] : null;
     }
-    
+    #[\ReturnTypeWillChange] 
     public function rewind() {
         $this->position = 0;
     }
-    
+    #[\ReturnTypeWillChange] 
     public function current() {
         return $this->value[$this->position];
     }
-    
+    #[\ReturnTypeWillChange] 
     public function key() {
         return $this->position;
     }
-    
+    #[\ReturnTypeWillChange] 
     public function next() {
         ++$this->position;
     }
-    
+    #[\ReturnTypeWillChange] 
     public function valid() {
         return isset($this->value[$this->position]);
     }
@@ -657,6 +657,16 @@ class Builder extends ReporticoObject implements \ArrayAccess, \Iterator, \Seria
     }
     
     public function unserialize($value) {
+        $this->value = unserialize($value);
+    }
+	
+	//thie is method overloading
+	//applied on 26-09-2022 for php version deprecations 8.1.4
+	public function __serialize() {
+        return serialize($this->value);
+    }
+    
+    public function __unserialize($value) {
         $this->value = unserialize($value);
     }
 }

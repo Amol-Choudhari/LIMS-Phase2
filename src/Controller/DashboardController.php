@@ -26,7 +26,7 @@ class DashboardController extends AppController{
 		
 		if ($username == null) {
 			echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">Please Login</a><?php
-			exit();
+			exit;
 		} else {
 
 			$this->loadModel('DmiUsers');
@@ -36,7 +36,7 @@ class DashboardController extends AppController{
 			if (empty($check_user)) {
 
 				echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">Please Login</a><?php
-				exit();
+				exit;
 			}
 		}
 	}

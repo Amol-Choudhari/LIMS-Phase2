@@ -50,7 +50,7 @@
 
 	//JS FILES
 
-	echo $this->Html->script('jquery-3.5.1.min');
+	echo $this->Html->script('jquery_main.min');
 	echo $this->Html->script('jquery-ui');
 	echo $this->Html->script('../dashboard/js/lumino.glyphs');
 	echo $this->Html->script('sha512.min');

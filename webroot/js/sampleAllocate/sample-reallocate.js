@@ -84,7 +84,7 @@
 
 	$("#moveright").click(function(e){
 
-	  if(getsampledetails()==false){
+	  if(move_right()==false){
 		e.preventDefault();
 	  }
 	});

@@ -12,7 +12,6 @@ use Cake\View;
 
 	var $name = 'SampleAllocate';
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /********************************************************************************************************************************************************************************************************************************/
 
@@ -21,8 +20,6 @@ use Cake\View;
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
-		$this->loadModel('DmiSmsEmailTemplates');
-		$this->loadModel('LimsUserActionLogs');
 	}
 
 /********************************************************************************************************************************************************************************************************************************/
@@ -36,8 +33,8 @@ use Cake\View;
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry You don't have permission to view this page.."; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -269,15 +266,13 @@ use Cake\View;
 
 						$chemist_code = $query->fetchAll('assoc');
 
-						// For Maintaining Action Log by Akash (28-07-2022)
-						$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Success');
-
 						$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $stage_smpl_cd])->order('id desc')->first();
 					
 						//Sample Allocate SMS/EMAIL
 						#$this->DmiSmsEmailTemplates->sendMessage(97,$frd_usr_cd['src_usr_cd'],$stage_smpl_cd); #allocating user
 						#$this->DmiSmsEmailTemplates->sendMessage(98,$frd_usr_cd['dst_usr_cd'],$stage_smpl_cd); #aloocated/chemist user
 
+						$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Success'); #Action
 						$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';
 						$message_theme = 'success';
 						$redirect_to = 'available_to_allocate';
@@ -2469,12 +2464,14 @@ use Cake\View;
 						$this->loadModel('DmiSmsEmailTemplates');
 						//$this->DmiSmsEmailTemplates->sendMessage(2008,$sample_code);
 
+						$this->LimsUserActionLogs->saveActionLog('Sample Reallocate','Success'); #Action
 						$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';
 						$message_theme = 'success';
 						$redirect_to = 'available_to_allocate';
 
 					} else {
 
+						$this->LimsUserActionLogs->saveActionLog('Sample Reallocate','Failed'); #Action
 						$message = 'Sorry.. There is some technical issues. please check';
 						$message_theme = 'failed';
 						$redirect_to = 'sample_allocate';
@@ -2600,6 +2597,7 @@ use Cake\View;
 					$this->loadModel('DmiSmsEmailTemplates');
 					//$this->DmiSmsEmailTemplates->sendMessage(2009,$sample_code);
 
+					$this->LimsUserActionLogs->saveActionLog('Sample Forward Retest','Success'); #Action
 					$message = 'The Sample is Forwarded to Lab Incharge with '.$stage_smpl_cd.' code!';
 					$message_theme = 'success';
 					$redirect_to = 'available_to_allocate_retest';

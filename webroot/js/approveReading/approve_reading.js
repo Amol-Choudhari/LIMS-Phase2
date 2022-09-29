@@ -1,8 +1,8 @@
 $(document).ready(function(){
 
-	let sess_user_flag = $("#sess_user_flag").val();
-  	let sess_role = $("#sess_role").val();
-
+	var sess_user_flag = $("#sess_user_flag").val();
+  	var sess_role = $("#sess_role").val();
+	
 	$('#save').hide();
 	$("#menubuttons").hide();
 	$("#stage_sample_code").change();
@@ -33,14 +33,20 @@ $(document).ready(function(){
 							return;
 					}else{
 
-						resArray = JSON.parse(resArray);//response is JSOn encoded to parse JSON
+						//resArray = JSON.parse(resArray);//response is JSOn encoded to parse JSON
 
-						$.each(resArray, function (key, value){
+						//$.each(resArray, function (key, value){
 
-							alert("The finalized result has been sent to RAL,Inward Officer for verification !!!");
-							$("#ral").attr("disabled", true);
-							window.location = 'available_for_approve_reading';
-						});
+							$.alert({
+								theme: 'modern',
+								content:"The finalized result has been sent to RAL,Inward Officer for verification !!!",
+								onClose: function(){
+									$("#ral").attr("disabled", true);
+									window.location = 'available_for_approve_reading';
+								}
+							});
+							
+						//});
 					}
 				}
 			});

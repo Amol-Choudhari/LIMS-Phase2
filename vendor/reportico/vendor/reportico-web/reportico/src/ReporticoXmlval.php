@@ -26,7 +26,7 @@ class ReporticoXmlval
 
     public function &add_xmlval($name, $value = false, $attributes = false)
     {
-        $element = new ReporticoXmlval($name, htmlspecialchars($value), $attributes);
+        $element = new ReporticoXmlval($name, htmlspecialchars($value ?? ''), $attributes);
         $this->elements[] = &$element;
         return $element;
     }

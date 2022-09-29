@@ -69,7 +69,7 @@ class AppController extends Controller
 		define("ForReportsPassword", "123");
 		define("ForReportsConnection", "localhost");
 		define("ForReportsDatabaseInterfade", "PostgreSQL");
-		define('ForReportsDB','newphaseIIdb');
+		define('ForReportsDB','dmi');
 
 		//below headers are set for "Content-Security-Policy", to allow inline scripts from same origin and report the outer origin scripts calls.
 		//the "Content-Security-Policy" header is commmented from httpd.conf file now and set here.

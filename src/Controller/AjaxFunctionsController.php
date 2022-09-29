@@ -444,7 +444,8 @@ class AjaxFunctionsController extends AppController{
 										'VS'=>'Sample Verified',
                                         'PS'=>'Payment Saved and Pending with DDO',
                                         'PC'=>'Payment Confirmed & Available to Forward',
-                                        'PR'=>'Payment Referred Back');
+                                        'PR'=>'Payment Referred Back',
+                                        'FT'=>'Test Finalized');
 									
 				$getlastFlag = $this->Workflow->find('all',array('fields'=>'stage_smpl_flag','conditions'=>array('org_sample_code'=>$org_smpl_cd),'order'=>'id desc'))->first();
 				$lastAction = $stageFlagArray[trim($getlastFlag['stage_smpl_flag'])];

@@ -59,4 +59,4 @@
 		</div>
 	</section>
 </div>
-<?php echo $this->Html->script("sampleForward/available_to_forward_list") ?>
+<?php echo $this->Html->script("sampleForward/available_to_forward_list"); ?>

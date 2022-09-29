@@ -7,8 +7,7 @@ use Cake\ORM\Entity;
 use Cake\Datasource\ConnectionManager;
 use Cake\View;
 
-class ApproveReadingController extends AppController
-{
+class ApproveReadingController extends AppController{
 
 	var $name = 'ApproveReading';
 	public function beforeFilter($event) {
@@ -101,8 +100,6 @@ class ApproveReadingController extends AppController
 
 /****************************************************************************************************************************************************************************************************************************/
 
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---------<Approve Reading>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	public function approveReading() {
 
@@ -274,8 +271,6 @@ class ApproveReadingController extends AppController
 /*******************************************************************************************************************************************************************************************************************************************/
 
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---------<Retesting Samples>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-
 
 	public function retestingSample() {
 
@@ -399,10 +394,10 @@ class ApproveReadingController extends AppController
 		$conn->execute("UPDATE sample_inward SET status_flag='SR' WHERE org_sample_code='$ogrsample_code'");
 
 		#SMS - Retest
-		//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code); # sender
+		//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code); # TO
+		//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code); # FROM
 
-		#Action
-		$this->LimsUserActionLogs->saveActionLog('Sample Sent for Retest','Success'); 
+		$this->LimsUserActionLogs->saveActionLog('Sample Sent for Retest','Success'); #Action
 
 	  	echo '#1#';
 	  	exit;
@@ -459,8 +454,6 @@ class ApproveReadingController extends AppController
 
 /*******************************************************************************************************************************************************************************************************************************************/
 
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---------<Check Multiple Test Allocations>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	 //this function is added to call on ajax when test is click to view result by Inw ofcr.
 	 //this will notify user the status of result submitted or not by chemist.
@@ -646,8 +639,6 @@ class ApproveReadingController extends AppController
 /*******************************************************************************************************************************************************************************************************************************************/
 
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---------<Forward RAL>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-
 	public function forwardRal(){
 
 		$this->loadModel('Workflow');
@@ -745,8 +736,7 @@ class ApproveReadingController extends AppController
 		//$this->DmiSmsEmailTemplates->sendMessage(2037,$sample_code,$_SESSION["posted_ro_office"]);
 		//$this->DmiSmsEmailTemplates->sendMessage(2038,$sample_code,$_SESSION["user_code"]);
 
-		#Action
-		$this->LimsUserActionLogs->saveActionLog('Sample Sent Back to RAL','Success');
+		$this->LimsUserActionLogs->saveActionLog('Sample Sent Back to RAL','Success'); #Action
 
 
 		echo  '#'.json_encode($office_name).'#';
@@ -757,9 +747,6 @@ class ApproveReadingController extends AppController
 
 
 /*******************************************************************************************************************************************************************************************************************************************/
-
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---------<Forward OIC>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 
 	public function forwardOic(){
@@ -842,8 +829,7 @@ class ApproveReadingController extends AppController
 		//$this->DmiSmsEmailTemplates->sendMessage(2015,$sample_code);
 		//$this->DmiSmsEmailTemplates->sendMessage(2015,$sample_code);
 
-		#Action
-		$this->LimsUserActionLogs->saveActionLog('Sample Sent to OIC','Success');
+		$this->LimsUserActionLogs->saveActionLog('Sample Sent to OIC','Success'); #Action
 
 		echo  '#'.json_encode($org_sample_code).'#';
 
@@ -891,9 +877,6 @@ class ApproveReadingController extends AppController
 
 
 /*******************************************************************************************************************************************************************************************************************************************/
-
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---------<Finalized Sample>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 
 
@@ -1031,8 +1014,6 @@ class ApproveReadingController extends AppController
 
 /*******************************************************************************************************************************************************************************************************************************************/
 
-
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---------<Approved Results>--------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	public function approvedResults(){
 

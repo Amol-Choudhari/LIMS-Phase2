@@ -33,10 +33,10 @@ class InwardController extends AppController{
 		$user_access = $this->DmiUserRoles->find('all',array('conditions'=>array('user_email_id IS'=>$this->Session->read('username'))))->first();
 
 		if (!empty($user_access)) {
-			//proceed
+			#PROCEED
 		} else {
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry.. You don't have permission to view this page"; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -88,6 +88,7 @@ class InwardController extends AppController{
 		$this->loadModel('UserRole');
 		$this->loadModel('DmiStates');
 		$this->loadModel('LimsCustomerDetails');
+		$this->loadModel('LimsSamplePaymentDetails');
 
 		$conn = ConnectionManager::get('default');
 
@@ -331,11 +332,10 @@ class InwardController extends AppController{
 		//for payment progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
 
-			$this->loadModel('LimsSamplePaymentDetails');
-			
 			$payment_details = $this->LimsSamplePaymentDetails->find('all')->select('payment_confirmation')->where(['sample_code IS'=>$this->Session->read('org_sample_code')])->order(['id desc'])->first();
 			$payment_details_form_status = trim($payment_details['payment_confirmation']);
 			$payment_section = 'Y'; # For the new field in the LimsSamplePaymentDetails table to store the status of inward section saved or not on 22-07-2022 by Akash
+		
 		} else {
 			$payment_details_form_status = '';
 			$payment_section = ''; # For the new field in the LimsSamplePaymentDetails table to store the status of inward section saved or not on 22-07-2022 by Akash
@@ -768,23 +768,21 @@ class InwardController extends AppController{
 											</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
 											</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
 
-						#SMS
+						#SMS : Sample Confirmed
 						#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #Inward
 						#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #DDO 
 						#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #RO
-
-						#Action
-						$this->LimsUserActionLogs->saveActionLog('Sample Sent to DDO','Success');
+						
+						$this->LimsUserActionLogs->saveActionLog('Sample Sent to DDO','Success'); #Action
 					}
 
 				} else {
 
-					#SMS
+					#SMS : Sample Confirmed
 					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #source user
 					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #destination user
-
-					#Action
-					$this->LimsUserActionLogs->saveActionLog('Sample Confirmed','Success');
+					
+					$this->LimsUserActionLogs->saveActionLog('Sample Confirmed','Success'); #Action
 				
 					$message_variable = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
@@ -976,7 +974,7 @@ class InwardController extends AppController{
 										  si.rej_reason, si.rej_code, si.users
 								ORDER BY si.received_date DESC");
 
-		$res = $query ->fetchAll('assoc'); //pr($res); exit;
+		$res = $query ->fetchAll('assoc');
 		$this->set('res',$res);
 	}
 

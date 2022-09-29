@@ -18,51 +18,52 @@ class InputvalidationComponent extends Component {
 		$this->Controller = $this->_registry->getController();
 		$this->Session = $this->getController()->getRequest()->getSession();
 	}
+
 /***************************************************************************************************************************************************************************************************/		
 
 	// validate category post data on server side
-		public function categoryPostValidations($postData) {
+	public function categoryPostValidations($postData) {
 
-			$validate_status = '';
+		$validate_status = '';
 
-			if (!empty($postData['category_name'])) {
+		if (!empty($postData['category_name'])) {
 
-				$res = preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $postData['category_name']);
-				
-					if ($res>'0') {
-
-						$validate_status = 'Invalid Category Name';
-					}
-			}
-
-			if (!empty($postData['l_category_name'])) {
-
-				$res = preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $postData['l_category_name']);
-				
-					if ($res>'0') {
-
-						$validate_status = 'Invalid Language Category Name';
-					}
-			}
-
-			if (!empty($postData['min_quantity'])) {
-
-				if (!is_numeric($postData['min_quantity'])) {
-
-					$validate_status = 'Invalid Minimum Quantity';
-				}
-
-				$res = preg_match('/[.]/', $postData['min_quantity']);
-				
+			$res = preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $postData['category_name']);
+			
 				if ($res>'0') {
 
-					$validate_status = 'Minium quantity should be numeric';
+					$validate_status = 'Invalid Category Name';
 				}
+		}
+
+		if (!empty($postData['l_category_name'])) {
+
+			$res = preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $postData['l_category_name']);
+			
+				if ($res>'0') {
+
+					$validate_status = 'Invalid Language Category Name';
+				}
+		}
+
+		if (!empty($postData['min_quantity'])) {
+
+			if (!is_numeric($postData['min_quantity'])) {
+
+				$validate_status = 'Invalid Minimum Quantity';
 			}
 
-			return $validate_status;
-		
+			$res = preg_match('/[.]/', $postData['min_quantity']);
+			
+			if ($res>'0') {
+
+				$validate_status = 'Minium quantity should be numeric';
+			}
 		}
+
+		return $validate_status;
+	
+	}
 
 /***************************************************************************************************************************************************************************************************/		
 

@@ -187,30 +187,34 @@ class UsersController extends AppController{
 	
 					if ($change_pass_result == 1) {
 
+						$this->LimsUserActionLogs->saveActionLog('Change Password','Failed');
 						$message = 'Sorry...username not matched to save new password';
 						$message_theme = 'failed';
 						$redirect_to = 'change_password';
 
 					} elseif ($change_pass_result == 2) {
 
+						$this->LimsUserActionLogs->saveActionLog('Change Password','Failed');
 						$message = 'Sorry...Please Check old password again';
 						$message_theme = 'failed';
 						$redirect_to = 'change_password';
 
 					} elseif ($change_pass_result == 3) {
 
+						$this->LimsUserActionLogs->saveActionLog('Change Password','Failed');
 						$message = 'Sorry...please Check. Confirm password not matched';
 						$message_theme = 'failed';
 						$redirect_to = 'change_password';
 
 					} elseif ($change_pass_result == 4) {
 
-						// SHOW ERROR MESSAGE IF NEW PASSWORD FOUND UNDER LAST THREE PASSWORDS OF USER By Aniket Ganvir dated 16th NOV 2020
+						$this->LimsUserActionLogs->saveActionLog('Change Password','Failed');
 						$message = 'This password matched with your last three passwords, Please enter different password';
 						$redirect_to = 'change_password';
 
 					} else {
 
+						$this->LimsUserActionLogs->saveActionLog('Change Password','Success');
 						$message = 'Password Changed Successfully';
 						$message_theme = 'success';
 						$redirect_to = 'change_password';
@@ -809,12 +813,14 @@ class UsersController extends AppController{
 						$this->Session->write('f_name',$htmlencodedfname);
 						$this->Session->write('l_name',$htmlencodedlname);
 
+						$this->LimsUserActionLogs->saveActionLog('Profile Update','Success');
 						$message = 'Profile data updated successfully';
 						$message_theme = 'success';
 						$redirect_to = 'user_profile';
 
 					} else {
 
+						$this->LimsUserActionLogs->saveActionLog('Profile Update','Failed');
 						$message = 'Sorry...Please check your fields again';
 						$message_theme = 'failed';
 						$redirect_to = 'user_profile';
@@ -822,6 +828,7 @@ class UsersController extends AppController{
 
 				} else {
 
+					$this->LimsUserActionLogs->saveActionLog('Profile Update','Failed');
 					$message =  "Please check some fields are not entered";
 					$message_theme = 'failed';
 					$redirect_to = 'user_profile';
@@ -1119,26 +1126,30 @@ class UsersController extends AppController{
 
 								if ($this->LimsUserTransfer->save($limsUserTransferEntity)) {
 
+									$this->LimsUserActionLogs->saveActionLog('Work Tarnsfer','Success');
 									$message = 'Pending work transfered successfully';
 									$message_theme = 'success';
 									$redirect_to = 'user_pending_work_transfer';
-								};
-							}							
-													
+								}
+							}
+
 						} else {
 							
+							$this->LimsUserActionLogs->saveActionLog('Work Tarnsfer','Failed');
 							$message = 'From user or To user value is Invalid';
 							$message_theme = 'failed';
 						}
 					
 					} else {
 						
+						$this->LimsUserActionLogs->saveActionLog('Work Tarnsfer','Failed');
 						$message = 'From user or To user value is Invalid';
 						$message_theme = 'failed';
 					}					
 					
 				} else {
 					
+					$this->LimsUserActionLogs->saveActionLog('Work Tarnsfer','Failed');
 					$message = 'Check All Input Fields Properly!';
 					$message_theme = 'failed';
 				}
@@ -1169,7 +1180,7 @@ class UsersController extends AppController{
 		$user_lists   = $this->DmiUsers->find('all',array('fields'=>array('id','f_name','l_name','email'),
 															'conditions'=>array('status !='=>'disactive','division IN'=>array('BOTH','LMIS'),
 															'role'=>$fromuserrole['role'],'posted_ro_office'=>$from_office_id),'order'=>'f_name'))->toArray();
-		//pr($user_lists); exit;
+		
 		$user_list = array();
 		
 		if (!empty($user_lists)) {

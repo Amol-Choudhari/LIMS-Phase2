@@ -385,5 +385,5 @@
 <input type="hidden" id="receivedfrom" value="<?php echo $receivedfrom; ?>">
 <?php if(empty($sample_type_code)){ $sample_type = ''; }else{ $sample_type = $sample_type_code; } ?>
 <input type="hidden" id="sample_type" value="<?php echo $sample_type; ?>">
-<?php echo $this->Html->Script('inward/sample_inward'); ?>
-<?php echo $this->Html->Script('sample_reg_form'); ?>
+<?php echo $this->Html->script('inward/sample_inward'); ?>
+<?php echo $this->Html->script('sample_reg_form'); ?>

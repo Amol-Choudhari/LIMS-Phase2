@@ -72,8 +72,9 @@ class ReportController extends AppController
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page OR Your session is expired";
-			exit();
+			
+			echo "Sorry.. You don't have permission to view this page OR Your session is expired"; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 
@@ -3804,7 +3805,7 @@ class ReportController extends AppController
 					$data = $this->request->getData('ral_lab');
 
 					$data1 = explode("~", $data);
-					// print_r($data1);exit;
+				
 
 					if ($data1[0] != 'all') {
 
@@ -4479,7 +4480,7 @@ class ReportController extends AppController
 
 			$headerone = $header1 . '<br>' . $header2 . '<br>' . $header3 . '<br>' . $header4;
 
-			if ($role == 'RAL/CAL OIC') {//print_r(ForReportsDB);exit;
+			if ($role == 'RAL/CAL OIC') {
 				if ($office_type == 'RAL') {
 					$query = ReportCustomComponent::getRalCalOicAllStaticsCounts($from_date, $to_date, $commodity, $office_type);
 					$sql = "SELECT ofsc_name, inward, forward, forward_to_test, internal, external, commodity_name FROM temp_reportico_ral_cal_oic_all_office_statistic WHERE user_id ='$user_id'  ORDER BY ofsc_name";
@@ -6888,7 +6889,7 @@ class ReportController extends AppController
 				}
 			}
 			
-			// print_r($query); exit;
+			
 			if ($role == 'Admin') {
 				$query = ReportCustomComponent::getAdmindetailsOfSamplesAnalysedCarryForwardForSampleType($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {
@@ -7040,7 +7041,7 @@ class ReportController extends AppController
 				
 				
 			}
-			// print_r($query); exit;
+			
 			if ($role == 'Admin') {
 				$query = ReportCustomComponent::getAdminConsolidatedReporteAnalyzedByChemist($month, $year, $ral_lab_no, $ral_lab_name);
 				if ($query == 1) {

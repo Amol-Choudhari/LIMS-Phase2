@@ -1,25 +1,25 @@
 <?php
-	namespace app\Controller\Component;
-	use Cake\Controller\Controller;
-	use Cake\Controller\Component;
-	use Cake\Controller\ComponentRegistry;
-	use Cake\ORM\Table;
-	use Cake\ORM\TableRegistry;
-	use Cake\Datasource\EntityInterface;
-	use QRcode;
-	class CustomfunctionsComponent extends Component {
+namespace app\Controller\Component;
+use Cake\Controller\Controller;
+use Cake\Controller\Component;
+use Cake\Controller\ComponentRegistry;
+use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
+use Cake\Datasource\EntityInterface;
+use QRcode;
+class CustomfunctionsComponent extends Component {
 
-		public $components= array('Session','PaymentDetails');
-		public $controller = null;
-		public $session = null;
-	
-		public function initialize(array $config):void{
-			parent::initialize($config);
-			$this->Controller = $this->_registry->getController();
-			$this->Session = $this->getController()->getRequest()->getSession();
-		}
+	public $components= array('Session','PaymentDetails');
+	public $controller = null;
+	public $session = null;
 
-/***************************************************************************************************************************************************************************************************/		
+	public function initialize(array $config):void{
+		parent::initialize($config);
+		$this->Controller = $this->_registry->getController();
+		$this->Session = $this->getController()->getRequest()->getSession();
+	}
+
+/***************************************************************************************************************************************************************************************************/
 
 	//CHECK FAILED ATTEMPTS OF USER
 	public function checkLoginLockout($table,$user_id) {
@@ -30,11 +30,7 @@
 		if ($table == 'DmiUserLogs') {
 
 			$get_logs_records = $Dmitable->find('all',array('fields'=>array('id'),'conditions'=>array('email_id IS'=>$user_id),'order'=>'id Desc'))->toArray();
-
-		} elseif ($table == 'DmiCustomerLogs') {
-
-			$get_logs_records = $Dmitable->find('all',array('fields'=>array('id'),'conditions'=>array('customer_id IS'=>$user_id),'order'=>'id Desc'))->toArray();
-		}
+		} 
 
 		$i = 0;
 
@@ -263,7 +259,7 @@
 	}
 
 
-/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>--------<File Upload Library>-------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+/***************************************************************************************************************************************************************************************************/		
 						
 	//FILE UPLOAD LIBRARY FOR FILE UPLOADING
 	public function fileUploadLib($file_name,$file_size,$file_type,$file_local_path) {
@@ -281,14 +277,14 @@
 
 			$extension_name = strtolower($get_extension_value[1]);
 
-				if (in_array($extension_name,$valid_extension_file)) {
+			if (in_array($extension_name,$valid_extension_file)) {
 
-				} else {
+			} else {
 
-					$this->Session->destroy();
-					echo "Invalid file type.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
-					exit;
-				}
+				$this->Session->destroy();
+				echo "Invalid file type.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+				exit;
+			}
 		}
 
 		if (($file_size > 2097152)) {
@@ -313,27 +309,27 @@
 					$header = fread($f, 4);
 					fclose($f);
 
-						// Signature = PDF
-						if (strncmp($header, "\x25\x50\x44\x46", 4)==0 && strlen ($header)==4) {
-							
-							// CHECK IF PDF CONTENT HAVING MALICIOUS CHARACTERS OR NOT
-							$pdf_content = file_get_contents($file_local_path);
-
-							$cleaned_pdf_content = $this->fileClean($pdf_content);
-
-								if ($cleaned_pdf_content=='invalid') {
-
-									$this->Session->destroy();
-									echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php	
-									exit;
-								}
+					// Signature = PDF
+					if (strncmp($header, "\x25\x50\x44\x46", 4)==0 && strlen ($header)==4) {
 						
-						} else {
+						// CHECK IF PDF CONTENT HAVING MALICIOUS CHARACTERS OR NOT
+						$pdf_content = file_get_contents($file_local_path);
+
+						$cleaned_pdf_content = $this->fileClean($pdf_content);
+
+						if ($cleaned_pdf_content=='invalid') {
 
 							$this->Session->destroy();
-							echo "Sorry....modified PDF file";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+							echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php	
 							exit;
 						}
+					
+					} else {
+
+						$this->Session->destroy();
+						echo "Sorry....modified PDF file";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+						exit;
+					}
 						
 				} else {
 
@@ -367,17 +363,18 @@
 							echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>">	Please Login</a><?php
 							exit;
 						}
-							// CHECK IF IMAGE CONTENTS HAVING MALICIOUS CHARACTERS OR NOT
-							$img_content = file_get_contents($file_local_path);
-								
-							$cleaned_img_content = $this->fileClean($img_content);
 
-							if ($cleaned_img_content=='invalid') {
+						// CHECK IF IMAGE CONTENTS HAVING MALICIOUS CHARACTERS OR NOT
+						$img_content = file_get_contents($file_local_path);
+							
+						$cleaned_img_content = $this->fileClean($img_content);
 
-								$this->Session->destroy();
-								echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>">	Please Login</a><?php	
-								exit;
-							}
+						if ($cleaned_img_content=='invalid') {
+
+							$this->Session->destroy();
+							echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>">	Please Login</a><?php	
+							exit;
+						}
 					
 					} else {
 
@@ -414,9 +411,9 @@
 
 		if (!empty($uploadData)) {
 
-				return $uploadData;
+			return $uploadData;
 		}
-	
+
 	}
 
 
@@ -436,13 +433,12 @@
 			$charac = $b_list['charac'];		
 			$posValue = strpos($str,$charac);
 			
-				if (!empty($posValue)) {
+			if (!empty($posValue)) {
 
-					$malicious_found = 1;
-					break;
-				}
-
-		}		
+				$malicious_found = 1;
+				break;
+			}
+		}
 		
 		if ($malicious_found > 0) {
 
@@ -493,14 +489,14 @@
 			$last_login = 'First login';
 			return $last_login;
 		}
-	
+
 	}
 
 /***************************************************************************************************************************************************************************************************/		
 
 	//SERVER-SIDE VALIDATIONS FOR RADIO BUTTON
 	public function radioButtonInputCheck($post_input_request) {
-	
+
 		if ($post_input_request == 'yes' || $post_input_request == 'no' || $post_input_request == 'page' ||
 				$post_input_request == 'external' || $post_input_request == 'top' || $post_input_request == 'side' ||
 				$post_input_request == 'bottom' || $post_input_request == 'DMI' || $post_input_request == 'LMIS' ||
@@ -582,7 +578,7 @@
 				}
 
 				$year_value = $this->integerInputCheck($year_value);
-	
+
 				$valid = checkdate(trim($month_value), trim($day_value), trim((int)$year_value));
 
 				if ($valid == 1) {
@@ -623,7 +619,7 @@
 			$this->createSampleCode();
 		}
 	}
-	
+
 
 /***************************************************************************************************************************************************************************************************/		
 
@@ -683,7 +679,7 @@
 
 		//get sample code by inward id
 		$check_sample_code=array();
-	
+
 		if ($org_sample_code != null) {
 
 			if ($check_for == 'payment_details') {
@@ -722,7 +718,7 @@
 
 			//RO SO Officer & Commercial
 			if ($user_flag=='RO' || $user_flag=='SO') {
- 
+
 				$check_details = $SampleInwardDetails->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('org_sample_code IS'=>$org_sample_code),'order'=>'id desc'))->first();
 						
 				if (!empty($check_inward) && !empty($check_details)) {
@@ -819,7 +815,7 @@
 	// Date : 01/09/2022
 
 	public function getQrCodeSampleTestReport($Sample_code_as,$sample_forwarded_office,$test_report){
-			  
+				
 		$LimsReportsQrcodes = TableRegistry::getTableLocator()->get('LimsReportsQrcodes'); //initialize model in component
 		
 		require_once(ROOT . DS .'vendor' . DS . 'phpqrcode' . DS . 'qrlib.php');
@@ -853,13 +849,15 @@
 			'modified'=>$date
 		]);
 
-			$LimsReportsQrcodes->save($SampleReportAdd);
-			
-			$qrimage = $LimsReportsQrcodes->find('all',array('field'=>'qr_code_path','conditions'=>array('sample_code'=>$stage_smpl_code),'order'=>'id desc'))->first();
+		$LimsReportsQrcodes->save($SampleReportAdd);
 		
-			return $qrimage;
+		$qrimage = $LimsReportsQrcodes->find('all',array('field'=>'qr_code_path','conditions'=>array('sample_code'=>$stage_smpl_code),'order'=>'id desc'))->first();
+	
+		return $qrimage;
 
 	}
+
+
 
 
 }

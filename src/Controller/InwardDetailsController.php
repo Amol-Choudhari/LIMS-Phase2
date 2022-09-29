@@ -36,8 +36,8 @@ class InwardDetailsController extends AppController {
 			//proceed
 		} else {
 
-			echo "Sorry.. You don't have permission to view this page";
-			exit();
+			echo "Sorry.. You don't have permission to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			exit;
 		}
 	}
 

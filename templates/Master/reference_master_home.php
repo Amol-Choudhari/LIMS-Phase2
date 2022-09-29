@@ -76,11 +76,11 @@
                             <div class="form-horizontal">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-3">
+                                       <!-- <div class="col-md-3">
                                             <div class="form-group">
-                                                <a  class="btn btn-block btn-outline-secondary" href="<?php echo $this->getRequest()->getAttribute('webroot');?>Master/commodityGrade">Sample Wise Inward Fields</a>
+                                                <a  class="btn btn-block btn-outline-secondary" href="<?php // echo $this->getRequest()->getAttribute('webroot');?>Master/commodityGrade">Sample Wise Inward Fields</a>
                                             </div>
-                                        </div>
+                                        </div>-->
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <a  class="btn btn-block btn-outline-secondary" href="<?php echo $this->getRequest()->getAttribute('webroot');?>Master/commodityGrade">Grading Standards</a>
