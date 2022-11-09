@@ -24,6 +24,7 @@ $("#sample_undo").click(function(e){
 	}
 
 });
+
 //to revert the reject samples on sample forward window by OIC.
 //and again available for forwarding
 function sample_undo(sid_id,sample_code){

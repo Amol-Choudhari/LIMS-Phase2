@@ -3467,9 +3467,9 @@ class ReportCustomComponent extends Component
                 $strForward = "SELECT w.org_sample_code FROM workflow w
                                 INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
                 if (!empty($commodity)) {
-                    $strForward .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
+                    $strForward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
                 } else {
-                    $strForward .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strForward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strForward .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strForward);
@@ -3479,9 +3479,9 @@ class ReportCustomComponent extends Component
                 $strForwardToTest = "SELECT w.org_sample_code FROM workflow w
                                     INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
                 if (!empty($commodity)) {
-                    $strForwardToTest .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
+                    $strForwardToTest .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
                 } else {
-                    $strForwardToTest .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strForwardToTest .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strForwardToTest .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strForwardToTest);
@@ -3491,9 +3491,9 @@ class ReportCustomComponent extends Component
                 $strFinalized = "SELECT w.org_sample_code FROM workflow w
                                 INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
                 if (!empty($commodity)) {
-                    $strFinalized .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
+                    $strFinalized .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
                 } else {
-                    $strFinalized .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strFinalized .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strFinalized .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strFinalized);
@@ -3507,12 +3507,12 @@ class ReportCustomComponent extends Component
 
                 if (!empty($recordsFinalized)) {
                     foreach ($recordsFinalized as $each_f) {
-                        $query = $con->execute("SELECT w.src_loc_id FROM workflow w WHERE w.org_sample_code = '" . $each_f['org_sample_code'] . "' AND w.stage_smpl_flag IN ('OF,HF,SI')  ");
+                        $query = $con->execute("SELECT w.src_loc_id FROM workflow w WHERE w.org_sample_code = '" . $each_f['org_sample_code'] . "' AND w.stage_smpl_flag IN ('OF','HF','SI')  ");
                         $get_details = $query->fetchAll('assoc');
                         $query->closeCursor();
                         if (!empty($get_details)) {
 
-                            $sr_loc_id = $get_details['src_loc_id'];
+                            $sr_loc_id = $get_details[0]['src_loc_id'];
 
                             if (in_array($sr_loc_id, $ral_ids)) {
 
@@ -3562,12 +3562,14 @@ class ReportCustomComponent extends Component
             $ro_ofsc_name = array();
             $ro_inward = array();
             $ro_forward = array();
-            $ro_finalized = array();
+            
 
             //$k is used for index in inserting value
             $k =  0;
             //getting counts for RO/SO offices
             foreach ($ro_loc_id as $each_ofsc) {
+				
+				$ro_finalized = array();
 
                 $ro_ofsc_name[$i] = $each_ofsc['ro_office'];
 
@@ -3587,9 +3589,9 @@ class ReportCustomComponent extends Component
                 $strRoFoward = "SELECT w.org_sample_code FROM workflow w INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
 
                 if (!empty($commodity)) {
-                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity'";
+                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity'";
                 } else {
-                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strRoFoward .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strRoFoward);
@@ -3619,18 +3621,27 @@ class ReportCustomComponent extends Component
                         $j = $j + 1;
                     }
                 }
-                $smpl_arry = implode(',', $smpl_arry);
+                /*$smpl_arry = implode(',', $smpl_arry);
                 $strRoFinalized = "SELECT w.org_sample_code FROM workflow w WHERE w.org_sample_code = '$smpl_arry' AND w.stage_smpl_flag = 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date' GROUP BY w.org_sample_code";
                 $query = $con->execute($strRoFinalized);
 
                 $recordsRoFinalized = $query->fetchAll('assoc');
-                $query->closeCursor();
+                $query->closeCursor();*/
+				
+				//now get finalized samples out of forwarded samples for each office
+				if(!empty($smpl_arry)){
+					$recordsRoFinalized = array('org_sample_code IN'=>$smpl_arry, 'stage_smpl_flag'=>'FG',
+													'date(tran_date) >=' =>$from_date, 'date(tran_date) <=' =>$to_date);
+													
+					$ro_finalized = $workflow->find('all',array('fields'=>array('org_sample_code'),'conditions'=>$recordsRoFinalized,'group'=>'org_sample_code'))->toArray();
+										
+				}
 
                 $i = $i + 1;
 
                 $ro_inward = COUNT($recordsRoInward);
                 $ro_forward = COUNT($recordsRoForward);
-                $ro_finalized = COUNT($recordsRoFinalized);
+                $ro_finalized = COUNT($ro_finalized);
 
                 $queryCommodity = $con->execute("SELECT commodity_name FROM m_commodity WHERE commodity_code = '$commodity'");
                 $recCommodities = $queryCommodity->fetchAll('assoc');
@@ -5862,7 +5873,7 @@ class ReportCustomComponent extends Component
         FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
         GROUP BY sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email";
                 
-        $sql2 = $con->execute($sql2);
+        $sql2 = $con->execute($sql);
         $recordNames = $sql2->fetchAll('assoc');
         $sql2->closeCursor();
 
@@ -8131,7 +8142,7 @@ class ReportCustomComponent extends Component
         $to_date = str_replace('/', '-', $to_date);
 
         $dmiRoOffice = TableRegistry::getTableLocator()->get('DmiRoOffices');
-        $workflow = TableRegistry::getTableLocator()->get('workflow');
+        $workflow = TableRegistry::getTableLocator()->get('Workflow');
 
         if ($office_type == 'RAL') {
             $delete = $con->execute("DELETE FROM temp_reportico_ho_all_office_statistic WHERE user_id = '$user_id'");
@@ -8181,9 +8192,9 @@ class ReportCustomComponent extends Component
                 $strForward = "SELECT w.org_sample_code FROM workflow w
                             INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
                 if (!empty($commodity)) {
-                    $strForward .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
+                    $strForward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
                 } else {
-                    $strForward .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strForward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strForward .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strForward);
@@ -8193,9 +8204,9 @@ class ReportCustomComponent extends Component
                 $strForwardToTest = "SELECT w.org_sample_code FROM workflow w
                                     INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
                 if (!empty($commodity)) {
-                    $strForwardToTest .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
+                    $strForwardToTest .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
                 } else {
-                    $strForwardToTest .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strForwardToTest .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'TA' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strForwardToTest .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strForwardToTest);
@@ -8205,9 +8216,9 @@ class ReportCustomComponent extends Component
                 $strFinalized = "SELECT w.org_sample_code FROM workflow w
                                 INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
                 if (!empty($commodity)) {
-                    $strFinalized .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
+                    $strFinalized .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag = 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity' ";
                 } else {
-                    $strFinalized .= " WHERE w.dst_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strFinalized .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag= 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strFinalized .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strFinalized);
@@ -8221,12 +8232,12 @@ class ReportCustomComponent extends Component
 
                 if (!empty($recordsFinalized)) {
                     foreach ($recordsFinalized as $each_f) {
-                        $query = $con->execute("SELECT w.src_loc_id FROM workflow w WHERE w.org_sample_code = '" . $each_f['org_sample_code'] . "' AND w.stage_smpl_flag IN ('OF,HF,SI')  ");
+                        $query = $con->execute("SELECT w.src_loc_id FROM workflow w WHERE w.org_sample_code = '" . $each_f['org_sample_code'] . "' AND w.stage_smpl_flag IN ('OF','HF','SI')  ");
                         $get_details = $query->fetchAll('assoc');
                         $query->closeCursor();
                         if (!empty($get_details)) {
 
-                            $sr_loc_id = $get_details['src_loc_id'];
+                            $sr_loc_id = $get_details[0]['src_loc_id'];
 
                             if (in_array($sr_loc_id, $ral_ids)) {
 
@@ -8275,12 +8286,14 @@ class ReportCustomComponent extends Component
             $ro_ofsc_name = array();
             $ro_inward = array();
             $ro_forward = array();
-            $ro_finalized = array();
+            
 
             //$k is used fro index in inserting value in temp table
             $k =  0;
             //getting counts for RO/SO offices
             foreach ($ro_loc_id as $each_ofsc) {
+				
+				$ro_finalized = array();
 
                 $ro_ofsc_name[$i] = $each_ofsc['ro_office'];
 
@@ -8301,9 +8314,9 @@ class ReportCustomComponent extends Component
                 $strRoFoward = "SELECT w.org_sample_code FROM workflow w INNER JOIN sample_inward si ON si.org_sample_code = w.org_sample_code";
 
                 if (!empty($commodity)) {
-                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity'";
+                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date' AND si.commodity_code = '$commodity'";
                 } else {
-                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF,HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
+                    $strRoFoward .= " WHERE w.src_loc_id = '" . $each_ofsc['id'] . "' AND w.stage_smpl_flag IN ('OF','HF') AND w.tran_date BETWEEN '$from_date' AND '$to_date'";
                 }
                 $strRoFoward .= "GROUP BY w.org_sample_code";
                 $query = $con->execute($strRoFoward);
@@ -8335,18 +8348,27 @@ class ReportCustomComponent extends Component
                         $j = $j + 1;
                     }
                 }
-                $smpl_arry = implode(',', $smpl_arry);
-                $strRoFinalized = "SELECT w.org_sample_code FROM workflow w WHERE w.org_sample_code = '$smpl_arry' AND w.stage_smpl_flag = 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date' GROUP BY w.org_sample_code";
+                //$smpl_arry = implode(',', $smpl_arry);
+                /*$strRoFinalized = "SELECT w.org_sample_code FROM workflow w WHERE w.org_sample_code = '$smpl_arry' AND w.stage_smpl_flag = 'FG' AND w.tran_date BETWEEN '$from_date' AND '$to_date' GROUP BY w.org_sample_code";
                 $query = $con->execute($strRoFinalized);
 
                 $recordsRoFinalized = $query->fetchAll('assoc');
-                $query->closeCursor();
+                $query->closeCursor();*/
+				
+				//now get finalized samples out of forwarded samples for each office
+				if(!empty($smpl_arry)){
+					$recordsRoFinalized = array('org_sample_code IN'=>$smpl_arry, 'stage_smpl_flag'=>'FG',
+													'date(tran_date) >=' =>$from_date, 'date(tran_date) <=' =>$to_date);
+													
+					$ro_finalized = $workflow->find('all',array('fields'=>array('org_sample_code'),'conditions'=>$recordsRoFinalized,'group'=>'org_sample_code'))->toArray();
+										
+				}
 
                 $i = $i + 1;
 
                 $ro_inward = COUNT($recordsRoInward);
                 $ro_forward = COUNT($recordsRoForward);
-                $ro_finalized = COUNT($recordsRoFinalized);
+                $ro_finalized = COUNT($ro_finalized);
 
                 $queryCommodity = $con->execute("SELECT commodity_name FROM m_commodity WHERE commodity_code = '$commodity'");
                 $recCommodities = $queryCommodity->fetchAll('assoc');
@@ -12011,7 +12033,7 @@ class ReportCustomComponent extends Component
         FROM sa.alloc_date):: INTEGER = '$year' AND u.role IN ('Jr Chemist','Sr Chemist','Cheif Chemist')
         GROUP BY sa.alloc_to_user_code, sa.commodity_code, mst.sample_type_code,u.email";
 
-        $sql1 = $con->execute($sql1);
+        $sql1 = $con->execute($sql);
         $recordNames = $sql1->fetchAll('assoc');
         $sql1->closeCursor();
 

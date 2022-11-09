@@ -30,7 +30,7 @@ class TestController extends AppController {
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page"; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry.. You don't have permission to view this page");
 			exit;
 		}
 	}
@@ -89,6 +89,7 @@ class TestController extends AppController {
 		$tran_date = date('Y-m-d');
 		$stage = 4;
 		$trimmedString = trim($this->request->getData('final_str'),"-");
+		$this->loadModel('DmiRoOffices');
 
 		$data = explode("-",$trimmedString);
 
@@ -115,15 +116,17 @@ class TestController extends AppController {
 		$workflowEntity = $this->Workflow->newEntities($workflow_data);
 
 		foreach($workflowEntity as $each){
-
+			
 			$this->Workflow->save($each);
+
+			$this->LimsUserActionLogs->saveActionLog('Sample Accept for Test','Success'); #Action
+			
+			$oic = $this->DmiRoOffices->getOfficeIncharge($each['src_loc_id']);
+			#SMS : Sample Accept for Test
+			$this->DmiSmsEmailTemplates->sendMessage(96,$each['dst_usr_cd'],$each['stage_smpl_cd']);
+			$this->DmiSmsEmailTemplates->sendMessage(97,$each['src_usr_cd'],$each['stage_smpl_cd']);
+			$this->DmiSmsEmailTemplates->sendMessage(153,$oic,$each['stage_smpl_cd']);
 		}
-
-	
-		$this->LimsUserActionLogs->saveActionLog('Sample Accept for Test','Success'); #Action
-
-		#SMS : Sample Accept for Test
-		//$this->DmiSmsEmailTemplates->sendMessage(2033,$sample[0]['sample_code'],$sample[0]['alloc_to_user_code']);
 
 		echo '#'.json_encode($chemist_code).'#';
 		exit;
@@ -136,6 +139,7 @@ class TestController extends AppController {
 		$conn = ConnectionManager::get('default');
 		$this->loadModel('Workflow');
 		$sendback_remark = htmlentities($_POST['sendback_remark'], ENT_QUOTES);
+		$this->loadModel('DmiRoOffices');
 
 		$trimmedString  = trim($this->request->getData('final_str1'),"-");
 		$data = explode("-",$trimmedString);
@@ -169,15 +173,16 @@ class TestController extends AppController {
 		foreach ($workflowEntity as $each) {
 
 			$this->Workflow->save($each);
+
+			$this->LimsUserActionLogs->saveActionLog('Test Sent Back','Success'); #Action
+
+			$oic = $this->DmiRoOffices->getOfficeIncharge($each['src_loc_id']);
+
+			#SMS: Sample Rejected For Test
+			$this->DmiSmsEmailTemplates->sendMessage(98,$each['src_usr_cd'],$each['stage_smpl_cd']); #For Rejecting User
+			$this->DmiSmsEmailTemplates->sendMessage(99,$each['dst_usr_cd'],$each['stage_smpl_cd']); #For Allocating User
+			$this->DmiSmsEmailTemplates->sendMessage(154,$oic,$each['stage_smpl_cd']); #For Current Office OIC
 		}
-
-
-		#SMS : Test Sent Back
-		#$this->DmiSmsEmailTemplates->sendMessage(2034,$sample[0]['sample_code'],$sample[0]['alloc_by_user_code']);
-		#$this->DmiSmsEmailTemplates->sendMessage(2034,$sample[0]['sample_code'],$sample[0]['alloc_by_user_code']);
-
-		$this->LimsUserActionLogs->saveActionLog('Test Sent Back','Success'); #Action
-
 
 		echo '#'.json_encode($chemist_code).'#';
 		exit;
@@ -911,9 +916,13 @@ class TestController extends AppController {
 
 		$t = $t->fetchAll('assoc');
 
+		$this->loadModel('DmiRoOffices');
+		$oic = $this->DmiRoOffices->getOfficeIncharge($src_loc_id);
+
 		#SMS : Test Result Finalized
-		//$this->DmiSmsEmailTemplates->sendMessage(2035,$sample_code1,$dst);
-		//$this->DmiSmsEmailTemplates->sendMessage(2036,$sample_code1,$user_code);
+		$this->DmiSmsEmailTemplates->sendMessage(100,$user_code,$chemist_code); #For Chemist
+		$this->DmiSmsEmailTemplates->sendMessage(101,$src_usr_cd,$chemist_code); #For Inward
+		$this->DmiSmsEmailTemplates->sendMessage(155,$oic,$chemist_code); #For OIC
 
 		$this->LimsUserActionLogs->saveActionLog('Test Result Finalized','Success'); #Action
 		$message = 'Result have been finalized and forwarded to '.$t[0]['role'].' for approval!';

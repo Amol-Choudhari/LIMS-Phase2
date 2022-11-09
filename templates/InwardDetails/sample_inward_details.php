@@ -1,3 +1,4 @@
+<?php echo $this->Html->css('sampleinward'); ?>
 <?php $sample_type=null; if (!empty($_SESSION['sample'])){ $sample_type = $_SESSION['sample']; } ?>
 	<div class="content-header">
 		<div class="container-fluid">
@@ -157,7 +158,7 @@
 										<!--if confirm then hide btns
 										Added the PV flag condtion if sample is commercial - 30-06-2022  						
 										-->
-										<?php if (!(trim($sample_Details_data['status_flag'])=='S' || trim($sample_Details_data['status_flag'])=='PV')) { ?>
+										<?php if (!(trim((string) $sample_Details_data['status_flag'])=='S' || trim((string) $sample_Details_data['status_flag'])=='PV')) { ?>
 											<div class="col-md-1 float-left">
 												<?php //if record exist
 													if ($SaveUpdatebtn=='update') {
@@ -192,7 +193,7 @@
 	</div>
 	
 <?php echo $this->Html->script('inward/sample_details'); ?>
-<input type="hidden" id="sample_status" value="<?php echo trim($sample_Details_data['status_flag']); ?>">
+<input type="hidden" id="sample_status" value="<?php echo trim((string) $sample_Details_data['status_flag']); ?>">
 <?php if(empty($sample_type)){ $sample_type = ''; }else{ $sample_type = $_SESSION['sample']; }?>
 <input type="hidden" id="sample_type" value="<?php echo $sample_type; ?>">
 <?php echo $this->Html->script('sample_reg_form'); ?>

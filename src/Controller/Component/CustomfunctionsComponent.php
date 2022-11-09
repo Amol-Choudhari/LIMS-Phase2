@@ -248,8 +248,7 @@ class CustomfunctionsComponent extends Component {
 
 		if (filter_var($post_input_request, FILTER_VALIDATE_INT, array("options" => array("min_range"=>$min_id_from_list, "max_range"=>$max_id_from_list))) === false) {
 			
-			$this->Session->destroy();
-			echo "One of selected drop down value is not proper";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->Controller->customAlertPage("One of selected drop down value is not proper");
 			exit;
 
 		} else {
@@ -269,8 +268,7 @@ class CustomfunctionsComponent extends Component {
 
 		if (count($get_extension_value) != 2 ) {
 
-			$this->Session->destroy();
-			echo "Invalid file type.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->Controller->customAlertPage("Invalid file type.");
 			exit;
 
 		} else {
@@ -281,22 +279,19 @@ class CustomfunctionsComponent extends Component {
 
 			} else {
 
-				$this->Session->destroy();
-				echo "Invalid file type.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+				$this->Controller->customAlertPage("Invalid file type.");
 				exit;
 			}
 		}
 
 		if (($file_size > 2097152)) {
 
-			$this->Session->destroy();
-			echo "File too large. File must be less than 2 megabytes.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->Controller->customAlertPage("File too large. File must be less than 2 megabytes.");
 			exit;
 
 		} elseif (($file_type != "application/pdf") && ($file_type != "image/jpeg")) {
 
-			$this->Session->destroy();
-			echo "Invalid file type. Only PDF, JPG types are accepted.";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->Controller->customAlertPage("Invalid file type. Only PDF, JPG types are accepted.");
 			exit;
 
 		} else {
@@ -319,21 +314,19 @@ class CustomfunctionsComponent extends Component {
 
 						if ($cleaned_pdf_content=='invalid') {
 
-							$this->Session->destroy();
-							echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php	
+							$this->Controller->customAlertPage("File seems to be corrupted !");
 							exit;
 						}
 					
 					} else {
 
-						$this->Session->destroy();
-						echo "Sorry....modified PDF file";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+						$this->Controller->customAlertPage("Sorry....modified PDF file");
 						exit;
 					}
 						
 				} else {
 
-					echo "Not getting file path";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+					$this->Controller->customAlertPage("Not getting file path");
 					exit;
 				}
 					//FOR IMAGE FILES
@@ -359,8 +352,7 @@ class CustomfunctionsComponent extends Component {
 						
 						} else {
 
-							$this->Session->destroy();
-							echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>">	Please Login</a><?php
+							$this->Controller->customAlertPage("File seems to be corrupted !");
 							exit;
 						}
 
@@ -371,21 +363,19 @@ class CustomfunctionsComponent extends Component {
 
 						if ($cleaned_img_content=='invalid') {
 
-							$this->Session->destroy();
-							echo "File seems to be corrupted !";?><a href="<?php echo $this->request->getAttribute('webroot');?>">	Please Login</a><?php	
+							$this->Controller->customAlertPage("File seems to be corrupted !");
 							exit;
 						}
 					
 					} else {
 
-						$this->Session->destroy();
-						echo "Sorry....modified JPG file";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+						$this->Controller->customAlertPage("Sorry....modified JPG file");
 						exit;
 					}
 				
 				} else {
 					
-					echo "Not getting file path";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+					$this->Controller->customAlertPage("Not getting file path");
 					exit;
 				}
 
@@ -403,7 +393,7 @@ class CustomfunctionsComponent extends Component {
 
 			} else {
 				
-				echo "File not uploaded please select proper file";?><a href="<?php echo $this->request->getAttribute('webroot');?>">Please Login</a><?php	
+				$this->Controller->customAlertPage("File not uploaded please select proper file");
 				exit;
 			}
 		
@@ -587,13 +577,13 @@ class CustomfunctionsComponent extends Component {
 
 				} else {
 
-					echo"Sorry.. Something wrong happened. ";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login again</a><?php
+					$this->Controller->customAlertPage("Sorry.. Something wrong happened. ");
 					exit;
 				}
 
 			} else {
 
-				echo"Sorry.. Something wrong happened. ";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login again</a><?php
+				$this->Controller->customAlertPage("Sorry.. Something wrong happened. ");
 				exit;
 
 			}

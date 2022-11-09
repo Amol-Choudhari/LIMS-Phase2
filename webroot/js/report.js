@@ -173,25 +173,28 @@ $(document).ready(function() {
         var changedValueTodate = $(this).val();
         var changedValueFromdate = $('#from_date').val();
         var changedValueRalLabList = $('#ral_lab_list').val();
-        $.ajax({
-            url: '../ajax-functions/get-chemist-code-by-date-ral-lab-array',
-            type: "POST",
-            data: ({
-                to_date: changedValueTodate,
-                from_date: changedValueFromdate,
-                ral_lab_list: changedValueRalLabList
-            }),
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
-            },
-            success: function(resp) {
-                $('#chemist_code')
-                    .find('option')
-                    .remove();
-                var mySelect = $('#chemist_code');
-                mySelect.append(resp);
-            }
-        });
+		
+		if (changedValueRalLabList != null) {
+			$.ajax({
+				url: '../ajax-functions/get-chemist-code-by-date-ral-lab-array',
+				type: "POST",
+				data: ({
+					to_date: changedValueTodate,
+					from_date: changedValueFromdate,
+					ral_lab_list: changedValueRalLabList
+				}),
+				beforeSend: function(xhr) {
+					xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+				},
+				success: function(resp) {
+					$('#chemist_code')
+						.find('option')
+						.remove();
+					var mySelect = $('#chemist_code');
+					mySelect.append(resp);
+				}
+			});
+		}
 
     });
 

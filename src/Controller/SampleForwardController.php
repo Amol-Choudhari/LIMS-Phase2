@@ -18,9 +18,6 @@ class SampleForwardController extends AppController {
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
-		$this->loadModel('DmiSmsEmailTemplates');
-		$this->loadModel('LimsUserActionLogs');
-
 	}
 
 /************************************************************************************************************************************************************************************************************************/
@@ -34,8 +31,7 @@ class SampleForwardController extends AppController {
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-
-			echo "Sorry.. You don't have permission to view this page"; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry.. You don't have permission to view this page");
 			exit;
 		}
 	}
@@ -219,14 +215,17 @@ class SampleForwardController extends AppController {
 
 							$user_flag_new = $user_flag1[0]['user_flag'];
 							$ro_office_new = $user_flag1[0]['ro_office'];
-
+							
+			
 							$conn->execute($str);
 
-							$get_user_codes = $this->Workflow->find('all',array('fields'=>array('src_usr_cd','dst_usr_cd'),'conditions'=>array('stage_smpl_cd IS'=>$new_sample_code)))->first();
-						
-							//Sample Forward SMS/EMAIL
-							#$this->DmiSmsEmailTemplates->sendMessage(129,$get_user_codes['src_usr_cd'],$new_sample_code); #source user
-							#$this->DmiSmsEmailTemplates->sendMessage(130,$get_user_codes['dst_usr_cd'],$new_sample_code); #destination user
+							$get_user_codes = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$new_sample_code)))->first();
+							$ralcaloic = $this->DmiRoOffices->getOfficeIncharge($get_user_codes['dst_loc_id']);
+
+							#SMS: Sample Forward
+							$this->DmiSmsEmailTemplates->sendMessage(90,$get_user_codes['src_usr_cd'],$new_sample_code); #Source
+							$this->DmiSmsEmailTemplates->sendMessage(91,$get_user_codes['dst_usr_cd'],$new_sample_code); #Destination
+							$this->DmiSmsEmailTemplates->sendMessage(141,$ralcaloic,$new_sample_code); #OIC
 							
 							// For Maintaining Action Log by Akash (26-04-2022)
 							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
@@ -539,8 +538,7 @@ class SampleForwardController extends AppController {
 
 			$this->authenticateUser();
 			$this->viewBuilder()->setLayout('admin_dashboard');
-			$conn = ConnectionManager::get('default');
-
+		
 			$this->loadModel('SampleInward');
 			$this->loadModel('Workflow');
 			$this->loadModel('SmpRejectAtFwdStage');
@@ -548,8 +546,6 @@ class SampleForwardController extends AppController {
 			$message='';
 			$message_theme = '';
 			$redirect_to='';
-
-			$user_code = $_SESSION['user_code'];
 
 			$this->set('res',array($rej_sample_cd=>$rej_sample_cd));
 
@@ -603,13 +599,10 @@ class SampleForwardController extends AppController {
 
 						//Save Entry of Reject
 						if ($this->SmpRejectAtFwdStage->save($SmpRejectEntity)) {
-
-							//Call to the Common SMS/Email Sending Method
-							//$this->DmiSmsEmailTemplates->sendMessage(2004,$sample_code);
-
-							// For Maintaining Action Log by Akash (26-04-2022)
-							$this->LimsUserActionLogs->saveActionLog('Sample Reject at Forward Stage','Success');
-
+							
+							#SMS: Sample Rejected At Forward
+							$this->DmiSmsEmailTemplates->sendMessage(137,$_SESSION['user_code'],$sample_code); #Source
+							$this->LimsUserActionLogs->saveActionLog('Sample Rejected at Forward Stage','Success'); #Action
 							$message = 'Sample Rejected Successfully';
 							$message_theme = 'success';
 							$redirect_to = 'rejected_list';
@@ -618,8 +611,7 @@ class SampleForwardController extends AppController {
 
 				} else {
 					
-					$this->LimsUserActionLogs->saveActionLog('Sample Reject at Forward Stage','Failed');
-
+					$this->LimsUserActionLogs->saveActionLog('Sample Reject at Forward Stage','Failed'); #Action
 					$message = 'Please enter sample rejection reason.';
 					$message_theme = 'warning';
 					$redirect_to = 'available_to_forward_list';
@@ -679,7 +671,7 @@ class SampleForwardController extends AppController {
 		}
 
 		$user_data = $query->fetchAll('assoc');
-
+		
 		if (!empty($user_data)) {
 			echo '~'.json_encode($user_data).'~';
 		} else {
@@ -709,7 +701,7 @@ class SampleForwardController extends AppController {
 			                     ORDER BY o.ro_office ASC");
 
 		$offices = $query->fetchAll('assoc');
-
+		
 		$str = "<option value='0' >--Select--</option>";//added this line on 18-05-2022 by Amol
 		foreach($offices as $office1) {
 
@@ -1174,10 +1166,10 @@ class SampleForwardController extends AppController {
 					));
 
 					if ($this->SmpRejectAtFwdStage->save($SmpRejectEntity)) {
-
-						//call to the common SMS/Email sending method
-						$this->loadModel('DmiSmsEmailTemplates');
-						//$this->DmiSmsEmailTemplates->sendMessage(2005,$_POST['sample_code']);
+						
+						#SMS: Sample Reverted
+						//$this->DmiSmsEmailTemplates->sendMessage(149,$_SESSION['user_code'],$_POST['sample_code']); #Source
+						$this->LimsUserActionLogs->saveActionLog('Sample Reverted','Success'); #Action
 
 						echo '~1~';
 						exit;

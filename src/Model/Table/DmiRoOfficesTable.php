@@ -216,6 +216,25 @@ class DmiRoOfficesTable extends Table{
 		return $dol;
 	}
 
+	public function getOfficeIncharge($posted=null) {
+
+		if($posted==null){
+			$posted = $_SESSION['posted_ro_office'];
+		}
+
+		$DmiRoOffices = TableRegistry::getTableLocator()->get('DmiRoOffices');
+		$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
+		$getEmail = $DmiRoOffices->find('all')->select(['ro_email_id'])->where(['id IS' => $posted,'delete_status IS NULL'])->first();
+		$get_user_details = $DmiUsers->find('all')->select(['id'])->where(['email IS'=>$getEmail['ro_email_id'],'status !='=>'disactive'])->first();
+		
+		if(!empty($get_user_details)){
+			$oic = $get_user_details['id'];
+		}else{
+			$oic=null;
+		}
+		return $oic;
+	}
+
 
 
 

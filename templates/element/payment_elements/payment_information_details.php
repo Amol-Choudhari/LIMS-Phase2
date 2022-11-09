@@ -121,7 +121,7 @@
 
 		<!--if confirm then hide btns-->
 		<?php if (!(trim($status_flag)== 'S' || trim($status_flag) =='PV')) { ?>
-		<div class="form-buttons">
+		<div class="form-buttons card-footer">
 			<?php if ($confirmBtnStatus =='show') { ?>
 				<div class="col-md-1 float-left">
 					<?php echo $this->Form->submit('Confirm', array('name'=>'confirm', 'id'=>'confirm', 'label'=>false,'class'=>'btn btn-success')); ?>

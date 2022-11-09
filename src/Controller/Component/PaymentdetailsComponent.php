@@ -231,11 +231,6 @@ class PaymentdetailsComponent extends Component {
 
 			if ($LimsSamplePaymentDetails->save($lims_sample_payment_detailsEntity)) {
 
-				#SMS : Payment Replied
-				//$DmiSmaEmailTemplates->sendMessage(2056,$sample_code);
-				//$DmiSmaEmailTemplates->sendMessage(2056,$sample_code);
-				//$DmiSmaEmailTemplates->sendMessage(2056,$sample_code);
-				
 				return true;
 			}
 
@@ -263,7 +258,7 @@ class PaymentdetailsComponent extends Component {
 				
 				if ($_SESSION['user_flag'] =='RO' || $_SESSION['user_flag'] =='SO') { 
 					//save the section save flag on the Sample Details Table : Akash : 25-07-2022
-					$SampleInwardDetails->updateAll(array('payment_section'=>'Y'),array('org_sample_code'=>$org_sample_code));
+					$SampleInwardDetails->updateAll(array('payment_section'=>'Y'),array('org_sample_code'=>$sample_code));
 				}
 				
 

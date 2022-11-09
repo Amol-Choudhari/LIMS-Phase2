@@ -1,0 +1,27 @@
+.error_div {
+    background: #dccac8;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    font-family: system-ui;
+}
+.card-header {
+    text-transform: initial;
+    background: #eb5d57;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 19px 26px;
+}
+#error_icon {
+    font-size: 40px;
+    color: #eb5d57;
+}
+.btn_continue {
+    background: #eb5d57;
+    margin-top: 30px;
+}
+.font_gainsboro {
+    color: #5c5c5c !important;
+    font-size: 19px;
+}

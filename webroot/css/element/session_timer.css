@@ -1,0 +1,16 @@
+#session_timer {
+	display: inline-flex;
+	margin-right: 10px;
+}
+#session_timer_text {
+	margin-top: 1px;
+    font-size: 15px;
+    padding-right: 8px;
+}
+#session_timer_counter {
+    font-size: 15px;
+    color: white;
+    background: #626262;
+    padding: 0px 10px 2px 10px;
+    border-radius: 4px;
+}   

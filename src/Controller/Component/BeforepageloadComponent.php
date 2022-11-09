@@ -90,7 +90,7 @@
 
 		// compare user current session id, Done by Pravin Bhakare 12-11-2020
 		$username = $this->Controller->Session->read('username');
-		$countspecialchar = substr_count($username,"/");
+		$countspecialchar = substr_count((string) $username,"/"); //This (String) typecast is added to Fix the Depracated on PHP 8.1 - Akash[06-10-2022]
 		if($countspecialchar == 1){ $userType = 'dp'; }
 		if($countspecialchar == 3){ $userType = 'df'; }
 		if($countspecialchar == 0){ $userType = 'du'; }
@@ -104,7 +104,7 @@
 			if($this->Controller->Session->read('browser_session_d') !=''){
 				if($browser_session_d != $this->Controller->Session->read('browser_session_d')){	
 														 
-					$this->Controller->Session->destroy();						
+					//$this->Controller->Session->destroy();						
 				}
 			}
 		}
@@ -115,8 +115,7 @@
 
 			if (time() - $login_time > 1200) {
 
-				$this->Controller->Session->destroy();
-				echo "Your session has timed out due to inactivity";?><a href="<?php echo $this->getController()->getRequest()->getAttribute('webroot');?>"> Please Login</a><?php "Again";
+				$this->Controller->customAlertPage("Your session has timed out due to inactivity");
 				exit;
 
 			} else {
@@ -149,7 +148,7 @@
 				$hostName = $_SERVER['HTTP_HOST'];
 				if(!in_array($hostName,$validHostName)){
 					$this->Controller->Session->destroy();
-					echo "Something went wrong. ";?><a href="<?php echo $this->webroot;?>"> Please Login</a><?php "Again";					
+					$this->customAlertPage("Something went wrong. ");
 					exit;
 				}else{
 					
@@ -163,7 +162,7 @@
 						// validated referere, Done by Pravin Bhakare 10-02-2021
 						if(isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'],$hostName) == null){
 							$this->Controller->Session->destroy();
-							echo "Something went wrong. ";?><a href="<?php echo $this->webroot;?>"> Please Login</a><?php "Again";					
+							$this->customAlertPage("Something went wrong. ");
 							exit;
 						}
 						

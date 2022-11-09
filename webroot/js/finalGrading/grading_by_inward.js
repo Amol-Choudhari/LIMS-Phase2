@@ -116,13 +116,9 @@ $(document).ready(function(){
 					$.alert({
 						content: resArray,
 						closeIcon: true,
-						buttons: {
-							Okay: {
-								btnClass: 'btn-blue',
-								action: function () {
-									window.location = 'available_for_grading_to_inward';
-								}
-							}
+						columnClass: 'm',
+						onClose: function () {
+							window.location = 'available_for_grading_to_inward';
 						}
 					});
 				}

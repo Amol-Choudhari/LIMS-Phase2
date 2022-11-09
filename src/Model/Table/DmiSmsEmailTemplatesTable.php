@@ -1,42 +1,43 @@
 <?php
 	
-	namespace app\Model\Table;
-	use Cake\ORM\Table;
-	use App\Model\Model;
-	use App\Controller\AppController;
-	use App\Controller\CustomersController;
-	use Cake\ORM\TableRegistry;
-	use Cake\Utility\Hash;
-	use Cake\Datasource\ConnectionManager;
+namespace app\Model\Table;
+use Cake\ORM\Table;
+use App\Model\Model;
+use App\Controller\AppController;
+use App\Controller\CustomersController;
+use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
+use Cake\Datasource\ConnectionManager;
+use Cake\Filesystem\File;
 
-	class DmiSmsEmailTemplatesTable extends Table{
+class DmiSmsEmailTemplatesTable extends Table{
 
-		var $name = "DmiSmsEmailTemplates";
-						
-		public $validate = array(
-		
-			'sms_message'=>array(	
-			
-						'rule' => 'notBlank',
-					),
-			'email_message'=>array(
-			
-						'rule' => 'notBlank',
-					),
-			'description'=>array(
+	var $name = "DmiSmsEmailTemplates";
 					
+	public $validate = array(
+	
+		'sms_message'=>array(	
+		
 					'rule' => 'notBlank',
 				),
-			'template_for'=>array(
-					'rule'=>array('maxLength',20),
-					'allowEmpty'=>false,	
-				),	
-			'email_subject'=>array(
-					'rule'=>array('maxLength',200),
-					'allowEmpty'=>false,	
-				),		
+		'email_message'=>array(
+		
+					'rule' => 'notBlank',
+				),
+		'description'=>array(
 				
-		);
+				'rule' => 'notBlank',
+			),
+		'template_for'=>array(
+				'rule'=>array('maxLength',20),
+				'allowEmpty'=>false,	
+			),	
+		'email_subject'=>array(
+				'rule'=>array('maxLength',200),
+				'allowEmpty'=>false,	
+			),		
+			
+	);
 		
 		
 	public function sendMessage($message_id,$userCode,$sample_code) {
@@ -310,21 +311,18 @@
 
 			// RO Officer
 			if ($getUserId == 109) { 
-
+				
 				$ro_data = $DmiUsers->getUserDetailsById($userCode);
-
+			
 				if (!empty($ro_data)) {
 					
-					if (trim($ro_data['role']) == 'RO Officer') {
+					$email_id = base64_decode($ro_data['email']); //for email encoding
+					$mobile_no = base64_decode($ro_data['phone']); //for mobile encoding
 
-						$email_id = base64_decode($ro_data['email']); //for email encoding
-						$mobile_no = base64_decode($ro_data['phone']); //for mobile encoding
-
-						//This is addded on 27-04-2021 for base64decoding by AKASH
-						$destination_mob_nos[$m] = '91'.$mobile_no; 
-						$log_dest_mob_nos[$m] = '91'.$mobile_no;
-						$destination_email_ids[$e] = $email_id;
-					}
+					//This is addded on 27-04-2021 for base64decoding by AKASH
+					$destination_mob_nos[$m] = '91'.$mobile_no; 
+					$log_dest_mob_nos[$m] = '91'.$mobile_no;
+					$destination_email_ids[$e] = $email_id;
 
 				} else {
 					
@@ -340,12 +338,12 @@
 
 			// RO/SO-OIC
 			if ($getUserId == 110) { 
-
+				
 				$ro_so_oic_data = $DmiUsers->getUserDetailsById($userCode);
 
 				if (!empty($ro_so_oic_data)) {
 					
-					if (trim($ro_so_oic_data['role']) == 'RO/SO-OIC') {
+					if (trim($ro_so_oic_data['role']) == 'RO/SO OIC') {
 
 						$email_id = base64_decode($ro_so_oic_data['email']); //for email encoding
 						$mobile_no = base64_decode($ro_so_oic_data['phone']); //for mobile encoding
@@ -372,7 +370,7 @@
 			if ($getUserId == 111) { 
 
 				$ddo_data = $DmiUsers->getUserDetailsById($userCode);
-
+		
 				if (!empty($ddo_data)) {
 
 					$email_id = base64_decode($ddo_data['email']); //for email encoding
@@ -428,7 +426,7 @@
 
 			// SO Officer
 			if ($getUserId == 113) { 
-
+				
 				$so_data = $DmiUsers->getUserDetailsById($userCode);
 
 				if (!empty($so_data)) {
@@ -471,14 +469,16 @@
 			//replacing dynamic values in the email message
 			$email_message = $this->replaceDynamicValuesFromMessage($email_message,$userCode,$sample_code);
 			
-			print_r($sms_message);
-			print_r("</br>");
-			print_r($destination_mob_nos_values);
-			print_r("</br>");
-			print_r($destination_email_ids_values);
-			print_r("</br>");
-			print_r($email_message);
-			exit;
+			$b = array (
+				'SMS' => $sms_message, 
+				'MOBILE' => $destination_mob_nos_values,
+				'Message' => $email_message,
+				'Email'=> $destination_email_ids_values
+			);
+				
+			$fp = fopen('D:/lims.txt',"a");
+			fwrite($fp, print_r($b, true));
+			fclose($fp);
 
 			//To send SMS on list of mobile nos.
 			if (!empty($find_message_record['sms_message'])) {
@@ -583,7 +583,7 @@
 
 	//REPLACE DYNAMIC VALUES IN MESSAGE STRING
 	public function replaceDynamicValuesFromMessage($message,$userCode,$sample_code) {
-		pr($message);
+		
 		//Getting Count Before Execution
 		$total_occurrences = substr_count($message,"%%");
 
@@ -596,59 +596,79 @@
 				switch ($matches[1]) {
 
 					case "sample_code":
-						$message = str_replace("%%sample_code%%",$this->getReplaceDynamicValues('sample_code',$userCode,$sample_code),$message);
+						$message = str_replace("%%sample_code%%",(string) $this->getReplaceDynamicValues('sample_code',$userCode,$sample_code),$message);
 					break;
 
 					case "commodities":
-						$message = str_replace("%%commodities%%",$this->getReplaceDynamicValues('commodities',$userCode,$sample_code),$message);
+						$message = str_replace("%%commodities%%",(string) $this->getReplaceDynamicValues('commodities',$userCode,$sample_code),$message);
 					break;
 
 					case "src_user":
-						$message = str_replace("%%src_user%%",$this->getReplaceDynamicValues('src_user',$userCode,$sample_code),$message);
+						$message = str_replace("%%src_user%%",(string) $this->getReplaceDynamicValues('src_user',$userCode,$sample_code),$message);
 					break;
 			
 					case "src_usr_role":
-						$message = str_replace("%%src_usr_role%%",$this->getReplaceDynamicValues('src_usr_role',$userCode,$sample_code),$message);
+						$message = str_replace("%%src_usr_role%%",(string) $this->getReplaceDynamicValues('src_usr_role',$userCode,$sample_code),$message);
 					break;
 
 					case "src_office":
-						$message = str_replace("%%src_office%%",$this->getReplaceDynamicValues('src_office',$userCode,$sample_code),$message);
+						$message = str_replace("%%src_office%%",(string) $this->getReplaceDynamicValues('src_office',$userCode,$sample_code),$message);
 					break;
 
 					case "dst_user":
-						$message = str_replace("%%dst_user%%",$this->getReplaceDynamicValues('dst_user',$userCode,$sample_code),$message);
+						$message = str_replace("%%dst_user%%",(string) $this->getReplaceDynamicValues('dst_user',$userCode,$sample_code),$message);
 					break;
 
 					case "dst_usr_role":
-						$message = str_replace("%%dst_usr_role%%",$this->getReplaceDynamicValues('dst_usr_role',$userCode,$sample_code),$message);
+						$message = str_replace("%%dst_usr_role%%",(string) $this->getReplaceDynamicValues('dst_usr_role',$userCode,$sample_code),$message);
 					break;
 
 					case "dst_office":
-						$message = str_replace("%%dst_office%%",$this->getReplaceDynamicValues('dst_office',$userCode,$sample_code),$message);
+						$message = str_replace("%%dst_office%%",(string) $this->getReplaceDynamicValues('dst_office',$userCode,$sample_code),$message);
 					break;
 
 					case "sample_flow":
-						$message = str_replace("%%sample_flow%%",$this->getReplaceDynamicValues('sample_flow',$userCode,$sample_code),$message);
+						$message = str_replace("%%sample_flow%%",(string) $this->getReplaceDynamicValues('sample_flow',$userCode,$sample_code),$message);
 					break;
 
 					case "category":
-						$message = str_replace("%%category%%",$this->getReplaceDynamicValues('category',$userCode,$sample_code),$message);
+						$message = str_replace("%%category%%",(string) $this->getReplaceDynamicValues('category',$userCode,$sample_code),$message);
 					break;
 						
 					case "sample_date":
-						$message = str_replace("%%sample_date%%",$this->getReplaceDynamicValues('sample_date',$userCode,$sample_code),$message);
+						$message = str_replace("%%sample_date%%",(string) $this->getReplaceDynamicValues('sample_date',$userCode,$sample_code),$message);
 					break;
 
 					case "letr_ref_no":
-						$message = str_replace("%%letr_ref_no%%",$this->getReplaceDynamicValues('letr_ref_no',$userCode,$sample_code),$message);
+						$message = str_replace("%%letr_ref_no%%",(string) $this->getReplaceDynamicValues('letr_ref_no',$userCode,$sample_code),$message);
 					break;
 
 					case "ref_src_code":
-						$message = str_replace("%%ref_src_code%%",$this->getReplaceDynamicValues('ref_src_code',$userCode,$sample_code),$message);
+						$message = str_replace("%%ref_src_code%%",(string) $this->getReplaceDynamicValues('ref_src_code',$userCode,$sample_code),$message);
 					break;
 
 					case "exp_sample":
-						$message = str_replace("%%exp_sample%%",$this->getReplaceDynamicValues('exp_sample',$userCode,$sample_code),$message);
+						$message = str_replace("%%exp_sample%%",(string) $this->getReplaceDynamicValues('exp_sample',$userCode,$sample_code),$message);
+					break;
+
+					case "oic":
+						$message = str_replace("%%oic%%",(string) $this->getReplaceDynamicValues('oic',$userCode,$sample_code),$message);
+					break;
+
+					case "pao_name":
+						$message = str_replace("%%pao_name%%",(string) $this->getReplaceDynamicValues('pao_name',$userCode,$sample_code),$message);
+					break;
+
+					case "ro_name":
+						$message = str_replace("%%ro_name%%",(string) $this->getReplaceDynamicValues('ro_name',$userCode,$sample_code),$message);
+					break;
+
+					case "chemist_name":
+						$message = str_replace("%%chemist_name%%",(string) $this->getReplaceDynamicValues('chemist_name',$userCode,$sample_code),$message);
+					break;
+
+					case "inward":
+						$message = str_replace("%%inward%%",(string) $this->getReplaceDynamicValues('inward',$userCode,$sample_code),$message);
 					break;
 
 					default:
@@ -688,8 +708,11 @@
 		$workflowData = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code])->order('id desc')->first();
 		
 		if(trim($workflowData['stage_smpl_flag']) == 'AS'){
+			
 			$workflowData = $Workflow->find('all')->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'OF'])->first();
 		}
+
+	
 
 		$sampleDetails = $SampleInward->getSampleDetailsByCode($workflowData['org_sample_code']);
 		
@@ -713,7 +736,27 @@
 		$src_office = $DmiRoOffices->getOfficeDetailsById($workflowData['src_loc_id']);
 		$dst_office = $DmiRoOffices->getOfficeDetailsById($workflowData['dst_loc_id']);
 		
+		//OIC
+		$getoicdetails = $DmiUsers->getUserDetailsById($userCode);
 
+		//PAO
+		$getPao = $DmiUsers->getUserDetailsById($userCode);
+
+		//RO/SO
+		$getRo = $DmiUsers->getUserDetailsById($userCode);
+
+		//Chemist
+		$getChemist = $DmiUsers->getUserDetailsById($userCode);
+
+		//Inward
+		$inwardData = $Workflow->find('all')->select(['src_usr_cd'])->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'AR'])->first();
+
+		if (!empty($inwardData)) {
+			$getInward = $DmiUsers->getUserDetailsById($inwardData['src_usr_cd']);
+		}else{
+			$getInward = $DmiUsers->getUserDetailsById($userCode);
+		}
+		
 
 		switch ($replace_variable_value) {
 				
@@ -781,6 +824,31 @@
 				return $exp_sample; 
 			break;
 
+			case "oic":
+				$oic = $getoicdetails['f_name']." ".$getoicdetails['l_name']; 
+				return $oic; 
+			break;
+
+			case "pao_name":
+				$pao = $getPao['f_name']." ".$getPao['l_name']; 
+				return $pao; 
+			break;
+
+			case "ro_name":
+				$ro_so = $getRo['f_name']." ".$getRo['l_name']; 
+				return $ro_so; 
+			break;
+
+			case "chemist_name":
+				$chemist_name = $getChemist['f_name']." ".$getChemist['l_name']; 
+				return $chemist_name; 
+			break;
+
+			case "inward":
+				$inward = "Inward"." ".$getInward['f_name']." ".$getInward['l_name']; 
+				return $inward; 
+			break;
+
 			default:	
 				$message = '%%';
 			break;
@@ -803,21 +871,45 @@
 
 	// This function replace the value between two character  (Done By pravin 9-08-2018)
 	function getUserDet($userCode,$destination_values) {
-
+		
 		$DmiUsers = TableRegistry::getTableLocator()->get('DmiUsers');
+
 		$details = $DmiUsers->getUserDetailsById($userCode);
+		
 		$getID = $this->smsUserId(trim($details['role']));
+		
 		$destination_array = explode(',',$destination_values);
+		
+		if (in_array(111,$destination_array)) {
+			
+			$getID = 111;
+			return $getID;
+		}
+
+		if (in_array(109,$destination_array)) {
+	
+			$getID = 109;
+			return $getID;
+		}
+
+		if (in_array(113,$destination_array)) {
+			$getID = 113;
+			return $getID;
+		}
+
+
 		$lookUp = in_array($getID,$destination_array);
 		if ($lookUp==1) {
 			return $getID;
 		}
+		
+		
 	}
 
 
 	
 	public function smsUserId($role){
-
+		
 		//Current selected values from edit page for LMIS
 		
 		if ($role == 'Inward Officer') { $dest_id = 101; }
@@ -840,12 +932,9 @@
 
 		if ($role == 'RO/SO OIC') { $dest_id = 110; }
 
-		if ($role == 'accounts') { $dest_id = 111; }
-
 		if ($role == 'Head Office') { $dest_id = 112; }
 
 		if ($role == 'SO Officer') { $dest_id = 113; }
-
 
 		return $dest_id;
 	}

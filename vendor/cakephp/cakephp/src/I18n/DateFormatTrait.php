@@ -439,6 +439,7 @@ trait DateFormatTrait
      *
      * @return string|int
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         if (static::$_jsonEncodeFormat instanceof Closure) {

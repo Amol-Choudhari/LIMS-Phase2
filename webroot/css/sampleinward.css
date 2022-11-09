@@ -1,2 +1,6 @@
 .marginB26{margin-bottom: 24px !important;}
 .marginT12{margin-top: 12px !important;}
+.disText{
+    pointer-events: none;
+    background-color: lightgrey;
+ }

@@ -87,7 +87,7 @@ if (!empty($records)) {
 			</td>
 			<td width="76%" align="center">
 				<h4>Government of India <br> Ministry of Agriculture and Farmers Welfare<br>
-					Department of Agriculture Co-Operation & Farmers Welfare<br>
+					Department of Agriculture & Farmers Welfare<br>
 					Directorate of Marketing & Inspection<br>
 				</h4>
 			</td>

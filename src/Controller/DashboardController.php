@@ -25,7 +25,7 @@ class DashboardController extends AppController{
 		unset($_SESSION['sample']);
 		
 		if ($username == null) {
-			echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">Please Login</a><?php
+			$this->customAlertPage('Sorry You are not authorized to view this page..');
 			exit;
 		} else {
 
@@ -34,8 +34,7 @@ class DashboardController extends AppController{
 			$check_user = $this->DmiUsers->find('all',array('conditions'=>array('email'=>$this->Session->read('username'))))->first();
 			
 			if (empty($check_user)) {
-
-				echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">Please Login</a><?php
+				$this->customAlertPage('Sorry You are not authorized to view this page..');
 				exit;
 			}
 		}
@@ -201,13 +200,14 @@ class DashboardController extends AppController{
 		
 		//get current user lab id
 		$this->loadModel('DmiUsers');
-		$user_details = $this->DmiUsers->find('all',array('fields'=>'posted_ro_office','conditions'=>array('email'=>$username)))->first();
+		$user_details = $this->DmiUsers->find('all',array('fields'=>'posted_ro_office','conditions'=>array('email IS'=>$username)))->first();
 		$lab_id = $user_details['posted_ro_office'];
 		
 		//get office type
+		$office_type = '';
 		$this->loadModel('DmiRoOffices');
-		$get_office_type = $this->DmiRoOffices->find('all',array('fields'=>'office_type','conditions'=>array('id'=>$lab_id)))->first();
-		$office_type = $get_office_type['office_type'];
+		$get_office_type = $this->DmiRoOffices->find('all',array('fields'=>'office_type','conditions'=>array('id IS'=>$lab_id)))->first();
+		if(!empty($get_office_type)){$office_type = $get_office_type['office_type'];}
 		
 		if ($office_type == 'RAL' || $office_type == 'CAL') {
 		
@@ -278,7 +278,7 @@ class DashboardController extends AppController{
 		
 		//get current user table id
 		$this->loadModel('DmiUsers');
-		$user_details = $this->DmiUsers->find('all',array('fields'=>'id','conditions'=>array('email'=>$username)))->first();
+		$user_details = $this->DmiUsers->find('all',array('fields'=>'id','conditions'=>array('email IS'=>$username)))->first();
 		$user_id = $user_details['id'];
 		
 		$this->loadModel('Workflow');

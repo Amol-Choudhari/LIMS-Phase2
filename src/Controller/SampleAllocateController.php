@@ -33,7 +33,7 @@ use Cake\View;
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry You don't have permission to view this page.."; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry You don't have permission to view this page..");
 			exit;
 		}
 	}
@@ -76,6 +76,7 @@ use Cake\View;
 			$this->loadModel('ActualTestData');
 			$this->loadModel('Workflow');
 			$this->loadModel('MUnitWeight');
+			$this->loadModel('DmiRoOffices');
 
 			$this->set('allocate_sample_cd',array($allocate_sample_cd=>$allocate_sample_cd));
 
@@ -267,10 +268,12 @@ use Cake\View;
 						$chemist_code = $query->fetchAll('assoc');
 
 						$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $stage_smpl_cd])->order('id desc')->first();
-					
-						//Sample Allocate SMS/EMAIL
-						#$this->DmiSmsEmailTemplates->sendMessage(97,$frd_usr_cd['src_usr_cd'],$stage_smpl_cd); #allocating user
-						#$this->DmiSmsEmailTemplates->sendMessage(98,$frd_usr_cd['dst_usr_cd'],$stage_smpl_cd); #aloocated/chemist user
+						$oic = $this->DmiRoOffices->getOfficeIncharge($_SESSION['posted_ro_office']);
+
+						#SMS: Sample Allocated
+						$this->DmiSmsEmailTemplates->sendMessage(142,$frd_usr_cd['src_usr_cd'],$stage_smpl_cd); #To Allocating User
+						$this->DmiSmsEmailTemplates->sendMessage(143,$frd_usr_cd['dst_usr_cd'],$stage_smpl_cd); #To Allocated User
+						$this->DmiSmsEmailTemplates->sendMessage(152,$oic,$stage_smpl_cd); #To Current OIC
 
 						$this->LimsUserActionLogs->saveActionLog('Sample Allocate','Success'); #Action
 						$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';
@@ -2258,6 +2261,7 @@ use Cake\View;
 			$this->loadModel('ActualTestData');
 			$this->loadModel('Workflow');
 			$this->loadModel('MUnitWeight');
+			$this->loadModel('DmiRoOffices');
 
 			$this->set('allocate_sample_cd',array($allocate_sample_cd=>$allocate_sample_cd));
 
@@ -2453,16 +2457,20 @@ use Cake\View;
 						$get_id = $this->MSampleAllocate->find('all',array('fields'=>'sr_no','conditions'=>array('sample_code IS'=>$sample_code),'order'=>'sr_no desc'))->first();
 						$lastInsertedId = $get_id['sr_no'];
 
-						$query	= $conn->execute("SELECT chemist_code, f_name ,l_name,role
+						$query	= $conn->execute("SELECT u.id,chemist_code, f_name ,l_name,role
 												 FROM m_sample_allocate AS s
 												 INNER JOIN dmi_users AS u ON s.alloc_to_user_code=u.id
 												 WHERE sr_no='$lastInsertedId'");
 
 						$chemist_code = $query->fetchAll('assoc');
+						
+						
+						$oic = $this->DmiRoOffices->getOfficeIncharge($_SESSION["posted_ro_office"]);
 
-						//call to the common SMS/Email sending method
-						$this->loadModel('DmiSmsEmailTemplates');
-						//$this->DmiSmsEmailTemplates->sendMessage(2008,$sample_code);
+						#SMS: Sample Allocated For Retest
+						$this->DmiSmsEmailTemplates->sendMessage(138,$_SESSION["user_code"],$sample_code); #INWARD
+						$this->DmiSmsEmailTemplates->sendMessage(139,$chemist_code[0]['id'],$sample_code); #CHEMIST
+						$this->DmiSmsEmailTemplates->sendMessage(141,$oic,$sample_code); #OIC
 
 						$this->LimsUserActionLogs->saveActionLog('Sample Reallocate','Success'); #Action
 						$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';

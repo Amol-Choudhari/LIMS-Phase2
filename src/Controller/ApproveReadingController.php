@@ -29,8 +29,7 @@ class ApproveReadingController extends AppController{
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-
-			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage('Sorry You are not authorized to view this page..');
 			exit;
 		}
 	}
@@ -393,10 +392,8 @@ class ApproveReadingController extends AppController{
 
 		$conn->execute("UPDATE sample_inward SET status_flag='SR' WHERE org_sample_code='$ogrsample_code'");
 
-		#SMS - Retest
-		//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code); # TO
-		//$this->DmiSmsEmailTemplates->sendMessage(2013,$sample_code); # FROM
-
+		#SMS: Sample Retest
+		//$this->DmiSmsEmailTemplates->sendMessage(102,$_SESSION["user_code"],$sample_code); #Source
 		$this->LimsUserActionLogs->saveActionLog('Sample Sent for Retest','Success'); #Action
 
 	  	echo '#1#';
@@ -732,12 +729,17 @@ class ApproveReadingController extends AppController{
 		$this->ActualTestData->updateAll(array('status_flag' => 'G'),array('sample_code'=>$sample_code,'display'=>'Y'));
 		$this->CodeDecode->updateAll(array('status_flag' => 'G'),array('sample_code'=>$sample_code,'display'=>'Y'));
 
-		#SMS - Forward To RAL
-		//$this->DmiSmsEmailTemplates->sendMessage(2037,$sample_code,$_SESSION["posted_ro_office"]);
-		//$this->DmiSmsEmailTemplates->sendMessage(2038,$sample_code,$_SESSION["user_code"]);
+		$this->loadModel('DmiRoOffices');
+		$oic = $this->DmiRoOffices->getOfficeIncharge();
+		$chemistID = $this->Workflow->getChemistId($ogrsample);
+
+		#SMS: Forward To RAL
+		$this->DmiSmsEmailTemplates->sendMessage(104,$_SESSION["user_code"],$sample_code); #SOURCE
+		$this->DmiSmsEmailTemplates->sendMessage(105,$dst_usr,$sample_code,); #INWARD
+		$this->DmiSmsEmailTemplates->sendMessage(141,$oic,$sample_code,); #OIC
+		$this->DmiSmsEmailTemplates->sendMessage(106,$chemistID,$sample_code,); #CHEMIST
 
 		$this->LimsUserActionLogs->saveActionLog('Sample Sent Back to RAL','Success'); #Action
-
 
 		echo  '#'.json_encode($office_name).'#';
 

@@ -35,8 +35,7 @@ class InwardDetailsController extends AppController {
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-
-			echo "Sorry.. You don't have permission to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry.. You don't have permission to view this page..");
 			exit;
 		}
 	}
@@ -72,6 +71,8 @@ class InwardDetailsController extends AppController {
 		$this->loadModel('DmiUsers');
 		$this->loadModel('DmiUserRoles');
 		$this->loadModel('SampleInwardDetails');
+		$this->loadModel('DmiUsers');
+		$this->loadModel('DmiRoOffices');	
 
 		//Variables To Show the Message From View Files
 		$message = '';
@@ -324,7 +325,7 @@ class InwardDetailsController extends AppController {
 
 							$user_code = null;
 						}
-
+						
 						$workflow_data	 = array("org_sample_code"=>$org_sample_code,
 												"src_loc_id"=>$_SESSION["posted_ro_office"],
 												"src_usr_cd"=>$_SESSION["user_code"],
@@ -494,14 +495,10 @@ class InwardDetailsController extends AppController {
 
 				$org_sample_code = $this->Session->read('org_sample_code');
 
-				$user_role = $this->SampleInward->find('all',array('fields'=>array('loc_id','users','sample_type_code'),'conditions'=>array('org_sample_code'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
-
-				$usercode = $user_role['users'];
-
-				$user_role = $this->DmiUsers->find('all',array('fields'=>array('role'),'conditions'=>array('id IS'=>$usercode)))->first();
+				$sampleDetails = $this->SampleInward->find('all',array('fields'=>array('sample_type_code'),'conditions'=>array('org_sample_code'=>$this->Session->read('org_sample_code')),'order'=>'inward_id desc'))->first();
 
 				//update status for payment sample
-				if ($user_role['sample_type_code'] == '3') {
+				if ($sampleDetails['sample_type_code'] == '3') {
 					$this->SampleInward->updateAll(array('status_flag'=>'PV'),array('org_sample_code'=>$org_sample_code));
 				} else {
 					$this->SampleInward->updateAll(array('status_flag'=>'S'),array('org_sample_code'=>$org_sample_code));
@@ -517,9 +514,13 @@ class InwardDetailsController extends AppController {
 										 WHERE si.org_sample_code='$org_sample_code'");
 
 				$get_info = $query->fetchAll('assoc');
-	
+				
+				//SMS Users Codes
+				$s_user = $get_info[0]['src_usr_cd'];
+				$d_user = $get_info[0]['dst_usr_cd'];
+				
 				// for commercial sample
-				if ($user_role['sample_type_code'] == '3') {
+				if ($sampleDetails['sample_type_code'] == '3') {
 
 					$confirm = $this->Paymentdetails->confirmSampleDetails();
 					$org_sample_code = $_SESSION['org_sample_code'];
@@ -528,37 +529,29 @@ class InwardDetailsController extends AppController {
 						
 						//get role and office where sample available after confirmed
 						$get_info = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code'],'stage_smpl_flag'=>'PS'])->order('id desc')->first();
-	
-						$this->loadModel('DmiUsers');
-						$this->loadModel('DmiRoOffices');	
-
 						$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
 						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
-						
+						$ro_so = $this->DmiUsers->getUserTableId($office[2]);
+
 						$message_variable = 'Note :
 											</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
-											</br> '.base64_decode($user['email']).'  ('.$office[0].')</b>
-											for payment verification, 
+											</br> '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification, 
 											</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
 											</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
 
-						#SMS
-						#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #Inward
-						#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #DDO 
-						#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #RO
-
-						#Action
-						$this->LimsUserActionLogs->saveActionLog('Sample Sent to DDO','Success');
+						#SMS: Commercial Sample Registered
+						$this->DmiSmsEmailTemplates->sendMessage(120,$s_user,$org_sample_code); #Source
+						$this->DmiSmsEmailTemplates->sendMessage(123,$d_user,$org_sample_code); #DDO 
+						$this->DmiSmsEmailTemplates->sendMessage(122,$ro_so,$org_sample_code);  #RO
+						$this->LimsUserActionLogs->saveActionLog('Sample Sent to DDO','Success'); #Action
 					}
 
 				} else {
 					
-					#SMS
-					#$this->DmiSmsEmailTemplates->sendMessage(127,$get_info[0]['src_usr_cd'],$org_sample_code); #source user
-					#$this->DmiSmsEmailTemplates->sendMessage(128,$get_info[0]['dst_usr_cd'],$org_sample_code); #destination user
-
-					#Action
-					$this->LimsUserActionLogs->saveActionLog('Sample Confirmed','Success');
+					#SMS: Sample Registered
+					$this->DmiSmsEmailTemplates->sendMessage(88,$s_user,$org_sample_code); #Source
+					$this->DmiSmsEmailTemplates->sendMessage(89,$d_user,$org_sample_code); #Destination
+					$this->LimsUserActionLogs->saveActionLog('Sample Confirmed','Success'); #Action
 
 					$message_variable = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}

@@ -334,6 +334,13 @@ class DmiUsersTable extends Table
 
         }
 
+        //GET ID by Username
+        public function getUserTableId($username){
+
+           $getId =  $this->find('all')->select(['id'])->where(['email IS' => $username, 'status !=' => 'disactive'])->first();
+		   return $getId['id'];
+        }
+
 
         public function getUserDetailsById($id){
 

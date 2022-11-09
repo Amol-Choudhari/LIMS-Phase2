@@ -33,7 +33,7 @@ class SampleAcceptController extends AppController
 		if(!empty($user_access)){
 			//proceed
 		}else{
-			echo "Sorry You don't have permission to view this page.."; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry You don't have permission to view this page..");
 			exit;
 		}
 	}
@@ -214,16 +214,14 @@ class SampleAcceptController extends AppController
 						$ro_office_new = $user_flag1[0]['ro_office'];
 
 						$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'OF'])->first();
-
+						$oic = $this->DmiRoOffices->getOfficeIncharge($_SESSION['posted_ro_office']);
 
 						if ($acceptstatus_flag=="A") {
 
-							//call to the common SMS/Email sending method
-							$this->loadModel('DmiSmsEmailTemplates');
-
-							//Sample Accept SMS/EMAIL
-							#$this->DmiSmsEmailTemplates->sendMessage(131,$frd_usr_cd['dst_usr_cd'],$sample_code); #accepting user
-							#$this->DmiSmsEmailTemplates->sendMessage(132,$frd_usr_cd['src_usr_cd'],$sample_code); #forwarding user
+							#SMS: Sample Accept
+							$this->DmiSmsEmailTemplates->sendMessage(92,$frd_usr_cd['dst_usr_cd'],$sample_code); #To Accepting User
+							$this->DmiSmsEmailTemplates->sendMessage(93,$frd_usr_cd['src_usr_cd'],$sample_code); #To Forwarding User
+							$this->DmiSmsEmailTemplates->sendMessage(150,$oic,$sample_code); #OIC of Current Posted Office
 
 							// For Maintaining Action Log by Akash (26-04-2022)
 							$this->LimsUserActionLogs->saveActionLog('Sample Accept','Success');
@@ -237,9 +235,11 @@ class SampleAcceptController extends AppController
 
 							$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $sample_code, 'stage_smpl_flag' => 'OF'])->first();
 
-							//Sample Reject SMS/EMAIL
-							#$this->DmiSmsEmailTemplates->sendMessage(133,$frd_usr_cd['dst_usr_cd'],$sample_code); #rejecting user
-							#$this->DmiSmsEmailTemplates->sendMessage(134,$frd_usr_cd['src_usr_cd'],$sample_code); #forwarding user
+							#SMS: Sample Rejected
+							$this->DmiSmsEmailTemplates->sendMessage(94,$frd_usr_cd['dst_usr_cd'],$sample_code); #To Rejecting User
+							$this->DmiSmsEmailTemplates->sendMessage(95	,$frd_usr_cd['src_usr_cd'],$sample_code); #To Forwarding User
+							$this->DmiSmsEmailTemplates->sendMessage(151,$oic,$sample_code); #OIC of Current Posted Office
+
 
 							// For Maintaining Action Log by Akash (26-04-2022)
 							$this->LimsUserActionLogs->saveActionLog('Sample Reject','Success');

@@ -31,7 +31,7 @@ class FinalGradingController extends AppController
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry.. You don't have permission to view this page");
 			exit;
 		}
 	}
@@ -139,6 +139,8 @@ class FinalGradingController extends AppController
 		$this->loadModel('MSampleAllocate');
 		$this->loadModel('MCommodity');
 		$this->loadModel('MGradeDesc');
+		$this->loadModel('DmiRoOffices');
+
 		$conn = ConnectionManager::get('default');
 
 		$verify_sample_code = $this->Session->read('verify_sample_code');
@@ -265,12 +267,13 @@ class FinalGradingController extends AppController
 						$conn->execute("UPDATE sample_inward SET remark ='$remark', status_flag ='R', grade ='$grade_code_vs', grading_date ='$date', inward_grading_date = '$date', sub_grad_check_iwo = '$subGradeChecked', inward_grade = '$grade_code_vs'
 										WHERE category_code = '$category_code' AND commodity_code = '$commodity_code' AND org_sample_code = '$ogrsample_code' AND display = 'Y' ");
 
-						#SMS - Marked For Retest
-						//$this->DmiSmsEmailTemplates->sendMessage(2016,$sample_code); 
-						//$this->DmiSmsEmailTemplates->sendMessage(2016,$sample_code);
+						$oic = $this->DmiRoOffices->getOfficeIncharge($_SESSION["posted_ro_office"]);
 
-						#Action
-						$this->LimsUserActionLogs->saveActionLog('Sample Sent For Retest','Success');
+						#SMS: Marked For Retest
+						$this->DmiSmsEmailTemplates->sendMessage(114,$abc,$sample_code); #INWARD
+						$this->DmiSmsEmailTemplates->sendMessage(113,$oic,$sample_code); #OIC
+
+						$this->LimsUserActionLogs->saveActionLog('Sample Sent For Retest','Success'); #Action
 
 						echo '#The sample is marked for retest and re-sent to '.$abc2.'#';
 
@@ -460,17 +463,23 @@ class FinalGradingController extends AppController
 							}
 						}
 
-						#SMS - Finalized by Inward
-						//$this->DmiSmsEmailTemplates->sendMessage(2017,$sample_code);
-						//$this->DmiSmsEmailTemplates->sendMessage(2017,$sample_code);
-
-						#Action
-						$this->LimsUserActionLogs->saveActionLog('Sample Finalized','Success');
-
 						if ($_SESSION['user_flag']=='RAL') {
+
+							#SMS: Sample Finalized
+							$this->DmiSmsEmailTemplates->sendMessage(109,$_SESSION["user_code"],$sample_code); #RAL
+							$this->DmiSmsEmailTemplates->sendMessage(108,$dst_usr,$sample_code); #OIC
+							$this->LimsUserActionLogs->saveActionLog('Sample Finalized Sent to RAL','Success'); #Action
+
 							echo '#The results have been finalized and forwarded to RAL,Office Incharge#';
 							exit;
+
 						} elseif ($_SESSION['user_flag']=='CAL') {
+
+							#SMS: Sample Finalized
+							$this->DmiSmsEmailTemplates->sendMessage(111,$_SESSION["user_code"],$sample_code); #CAL
+							$this->DmiSmsEmailTemplates->sendMessage(108,$dst_usr,$sample_code); #OIC
+							$this->LimsUserActionLogs->saveActionLog('Sample Finalized Sent to CAL','Success'); #Action
+
 							echo '#The results have been finalized and forwarded to CAL,Office Incharge#';
 							exit;
 						} else {
@@ -488,7 +497,7 @@ class FinalGradingController extends AppController
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>--------<Get Final Result>-------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 	// Inward Officer verify sample final grading please do not change, change let me know mandar
-	public function getfinalResult(){
+	public function getfinalResult(){	
 
 		$this->loadModel('CommGrade');
 		$this->loadModel('MCommodity');
@@ -1008,9 +1017,9 @@ class FinalGradingController extends AppController
 										AND org_sample_code = '$ogrsample_code'
 										AND display = 'Y' ");
 
-						#SMS - Sample For Retest
-						//$this->DmiSmsEmailTemplates->sendMessage(2018,$sample_code);
-						//$this->DmiSmsEmailTemplates->sendMessage(2018,$sample_code);
+						#SMS: Sample For Retest
+						$this->DmiSmsEmailTemplates->sendMessage(118,$_SESSION["user_code"],$sample_code); #OIC
+						$this->DmiSmsEmailTemplates->sendMessage(119,$abc,$sample_code); #INWARD
 
 						#Action
 						$this->LimsUserActionLogs->saveActionLog('Sample Sent For Retest','Success');
@@ -1061,7 +1070,10 @@ class FinalGradingController extends AppController
 		$message = '';
 		$message_theme = '';
 		$redirect_to = '';
+
 		$this->loadModel('Workflow');
+		$this->loadModel('DmiRoOffices');
+
 		$conn = ConnectionManager::get('default');
 
 		$sample_code = $this->Session->read('grading_sample_code');
@@ -1159,10 +1171,13 @@ class FinalGradingController extends AppController
 		$this->Session->delete('post_category_code');
 		$this->Session->delete('post_commodity_code');
 
-		#SMS - Final Graded By OIC
-		//$this->DmiSmsEmailTemplates->sendMessage(2019,$sample_code);
-		//$this->DmiSmsEmailTemplates->sendMessage(2019,$sample_code);
-		//$this->DmiSmsEmailTemplates->sendMessage(2019,$sample_code);
+		#original user
+		$getOrgUsr = $this->Workflow->getOriginalUser($ogrsample);
+		
+		#SMS: Final Graded
+		$this->DmiSmsEmailTemplates->sendMessage(115,$getOrgUsr,$sample_code); #ORIGINAL USER
+		$this->DmiSmsEmailTemplates->sendMessage(116,$_SESSION["user_code"],$sample_code); #OIC
+		$this->DmiSmsEmailTemplates->sendMessage(117,$org_src_usr_cd,$sample_code); #INWARD
 
 		#Action
 		$this->LimsUserActionLogs->saveActionLog('Sample Finalized','Success');
@@ -2031,7 +2046,7 @@ class FinalGradingController extends AppController
 			// Call to function for generate pdf file,
 			// change generate pdf file name,
 			$current_date = date('d-m-Y');
-			$test_report_name = 'grade_report_'.$sample_code1.'.pdf';
+			$test_report_name = 'grade_report_'.trim($sample_code1).'.pdf';
 
 			//store pdf path to sample inward table to preview further
 			$pdf_path = '/writereaddata/LIMS/reports/'.$test_report_name;

@@ -1,3 +1,73 @@
+	//call to login validations
+	$('#ral').click(function (e) {
+
+		if (sample_accept_validations() == false) {
+			e.preventDefault();
+		} else {
+			$('#frm_sample_forward').submit();
+		}
+	});	
+	
+	function sample_accept_validations(){
+
+		var acc_rej_flg=$("#acc_rej_flg").val();
+		var dst_loc_id = $("#dst_loc_id").val();
+		var dst_usr_cd = $("#dst_usr_cd").val();
+		var actual_received_qty = $("#actual_received_qty").val();
+		var acc_accepted_flag = $("#acc_accepted_flag").val();
+		var value_return = 'true';
+		
+		if(acc_rej_flg==""){
+
+			$("#error_acc_rej_flg").show().text("Please Enter Letter Reference Number.");
+			$("#acc_rej_flg").addClass("is-invalid");
+			$("#acc_rej_flg").click(function(){$("#error_acc_rej_flg").hide().text;$("#acc_rej_flg").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(dst_loc_id==""){
+
+			$("#error_dst_loc_id").show().text("Please Enter Letter Reference Number.");
+			$("#dst_loc_id").addClass("is-invalid");
+			$("#dst_loc_id").click(function(){$("#error_dst_loc_id").hide().text;$("#dst_loc_id").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(dst_usr_cd==""){
+
+			$("#error_dst_usr_cd").show().text("Please Enter Letter Reference Number.");
+			$("#dst_usr_cd").addClass("is-invalid");
+			$("#dst_usr_cd").click(function(){$("#error_dst_usr_cd").hide().text;$("#dst_usr_cd").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(actual_received_qty==""){
+
+			$("#error_actual_received_qty").show().text("Please Enter Quanity.");
+			$("#actual_received_qty").addClass("is-invalid");
+			$("#actual_received_qty").click(function(){$("#error_actual_received_qty").hide().text;$("#actual_received_qty").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(acc_accepted_flag==""){
+
+			$("#error_acc_accepted_flag").show().text("Please Enter Letter Reference Number.");
+			$("#acc_accepted_flag").addClass("is-invalid");
+			$("#acc_accepted_flag").click(function(){$("#error_acc_accepted_flag").hide().text;$("#acc_accepted_flag").removeClass("is-invalid");});
+			value_return = 'false';
+		}
+
+		if(value_return == 'false'){
+
+			var msg = "Please check some fields are missing or not proper.";
+			renderToast('error', msg);
+			return false;
+
+		}else{
+			exit();
+		}
+
+	}
 	
 	$(document).ready(function(){
 	
@@ -124,7 +194,11 @@
 		
 	});
 
-// enable save button after keyup of inputfield, done by pravin bhakare,11-12-2019
-//function disable_save_btn(){
-//	$("#ral").prop("disabled", false);
-//}
+	$(".allow_decimal").on("input", function(evt) {
+		var self = $(this);
+		self.val(self.val().replace(/[^0-9\.]/g, ''));
+		if ((evt.which != 46 || self.val().indexOf('.') != -1) && (evt.which < 48 || evt.which > 57)) 
+		{
+		  evt.preventDefault();
+		}
+	});

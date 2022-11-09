@@ -424,9 +424,9 @@ class ReportHtml extends Report
 
         $just = $trailer_col->deriveAttribute("justify", false);
         if ($just && $just != "left") {
-            $this->query->output_group_trailer_styles["text-align"] = $just;
+            //$this->query->output_group_trailer_styles["text-align"] = $just;
         } else {
-            $this->query->output_group_trailer_styles["text-align"] = "left";
+            //$this->query->output_group_trailer_styles["text-align"] = "left";
         }
 
 

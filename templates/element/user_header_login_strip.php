@@ -22,6 +22,24 @@
 		?>
 		</div>
 
+        <!-- Session timer countdown - Aniket G [13-10-2022] -->
+        <ul class="navbar-nav mb-n3 mr-2">
+            <?php $maxlifetime = ini_get("session.gc_maxlifetime") * 1000; ?>
+            <input type="hidden" value="<?php echo $maxlifetime; ?>" id="session_timeout_value">
+            <?php echo $this->Form->create(null, array('type' => 'file', 'enctype' => 'multipart/form-data', 'class' => '')); ?>
+            <div id="session_timer">
+                <div id="session_timer_text">Session time:</div>
+                <div id="session_timer_counter"><?php echo $maxlifetime/(60*1000); ?> : 00</div>
+                <?php echo $this->Form->control('session_timer_id', array('type'=>'hidden', 'id'=>'session_timer_id', 'value'=>$_SESSION['browser_session_d'])); ?>
+                <?php echo $this->Form->control('session_timer_logout_url', array('type'=>'hidden', 'id'=>'session_timer_logout_url', 'value'=>$this->Url->build(['controller'=>'users', 'action'=>'sessionExpiredLogout']))); ?>
+                <?php echo $this->Form->control('session_username', array('type'=>'hidden', 'id'=>'session_username', 'value'=>$_SESSION['username'])); ?>
+                <?php echo $this->Form->control('session_timer_status', array('type'=>'hidden', 'id'=>'session_timer_status', 'value'=>0)); ?>
+            </div>
+            <?php echo $this->Form->end(); ?>
+            <?php echo $this->Html->css('element/session_timer'); ?>
+            <?php echo $this->Html->script('element/session_timer'); ?>
+        </ul>
+
         <!--RIGHT NAVIGATION BAR MENU-->
             <ul class="nav navbar-nav navbar-right">
                 <li id="user" class="dropdown"><a href="#"  class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Profile<span class="caret"></span></a>

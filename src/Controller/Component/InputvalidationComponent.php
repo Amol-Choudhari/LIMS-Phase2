@@ -85,12 +85,13 @@ class InputvalidationComponent extends Component {
 
 					$validate_status = 'Invalid Commodity Name';
 				}
-
-				if (strlen($postData['commodity_name']) <= 4) {
-
+				//added for (<=4) replace (< 4) while testing the validation not working  min. 4 characters
+				//06-10-2022 by shreeya
+				if (strlen($postData['commodity_name']) < 4) {
+					
 					$validate_status = 'Commodity name should be minimum 4 characters';
 				}
-
+				
 				if (strlen($postData['commodity_name']) >= 50) {
 
 					$validate_status = 'Commodity name should not greater than 50 characters';

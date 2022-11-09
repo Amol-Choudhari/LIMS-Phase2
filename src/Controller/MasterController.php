@@ -51,8 +51,7 @@ class MasterController extends AppController {
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-
-			echo "Sorry.. You don't have permission to view this page";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry.. You don't have permission to view this page");
 			exit;
 		}
 	}
@@ -1383,8 +1382,7 @@ class MasterController extends AppController {
 
 		$tests = $this->MTest->find('all', array('join'=>array(array('table'=>'m_test_type','alias'=>'mtt','type'=>'INNER','conditions'=>array('MTest.test_type_code = mtt.test_type_code'))),
 																							'fields'=> array('MTest.test_name', 'MTest.test_code','MTest.l_test_name','mtt.test_type_name'), 'conditions'=> array('MTest.display'=>'Y')))->toArray();
-		
-		$this->set(compact('tests', $tests));
+		$this->set('tests', $tests);
 	}
 
 
@@ -2286,7 +2284,7 @@ class MasterController extends AppController {
 			$startdate = $this->request->getData('start_date');
 
 
-       		if(!is_numeric($test_code) || !is_numeric($method_code) ||  $start_date == ''){
+       		if(!is_numeric($test_code) || !is_numeric($method_code) ||  $startdate == ''){
 
 				$this->LimsUserActionLogs->saveActionLog('Master Add','Failed'); #Action
 				$message = 'Invalid form data, please checked properly and resubmit';

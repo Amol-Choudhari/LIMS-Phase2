@@ -102,16 +102,6 @@
 	}
 
 
-	// ADDED THIS BELOW CODE TO GRAY OUT THE SAMPLE TYPE SELECTION AFTER SAVE.
-	var sample_type = $("#sample_type").val();
-
-	if(sample_type != ''){
-		$('#sample_type_code').attr("style", "pointer-events: none;").css("background-color", "lightgray");
-   		
-	}
-
-
-
 	//to get users list according to designation from designation dropdown
 	function get_users_By_Loc_id(){
 

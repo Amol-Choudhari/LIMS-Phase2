@@ -8,11 +8,17 @@
 		}     
 	});
 
+    // ADDED THIS BELOW CODE TO GRAY OUT THE SAMPLE TYPE SELECTION AFTER SAVE.
+	var sample_type = $("#sample_type").val();
+	if(sample_type != ''){
+		$('#sample_type_code').addClass('disText');
+	}
 
+    
     /// For Comercial Type Sample ///
 
 	$('#sample_type_code').change(function (e) {
-		//e.preventDefault();
+		e.preventDefault();
 		var sample_type_code = $('#sample_type_code').val();
 
 		if(sample_type_code == '3'){

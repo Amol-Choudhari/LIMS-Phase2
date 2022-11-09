@@ -19,7 +19,7 @@
 
 <?php 
 //for email encoding
-if (filter_var(base64_decode($this->getRequest()->getSession()->read('username'), FILTER_VALIDATE_EMAIL))) {
+if (filter_var(base64_decode((string) $this->getRequest()->getSession()->read('username'), FILTER_VALIDATE_EMAIL))) {
 
 	if(isset($_SESSION['userloggedin']) && $_SESSION['userloggedin']=='yes'){
 		echo $this->element('user_header_login_strip');

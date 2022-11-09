@@ -87,6 +87,7 @@ class BufferedIterator extends Collection implements Countable, Serializable
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_key;
@@ -97,6 +98,7 @@ class BufferedIterator extends Collection implements Countable, Serializable
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->_current;

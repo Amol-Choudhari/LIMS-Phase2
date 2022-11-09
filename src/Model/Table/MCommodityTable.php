@@ -8,6 +8,7 @@ class MCommodityTable extends Table{
 
 	var string $name = "MCommodity";
 
+    
     //getCommodity
     //Description : This is function will return the commodity name by id.
     //Author : Akash Thakre

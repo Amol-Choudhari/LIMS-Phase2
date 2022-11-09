@@ -604,5 +604,28 @@ a:hover {
 .alimpl34fs17{padding-left: 34px; font-size: 17px}
 .mtminus8{margin-top: -8px;}
 
-.ms-options-wrap > .ms-options > ul label{padding-left:23px;};
+.ms-options-wrap > .ms-options > ul label{padding-left:23px;}
 
+.disTex{pointer-events: none;}
+/* smartphones, iPhone, portrait 480x320 phones 
+Author: Shankhpal Shende
+Purpase: for set layout responsive in mobile device
+date: 04/11/2022
+*/ 
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    /* Styles */
+    .col-7{display: contents;}
+    .login-tips{display: contents;}
+    .social-auth-links{margin-bottom: 10px !important;}
+    .card{margin: auto;}
+    
+}
+@media only screen and (max-device-width: 480px) {
+    /* STYLES HERE for DEVICES with physical max-screen width of 480px */
+    .col-7{display: contents;}
+    .login-tips{display: contents;}
+    .social-auth-links{margin-bottom: 10px !important;}
+    .card{margin: auto;}
+   
+}

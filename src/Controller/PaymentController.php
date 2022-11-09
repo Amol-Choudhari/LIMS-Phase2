@@ -35,7 +35,7 @@ class PaymentController extends AppController{
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			echo "Sorry.. You don't have permission to view this page.."; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry.. You don't have permission to view this page..");
 			exit;
 		}
 	}
@@ -92,12 +92,29 @@ class PaymentController extends AppController{
 
 					if ($savePaymentDetails == true){
 						
-						
-						
 						if ($sample['payment_confirmation']=='replied') {
+							
+							//get role and office where sample available after confirmed
+							$get_info = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code']])->order('id desc')->first();
+							
+							$sample_code = $_SESSION['org_sample_code'];
 
+							//SMS Users Codes
+							$s_user = $get_info['dst_usr_cd'];
+							$d_user = $get_info['src_usr_cd'];
+							$oic = $this->DmiRoOffices->getOfficeIncharge();
+							
+							$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
+							$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
+							$ro_so = $this->DmiUsers->getUserTableId($office[2]);
+	
+							#SMS: Commercial Sample Registered
+							$this->DmiSmsEmailTemplates->sendMessage(128,$s_user,$sample_code); #Source
+							$this->DmiSmsEmailTemplates->sendMessage(129,$d_user,$sample_code); #DDO 
+							
 							$this->LimsUserActionLogs->saveActionLog('Replied Payment','Success'); #Action
-							$message = 'Your Reply Saved Successfully & Forwared to DDO for further process.';
+							$message = 'Your Reply Saved Successfully & Forwarded to DDO for further process.';
+
 						} else {
 
 							$this->LimsUserActionLogs->saveActionLog('Save Payment','Success'); #Action
@@ -124,22 +141,35 @@ class PaymentController extends AppController{
 						
 						//get role and office where sample available after confirmed
 						$get_info = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code']])->order('id desc')->first();
-	
+					
+						//SMS Users Codes
+						$s_user = $get_info['src_usr_cd'];
+						$d_user = $get_info['dst_usr_cd'];
+						$oic = $this->DmiRoOffices->getOfficeIncharge();
 						
 						$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
 						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
+						$ro_so = $this->DmiUsers->getUserTableId($office[2]);
 						
-						#SMS - Payment Confirmed
-						//$this->DmiSmsEmailTemplates->sendMessage(); #Inward
-						//$this->DmiSmsEmailTemplates->sendMessage(); #DDO
-						//$this->DmiSmsEmailTemplates->sendMessage(); #RO
+						if ($_SESSION['user_flag'] == 'SO' || $_SESSION['user_flag'] == 'RO') {
+							#SMS: Commercial Sample Registered
+							$this->DmiSmsEmailTemplates->sendMessage(120,$s_user,$org_sample_code); #Source
+							$this->DmiSmsEmailTemplates->sendMessage(123,$d_user,$org_sample_code); #DDO 
+							$this->DmiSmsEmailTemplates->sendMessage(122,$ro_so,$org_sample_code);  #RO
+						} else {
+							#SMS: Commercial Sample Registered
+							$this->DmiSmsEmailTemplates->sendMessage(120,$s_user,$org_sample_code); #Source
+							$this->DmiSmsEmailTemplates->sendMessage(123,$d_user,$org_sample_code); #DDO 
+							$this->DmiSmsEmailTemplates->sendMessage(122,$ro_so,$org_sample_code);  #RO
+							$this->DmiSmsEmailTemplates->sendMessage(141,$oic,$org_sample_code);    #OIC	
+						}
+						
 
 						$this->LimsUserActionLogs->saveActionLog('Payment Section Confirm','Success'); #Action
 
 						$message = 'Note :
 						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
-						</br> '.base64_decode($user['email']).'  ('.$office[0].')</b>
-						for payment verification, 
+						</br> '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification, 
 						</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
 						</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
 						$message_theme = 'success';

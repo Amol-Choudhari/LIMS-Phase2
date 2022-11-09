@@ -184,6 +184,7 @@ class ResultSet implements ResultSetInterface
      *
      * @return array|object
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->_current;
@@ -556,5 +557,19 @@ class ResultSet implements ResultSetInterface
         return [
             'items' => $this->toArray(),
         ];
+    }
+
+    //overloading methods with magic methods, to resolve deprecation issue php 8.1
+    //applied on 03-10-2022 by Amol
+    public function __serialize()
+    {
+        $array = $this->jsonSerialize();
+
+        return serialize($array);
+    }
+
+    public function __unserialize($data)
+    {
+        $this->createFromArray(unserialize($data));
     }
 }

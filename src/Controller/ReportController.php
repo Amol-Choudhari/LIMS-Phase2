@@ -72,8 +72,7 @@ class ReportController extends AppController
 		if (!empty($user_access)) {
 			//proceed
 		} else {
-			
-			echo "Sorry.. You don't have permission to view this page OR Your session is expired"; ?><a href="<?php echo $this->request->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry.. You don't have permission to view this page OR Your session is expired");
 			exit;
 		}
 	}

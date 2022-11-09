@@ -20,7 +20,7 @@
 	// ADDED THIS BELOW CODE TO GRAY OUT THE SAMPLE TYPE SELECTION AFTER SAVE.
 	var sample_type = $("#sample_type").val();
 	if(sample_type != ''){
-		$('#sample_type_code').attr("style", "pointer-events: none;").css("background-color", "lightgray");
+		$('#sample_type_code').addClass('disText');
 	}
 
 
@@ -453,8 +453,8 @@
 
 	/// For Comercial Type Sample ///
 
-	$('#sample_type_code').change(function (e) {
-		//e.preventDefault();
+	$('#sample_type_code').change(function () {
+	
 		$('#customer_details_div').hide(); // This is added on the 24-08-2022 to hide the customer details by Akash
 		var sample_type_code = $('#sample_type_code').val();
 
@@ -479,7 +479,6 @@
 					}
 				}
 			});
-
 		}
 	});
 
@@ -539,6 +538,7 @@
 								OK: {
 									btnClass: 'btn-info',
 									action: function(){
+										$('#commodity_code').val('');
 									}
 								}
 							}

@@ -22,8 +22,7 @@ class NablAccreditationController extends AppController{
 
 		//check masters role given
 		if (empty($user_access)) {
-
-			echo "Sorry You are not authorized to view this page.."; ?><a href="<?php echo $this->getRequest()->getAttribute('webroot');?>users/login_user">	Please Login</a><?php
+			$this->customAlertPage("Sorry You are not authorized to view this page..");
 			exit;
 		}
 	}

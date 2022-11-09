@@ -121,7 +121,7 @@
 
 											<div class="clear"></div>
 
-											<div class="col-md-10 col-md-offset-1" id="select_test_div">
+											<div class="col-md-12 col-md-offset-1" id="select_test_div">
 												<label id="flg" class="flagForAllocate alert alert-success"></label>
 												<label id="qty" class="quantityForAllocate alert alert-info"></label>
 												<div class="clear"></div>

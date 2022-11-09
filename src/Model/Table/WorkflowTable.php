@@ -1,16 +1,18 @@
 <?php
 namespace app\Model\Table;
-	use Cake\ORM\Table;
-	use App\Model\Model;
-	use Cake\ORM\TableRegistry;
-	use Cake\Core\Configure;
+use Cake\ORM\Table;
+use App\Model\Model;
+use Cake\ORM\TableRegistry;
+use Cake\Core\Configure;
 	
 class WorkflowTable extends Table {
-	 var $useTable = 'workflow';
-	  public $primaryKey='id';
+
+	var $useTable = 'workflow';
+	public $primaryKey='id';
 	  
 	  
-	  public $validate = array(
+	public $validate = array(
+
 		'org_sample_code' => array(
 			'onlyLetterSp' => array(
 				'rule' => array('custom', '/^[0-9]+$/'),
@@ -55,7 +57,17 @@ class WorkflowTable extends Table {
 		) 
 		
 	);
-	  
-	  
-	 }
-	 ?>
+
+	//Get Original User 
+	public function getOriginalUser($sample_code){
+
+		$details = $this->find('all')->select(['src_usr_cd'])->where(['org_sample_code IS' => $sample_code,'stage_smpl_flag'=>'SI'])->first();
+		return $details['src_usr_cd'];
+	}
+
+	public function getChemistId($sample_code){
+		$details = $this->find('all')->select(['src_usr_cd'])->where(['org_sample_code IS' => $sample_code,'stage_smpl_flag'=>'FT'])->first();
+		return $details['src_usr_cd'];
+	}
+}
+?>

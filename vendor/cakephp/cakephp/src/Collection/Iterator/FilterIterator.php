@@ -89,4 +89,18 @@ class FilterIterator extends Collection
 
         return new ArrayIterator($res);
     }
+
+    //overloading methods with magic methods, to resolve deprecation issue php 8.1
+    //applied on 03-10-2022 by Amol
+    public function __serialize()
+    {
+        $array = $this->jsonSerialize();
+
+        return serialize($array);
+    }
+
+    public function __unserialize($data)
+    {
+        $this->createFromArray(unserialize($data));
+    }
 }

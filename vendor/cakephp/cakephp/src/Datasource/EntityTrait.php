@@ -601,6 +601,7 @@ trait EntityTrait
      * @param string $offset The offset to get.
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function &offsetGet($offset)
     {
         return $this->get($offset);

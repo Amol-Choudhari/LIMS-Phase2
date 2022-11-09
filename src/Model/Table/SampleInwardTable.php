@@ -360,7 +360,7 @@ class SampleInwardTable extends Table
 		FROM sample_inward si
 		INNER JOIN workflow wf ON si.org_sample_code = wf.org_sample_code AND (wf.dst_loc_id = '$ral_lab_no' OR wf.src_loc_id = '$ral_lab_no')  AND wf.stage_smpl_flag = 'FG'
 		WHERE si.commodity_code = '$commodity' AND wf.tran_date BETWEEN '$from_date' AND '$to_date'");
-		//pr($q);
+	
 		$records = $q->fetchAll('assoc');
 
 		$data = array();

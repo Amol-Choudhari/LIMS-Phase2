@@ -161,7 +161,7 @@ class UsersController extends AppController{
 
 		if ($this->Session->read('username') == null) {
 
-			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry You are not authorized to view this page..");
 			exit;
 
 		} else {
@@ -223,7 +223,7 @@ class UsersController extends AppController{
 			
 			} else {
 
-				echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+				$this->customAlertPage("Sorry You are not authorized to view this page..");
 				exit;
 			}
 		}
@@ -304,7 +304,7 @@ class UsersController extends AppController{
 
 		if	(empty($_GET['$key']) || empty($_GET['$id'])) {
 
-			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry You are not authorized to view this page..");
 			exit;
 
 		} else {
@@ -537,7 +537,7 @@ class UsersController extends AppController{
 
         if ($this->request->getSession()->read('username') == null) {
 
-			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry You are not authorized to view this page..");
 			exit;
 
         }
@@ -581,7 +581,7 @@ class UsersController extends AppController{
 
 		if ($username == null) {
 
-			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry You are not authorized to view this page..");
 			exit;
 		}
 
@@ -642,7 +642,7 @@ class UsersController extends AppController{
 	public function adminLogs() {
 
 		if ($this->Session->read('username') == null) {
-			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry You are not authorized to view this page..");
 			exit;
 		}
 
@@ -693,7 +693,7 @@ class UsersController extends AppController{
 			
 			} else {
 	
-				echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+				$this->customAlertPage("Sorry You are not authorized to view this page..");
 				exit;
 			}
 		
@@ -837,7 +837,7 @@ class UsersController extends AppController{
 
 		} else {
 
-			echo "Sorry You are not authorized to view this page..";?><a href="<?php echo $this->request->getAttribute('webroot');?>"> Please Login</a><?php
+			$this->customAlertPage("Sorry You are not authorized to view this page..");
 			exit;
 		}
 
@@ -1209,6 +1209,42 @@ class UsersController extends AppController{
 				?><option value='<?php echo $user['id']; ?>'><?php echo trim($user['f_name'])." ".trim($user['l_name'])."(".trim(base64_decode($user['email'])).")"; ?></option><?php 
 			}
 		}					
+	}
+
+	// Calling logout on session expired
+	public function sessionExpiredLogout() {
+
+		$this->autoRender = false;
+		$this->loadModel('DmiUserLogs');
+		$username = $_POST['session_username'];
+		$this->Session->write('username', $username);
+
+		if (!empty($username)) {
+			
+			$list_id = $this->DmiUserLogs->find('list', array('valueField' => 'id', 'conditions' => array('email_id IS' => $username)))->toList();
+
+			if (!empty($list_id)) {
+
+				$fetch_last_id_query = $this->DmiUserLogs->find('all',array('fields'=>'id', 'conditions'=>array('id'=>max($list_id), 'remark'=>'Success')))->first();
+				$fetch_last_id = $fetch_last_id_query['id'];
+	
+				$DmiUserLogsEntity = $this->DmiUserLogs->newEntity(array(
+					'id'=> $fetch_last_id,
+					'time_out'=>date('H:i:s')
+				));
+				$this->DmiUserLogs->save($DmiUserLogsEntity);
+				$this->Authentication->browserLoginStatus($username,null);
+				$this->Session->destroy();
+				echo 'success'; exit;
+			
+			} else {
+				echo 'Unauthorized request'; exit;
+			}
+		
+		} else {
+			echo 'Invalid username'; exit;
+		}
+	
 	}
 
 }
