@@ -175,7 +175,12 @@ class InwardDetailsController extends AppController {
 		//for paymnet progress bar
 		if (!empty($this->Customfunctions->checkSampleIsSaved('payment_details',$this->Session->read('org_sample_code')))) {
 			
-			$payment_details = $this->LimsSamplePaymentDetails->find('all')->select('payment_confirmation')->where(['sample_code IS'=>$this->Session->read('org_sample_code')])->order(['id desc'])->first();
+			$payment_details = $this->LimsSamplePaymentDetails->find('all')
+															  ->select('payment_confirmation')
+															  ->where(['sample_code IS'=>$this->Session->read('org_sample_code')])
+															  ->order(['id desc'])
+															  ->first();
+
 			$payment_details_form_status = trim($payment_details['payment_confirmation']);
 			$payment_section = 'Y';
 
@@ -218,22 +223,27 @@ class InwardDetailsController extends AppController {
 				$validate_err = $this->detailsPostValidations($this->request->getData());
 
 				if ($validate_err != '') {
-
 					$this->set('validate_err',$validate_err);
 					return null;
 				}
 
 				$_SESSION["sample"] = $postData['sample_type_code'];
 
-				$replica_serial_no=array();
+				//This below condition is added to avoid the replica saving if the sample code is 3.
+				//That is for the Commercial sample is not needed to fill the replica serial no.
+				// -> Akash [29-11-2022]
 
-				for ($i=1;$i<=$postData['no_of_packets'];$i++) {
+				if ($postData['sample_type_code'] != 3) {
 
-					$replica_serial_no[$i]=$postData['replica_serial_no'.$i];
+					$replica_serial_no=array();
 
+					for ($i=1;$i<=$postData['no_of_packets'];$i++) {
+						$replica_serial_no[$i]=$postData['replica_serial_no'.$i];
+					}
+
+					$postData['replica_serial_no'] = implode(",", $replica_serial_no);
 				}
-
-				$postData['replica_serial_no'] = implode(",", $replica_serial_no);
+					
 
 				if ($postData['smpl_drwl_dt']!='') {
 
@@ -384,20 +394,25 @@ class InwardDetailsController extends AppController {
 				$validate_err = $this->detailsPostValidations($this->request->getData());
 
 				if ($validate_err != '') {
-
 					$this->set('validate_err',$validate_err);
 					return null;
 				}
 
-				$replica_serial_no=array();
+				//This below condition is added to avoid the replica saving if the sample code is 3.
+				//That is for the Commercial sample is not needed to fill the replica serial no.
+				// -> Akash [29-11-2022]
 
-				for ($i=1;$i<=$postData['no_of_packets'];$i++) {
+				if ($postData['sample_type_code'] != 3) {
 
-					$replica_serial_no[$i]=$postData['replica_serial_no'.$i];
+					$replica_serial_no=array();
 
+					for ($i=1;$i<=$postData['no_of_packets'];$i++) {
+						$replica_serial_no[$i]=$postData['replica_serial_no'.$i];
+					}
+
+					$postData['replica_serial_no']=implode(",", $replica_serial_no);
 				}
-
-				$postData['replica_serial_no']=implode(",", $replica_serial_no);
+					
 
 				if ($postData['smpl_drwl_dt']!='') {
 
@@ -533,17 +548,18 @@ class InwardDetailsController extends AppController {
 						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
 						$ro_so = $this->DmiUsers->getUserTableId($office[2]);
 
+						
 						$message_variable = 'Note :
-											</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
-											</br> '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification, 
-											</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
-											</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
+											</br>You have registered the Commercial Sample successfully having Sample Code : '.$org_sample_code.' and it is saved with payment details.
+											</br>The Sample in now sent to the <b>PAO/DDO : '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification. 
+											</br>If the <b>PAO/DDO</b> user verify the payment then it will be available to the forward the sample .
+											</br>If the <b>PAO/DDO</b> user referred back  then you need to update details as per requirement and send again.';
 
 						#SMS: Commercial Sample Registered
 						$this->DmiSmsEmailTemplates->sendMessage(120,$s_user,$org_sample_code); #Source
 						$this->DmiSmsEmailTemplates->sendMessage(123,$d_user,$org_sample_code); #DDO 
 						$this->DmiSmsEmailTemplates->sendMessage(122,$ro_so,$org_sample_code);  #RO
-						$this->LimsUserActionLogs->saveActionLog('Sample Sent to DDO','Success'); #Action
+						$this->LimsUserActionLogs->saveActionLog('New Sample Registered and Sent to DDO','Success'); #Action
 					}
 
 				} else {
@@ -551,8 +567,7 @@ class InwardDetailsController extends AppController {
 					#SMS: Sample Registered
 					$this->DmiSmsEmailTemplates->sendMessage(88,$s_user,$org_sample_code); #Source
 					$this->DmiSmsEmailTemplates->sendMessage(89,$d_user,$org_sample_code); #Destination
-					$this->LimsUserActionLogs->saveActionLog('Sample Confirmed','Success'); #Action
-
+					$this->LimsUserActionLogs->saveActionLog('New Sample Registered','Success'); #Action
 					$message_variable = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 				
@@ -770,15 +785,20 @@ class InwardDetailsController extends AppController {
 		}
 
 		$replica_serial_no=array();
+		
+		#Below condition is added to skip the replic serial no validation for Sample Type 3 aka Commercial Sample Type
+		#-> Akash [29-11-2022]
+		if ($postData['sample_type_code'] != 3) {
 
-		 for ($i=1;$i<=$postData['no_of_packets'];$i++) {
+			for ($i=1;$i<=$postData['no_of_packets'];$i++) {
 
-			if (empty($postData['replica_serial_no'.$i])) {
-
-				$validation_status = 'Enter Proper Replica No.';
+				if (empty($postData['replica_serial_no'.$i])) {
+	
+					$validation_status = 'Enter Proper Replica No.';
+				}
 			}
-
-		 }
+		}
+		
 
 		return $validation_status;
 

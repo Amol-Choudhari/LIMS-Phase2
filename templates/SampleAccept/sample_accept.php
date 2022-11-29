@@ -92,7 +92,16 @@
 											</div>
 											<div class="form-group">
 												<div class="col-md-6">
-													<span  class="badge bg-info">Registered Quantity :  <span class="actualquantity"> <?php echo $getqty[0]['sample_total_qnt']; ?> </span> - <?php echo $unit ?></span>
+													<span  class="badge bg-info">Registered Quantity :  <span class="actualquantity"> 
+														<!-- aded if condition for sample type ILC show save selected quantity done by shreeya on 16-11-2022 -->
+														<?php if($sampleTypeCode == 9){
+														 		echo $selectedqty[0]['qty'];
+															}else{
+																echo $getqty[0]['sample_total_qnt'];
+															}
+														?>  
+													</span> - <?php echo $unit ?></span>
+													
 												</div>
 												<label for="inputEmail3" class="col-sm-5 col-form-label">Actual Recieved Qty <span class="required-star">*</span></label>
 												<div class="custom-file col-sm-6">

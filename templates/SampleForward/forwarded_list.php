@@ -19,6 +19,13 @@
 						<div class="masters_list card card-lims">
 							<div class="panel panel-primary filterable">
 								<div class="card-header"><h3 class="card-title-new">List of All Forwarded Samples</h3></div>
+								<!-- added for radio show separate view of ilc & othar -->
+								<div class="col-md-12 radio_options text-center">
+									<label class="radio-inline"><input class="type validate[required] radio" type="radio" id="type"  name="type" value="all" checked="checked">&nbsp;Forward List</label>
+									<label class="radio-inline"><input class="type validate[required] radio" type="radio" id="type" name="type" value="ilc">&nbsp;ILC Forward List</label>
+								</div>
+								<!-- list of other sample to Forward -->
+								<div id="ALL_list">
 									<table id="forwarded_samples_list" class="table table-bordered table-hover table-striped m-0">
 										<thead class="tablehead">
 											<tr>
@@ -57,6 +64,49 @@
 											</table>
 										</div>
 									</div>
+								</div>
+								<!-- list of sample to Forward ILC-->
+								<div id="ILC_list">
+									<table id="ilc_forwarded_samples_list" class="table table-bordered table-hover table-striped m-0">
+										<thead class="tablehead">
+											<tr>
+												<th>Sr No</th>
+												<th>Registered Code</th>
+												<th>Forwarded Code</th>
+												<th>Forwarded To</th>
+												<th>Commodity</th>
+												<th>Type of Sample</th>
+												<th>Forwarded Date</th>
+												<th>Action</th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php if (!empty($result)) {
+
+												$sr_no = 1;
+												$i = 1;
+												foreach($result as $each){ 
+													if(!empty($subsamplelist[$i])){
+													?>
+
+													<tr>
+														<td><?php echo $sr_no; ?></td>
+														<td><?php echo $each['stage_sample_code']; ?></td>
+														<td><?php echo $this->Form->control('stage_smpl_cd', array('type'=>'select','options'=>$subsamplelist[$i], 'label'=>false,'class'=>'form-control')); ?></td>
+														<td><?php echo $this->Form->control('f_name', array('type'=>'select', 'options'=>$userdetailslist[$i],  'label'=>false,'class'=>'form-control')); ?></td>
+														<td><?php echo $each['commodity_name']; ?></td>
+														<td><?php echo $each['sample_type_desc']; ?></td>
+														<td><?php echo $each['tran_date']; ?></td>
+														<td><?php echo $this->Html->link('', array('controller' => 'Sample-forward', 'action'=>'redirect_to_gnrt_ltr_ilc', $each['stage_smpl_cd']),array('class'=>'glyphicon glyphicon-share','title'=>'Generate Letter for Single Sample')); ?> |
+															<?php echo $this->Html->link('', array('controller' => 'Sample-forward', 'action'=>'gnrt_multiple_smpl_frwd_ltr'),array('class'=>'glyphicon glyphicon-list-alt','title'=>'Generate Letter for Multiple Samples')); ?> 
+															<?php // echo $this->Html->link('', array('controller' => 'Sampleforward', 'action'=>'editForwardedSample',$each['stage_smpl_cd']),array('class'=>'fas fa-edit','title'=>'Edit Forwarded Sample')); ?>
+														</td>
+														
+													</tr>
+											<?php $sr_no++; } $i++;} } ?>
+										</tbody>
+									</table>
+								</div>
 						<?php echo $this->Form->end(); ?>
 					</div>
 				</div>

@@ -89,6 +89,8 @@ class InwardController extends AppController{
 		$this->loadModel('DmiStates');
 		$this->loadModel('LimsCustomerDetails');
 		$this->loadModel('LimsSamplePaymentDetails');
+		$this->loadModel('DmiUsers');
+		$this->loadModel('DmiRoOffices');
 
 		$conn = ConnectionManager::get('default');
 
@@ -173,7 +175,9 @@ class InwardController extends AppController{
 
 		//send sample_condition to view
 		$this->loadModel('MSampleCondition');
-		$condition=$this->MSampleCondition->find('list',array('valueField'=>'sam_condition_desc','conditions' => array('display' => 'Y')))->toArray();
+		//$condition=$this->MSampleCondition->find('list',array('valueField'=>'sam_condition_desc','conditions' => array('display' => 'Y')))->toArray();
+		#Upper Query is Changed to a query builder format to get the list array of the sample condition , the dropdown value is not getting after the cache is cleared thats why have to changed - Akash [10-11-2022]
+		$condition = $this->MSampleCondition->find('all')->select(['sam_condition_code','sam_condition_desc'])->where(['display' => 'Y'])->combine('sam_condition_code','sam_condition_desc')->toArray();
 		$this->set('sample_condition',$condition);
 
 		//send parcel_condition to view
@@ -740,13 +744,28 @@ class InwardController extends AppController{
 										 WHERE si.org_sample_code='$org_sample_code'");
 
 				$get_info = $query->fetchAll('assoc');
-				
-				//SMS Users Codes
-				if ($_SESSION['user_flag'] == 'SO' || $_SESSION['user_flag'] == 'RO') {
-					$get_info1 = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code'],'stage_smpl_flag'=>'SD'])->order('id desc')->first();
-					$s_user = $get_info1['src_usr_cd'];
-					$d_user = $get_info1['dst_usr_cd'];
+
+				//Block for the SMS Varibles and IDs based on Various Scenarios : 
+				//1. Commercial Sample 2. If DMI users is Sample filling. 3. IF LIMS users is Sample Filling.
+				//Akash[10-11-2022]
+				if ($sampleDetails['sample_type_code'] == '3') {
+					
+					$getCommercialInfo = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code'],'stage_smpl_flag'=>'PS'])->order('id desc')->first();
+					$s_user = $getCommercialInfo['src_usr_cd'];
+					$d_user = $getCommercialInfo['dst_usr_cd'];
+
+					$user =  $this->DmiUsers->getUserDetailsById($getCommercialInfo['dst_usr_cd']);
+					$office = $this->DmiRoOffices->getOfficeDetailsById($getCommercialInfo['dst_loc_id']);
+					$rosoIncharge = $this->DmiUsers->getUserTableId($office[2]);
+
+				} elseif ($_SESSION['user_flag'] == 'SO' || $_SESSION['user_flag'] == 'RO') {
+
+					$getSoRoInfo = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code'],'stage_smpl_flag'=>'SD'])->order('id desc')->first();
+					$s_user = $getSoRoInfo['src_usr_cd'];
+					$d_user = $getSoRoInfo['dst_usr_cd'];
+
 				}else{
+					
 					$s_user = $get_info[0]['src_usr_cd'];
 					$d_user = $get_info[0]['dst_usr_cd'];
 				}
@@ -761,39 +780,29 @@ class InwardController extends AppController{
 	
 					if ($confirm == true){
 						
-						//get role and office where sample available after confirmed
-						$get_info = $this->Workflow->find('all')->where(['org_sample_code IS' => $_SESSION['org_sample_code'],'stage_smpl_flag'=>'PS'])->order('id desc')->first();
-	
-						$this->loadModel('DmiUsers');
-						$this->loadModel('DmiRoOffices');
-
-						$user =  $this->DmiUsers->getUserDetailsById($get_info['dst_usr_cd']);
-						$office = $this->DmiRoOffices->getOfficeDetailsById($get_info['dst_loc_id']);
-						$ro_so = $this->DmiUsers->getUserTableId($office[2]);
-						
 						$message_variable = 'Note :
-											</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
-											</br> '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification, 
-											</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
-											</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
+											</br>You have registered the Commercial Sample successfully having Sample Code : '.$org_sample_code.' and it is saved with payment details.
+											</br>The Sample in now sent to the <b>PAO/DDO : '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification. 
+											</br>If the <b>PAO/DDO</b> user verify the payment then it will be available to the forward the sample .
+											</br>If the <b>PAO/DDO</b> user referred back  then you need to update details as per requirement and send again.';
 
 						if ($_SESSION['user_flag'] == 'SO' || $_SESSION['user_flag'] == 'RO') {
 
 							#SMS: Commercial Sample Registered
 							$this->DmiSmsEmailTemplates->sendMessage(120,$s_user,$org_sample_code); #Source
 							$this->DmiSmsEmailTemplates->sendMessage(123,$d_user,$org_sample_code); #DDO 
-							$this->DmiSmsEmailTemplates->sendMessage(122,$ro_so,$org_sample_code);  #RO
+							$this->DmiSmsEmailTemplates->sendMessage(122,$rosoIncharge,$org_sample_code);  #RO
 
 						} else {
 
 							#SMS: Commercial Sample Registered
 							$this->DmiSmsEmailTemplates->sendMessage(120,$s_user,$org_sample_code); #Source
 							$this->DmiSmsEmailTemplates->sendMessage(123,$d_user,$org_sample_code); #DDO 
-							$this->DmiSmsEmailTemplates->sendMessage(122,$ro_so,$org_sample_code);  #RO
-							$this->DmiSmsEmailTemplates->sendMessage(141,$oic,$org_sample_code);    #OIC	
+							$this->DmiSmsEmailTemplates->sendMessage(122,$rosoIncharge,$org_sample_code); #RO
+							$this->DmiSmsEmailTemplates->sendMessage(156,$oic,$org_sample_code);    #OIC	
 						}
 
-						$this->LimsUserActionLogs->saveActionLog('Sample Confirmed and Sent to DDO','Success'); #Action
+						$this->LimsUserActionLogs->saveActionLog('New Sample Registered and Sent to DDO','Success'); #Action
 					}
 
 				} else {
@@ -801,8 +810,7 @@ class InwardController extends AppController{
 					#SMS: Sample Registered
 					$this->DmiSmsEmailTemplates->sendMessage(88,$s_user,$org_sample_code); #Source
 					$this->DmiSmsEmailTemplates->sendMessage(89,$d_user,$org_sample_code); #Destination
-					$this->LimsUserActionLogs->saveActionLog('Sample Confirmed','Success'); #Action
-				
+					$this->LimsUserActionLogs->saveActionLog('New Sample Registered','Success'); #Action
 					$message_variable = 'Sample Code '.$org_sample_code.' has been Confirmed and Available to "'.$get_info[0]['role'].' ('.$get_info[0]['ro_office'].' )"';
 				}
 
@@ -884,8 +892,8 @@ class InwardController extends AppController{
 				}
 				
 				//get sample details, if saved
-				$getDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code','smpl_drwl_dt','id','inward_section','details_section','payment_section','sample_type_code'),'conditions'=>array('org_sample_code IS'=>$each_sample['org_sample_code']),'order'=>'id desc'))->first();
-
+				$getDetails = $this->SampleInwardDetails->find('all',array('fields'=>array('org_sample_code','smpl_drwl_dt','id','inward_section','details_section','payment_section','sample_type_code'),'conditions'=>array('org_sample_code IS'=>2490971 /*$each_sample['org_sample_code']*/),'order'=>'id desc'))->first();
+				
 				if (!empty($getInward)) {
 
 					if (trim($getInward['status_flag'])=='D') {
@@ -899,6 +907,10 @@ class InwardController extends AppController{
 							$sampleArray[$i]['details_section'] = $getDetails['details_section'];
 							$sampleArray[$i]['payment_section'] = $getDetails['payment_section'];
 							$sampleArray[$i]['sample_type_code'] = $getDetails['sample_type_code'];
+						
+							$sampleType = $this->MSampleType->find('all')->select(['sample_type_desc'])->where(['sample_type_code'=>$getDetails['sample_type_code']])->first();
+					
+							$sampleArray[$i]['sample_type_desc'] = $sampleType['sample_type_desc'];
 						}
 					}
 
@@ -913,6 +925,10 @@ class InwardController extends AppController{
 						$sampleArray[$i]['details_section'] = $getDetails['details_section'];
 						$sampleArray[$i]['payment_section'] = $getDetails['payment_section'];
 						$sampleArray[$i]['sample_type_code'] = $getDetails['sample_type_code'];
+						
+						$sampleType = $this->MSampleType->find('all')->select(['sample_type_desc'])->where(['sample_type_code'=>$getDetails['sample_type_code']])->first();
+					
+						$sampleArray[$i]['sample_type_desc'] = $sampleType['sample_type_desc'];
 					}
 				}
 

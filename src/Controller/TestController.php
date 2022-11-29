@@ -121,11 +121,12 @@ class TestController extends AppController {
 
 			$this->LimsUserActionLogs->saveActionLog('Sample Accept for Test','Success'); #Action
 			
-			$oic = $this->DmiRoOffices->getOfficeIncharge($each['src_loc_id']);
+			$oic = $this->DmiRoOffices->getOfficeIncharge($each['dst_loc_id']);
+			
 			#SMS : Sample Accept for Test
-			$this->DmiSmsEmailTemplates->sendMessage(96,$each['dst_usr_cd'],$each['stage_smpl_cd']);
-			$this->DmiSmsEmailTemplates->sendMessage(97,$each['src_usr_cd'],$each['stage_smpl_cd']);
-			$this->DmiSmsEmailTemplates->sendMessage(153,$oic,$each['stage_smpl_cd']);
+			$this->DmiSmsEmailTemplates->sendMessage(96,$each['dst_usr_cd'],$each['stage_smpl_cd']); #Inward
+			$this->DmiSmsEmailTemplates->sendMessage(97,$each['src_usr_cd'],$each['stage_smpl_cd']); #Chemist
+			$this->DmiSmsEmailTemplates->sendMessage(153,$oic,$each['stage_smpl_cd']);				 #OIC
 		}
 
 		echo '#'.json_encode($chemist_code).'#';
@@ -176,12 +177,12 @@ class TestController extends AppController {
 
 			$this->LimsUserActionLogs->saveActionLog('Test Sent Back','Success'); #Action
 
-			$oic = $this->DmiRoOffices->getOfficeIncharge($each['src_loc_id']);
+			$oic = $this->DmiRoOffices->getOfficeIncharge($each['dst_loc_id']);
 
 			#SMS: Sample Rejected For Test
 			$this->DmiSmsEmailTemplates->sendMessage(98,$each['src_usr_cd'],$each['stage_smpl_cd']); #For Rejecting User
 			$this->DmiSmsEmailTemplates->sendMessage(99,$each['dst_usr_cd'],$each['stage_smpl_cd']); #For Allocating User
-			$this->DmiSmsEmailTemplates->sendMessage(154,$oic,$each['stage_smpl_cd']); #For Current Office OIC
+			$this->DmiSmsEmailTemplates->sendMessage(154,$oic,$each['stage_smpl_cd']); 				 #For Current Office OIC
 		}
 
 		echo '#'.json_encode($chemist_code).'#';
@@ -919,10 +920,10 @@ class TestController extends AppController {
 		$this->loadModel('DmiRoOffices');
 		$oic = $this->DmiRoOffices->getOfficeIncharge($src_loc_id);
 
-		#SMS : Test Result Finalized
-		$this->DmiSmsEmailTemplates->sendMessage(100,$user_code,$chemist_code); #For Chemist
+		#SMS: Test Finalized By Chemist
+		$this->DmiSmsEmailTemplates->sendMessage(100,$user_code,$chemist_code);  #For Chemist
 		$this->DmiSmsEmailTemplates->sendMessage(101,$src_usr_cd,$chemist_code); #For Inward
-		$this->DmiSmsEmailTemplates->sendMessage(155,$oic,$chemist_code); #For OIC
+		$this->DmiSmsEmailTemplates->sendMessage(155,$oic,$chemist_code); 		 #For OIC
 
 		$this->LimsUserActionLogs->saveActionLog('Test Result Finalized','Success'); #Action
 		$message = 'Result have been finalized and forwarded to '.$t[0]['role'].' for approval!';

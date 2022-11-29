@@ -147,6 +147,18 @@
 		}
 
 		
+
+		// This below block is added to remove the ILC option from the dropdown list if the User flag
+		// is RO or SO as the ILC is only filled by RAL and CALs - Akash[29-11-2022].
+		var userFlag = $('#user_flag_id').val();
+		
+		if (userFlag == 'RO' || userFlag == 'SO') {
+		   
+			dropdownElement = $("#sample_type_code");
+			dropdownElement.find('option[value=9]').remove();
+		}   
+
+
 	});
 
 

@@ -183,10 +183,27 @@
 
 									<?php if($_SESSION['role']=="Inward Officer") { ?>
 
+										<!-- added for ilc finalized sample (inner sub sample view) Done by shreeya -->
+										<li class="nav-item">
+											<a href="<?php echo $this->request->getAttribute('webroot');?>FinalGrading/ilc_finalized_samples" class="bg-cyan nav-link">
+												<i class="nav-icon fas fa-poll-h"></i>
+												<p>ILC Final Z-score</p>
+											</a>
+										</li>
+
 									<?php } else { ?>
+										
 										<li class="nav-item">
 											<a href="<?php echo $this->request->getAttribute('webroot');?>FinalGrading/finalized_samples" class="bg-cyan nav-link"><i class="nav-icon fas fa-poll-h"></i><p>Finalized Samples</p></a>
 										</li>
+										<li class="nav-item">
+											<a href="<?php echo $this->request->getAttribute('webroot');?>FinalGrading/ilc_finalized_zscore" class="bg-cyan nav-link">
+											<!-- ilc_finalized_zscore menu (outer view) Done by shreeya -->
+												<i class="nav-icon fas fa-poll-h"></i>
+												<p>ILC Finalized Z-score</p>
+											</a>
+										</li>
+
 									<?php } ?>
 								</li>
 							</ul>

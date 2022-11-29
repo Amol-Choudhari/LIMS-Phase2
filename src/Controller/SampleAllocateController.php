@@ -270,7 +270,7 @@ use Cake\View;
 						$frd_usr_cd = $this->Workflow->find('all')->where(['stage_smpl_cd' => $stage_smpl_cd])->order('id desc')->first();
 						$oic = $this->DmiRoOffices->getOfficeIncharge($_SESSION['posted_ro_office']);
 
-						#SMS: Sample Allocated
+						#SMS: Sample Allocated [Not Approved Only Emails are Applied]
 						$this->DmiSmsEmailTemplates->sendMessage(142,$frd_usr_cd['src_usr_cd'],$stage_smpl_cd); #To Allocating User
 						$this->DmiSmsEmailTemplates->sendMessage(143,$frd_usr_cd['dst_usr_cd'],$stage_smpl_cd); #To Allocated User
 						$this->DmiSmsEmailTemplates->sendMessage(152,$oic,$stage_smpl_cd); #To Current OIC
@@ -409,9 +409,9 @@ use Cake\View;
 
 					$conn->execute("UPDATE sample_inward SET status_flag='IF' WHERE org_sample_code='$ogrsample'");
 
-					// Sample Forward to Lab Incharge SMS/EMAIL
-					#$this->DmiSmsEmailTemplates->sendMessage(91,$_SESSION['user_code'],$stage_smpl_cd);
-					#$this->DmiSmsEmailTemplates->sendMessage(92,$alloc_to_user_code,$stage_smpl_cd);
+					#SMS: Forward To Lab Incharge
+					$this->DmiSmsEmailTemplates->sendMessage(90,$_SESSION['user_code'],$stage_smpl_cd); #Source
+					$this->DmiSmsEmailTemplates->sendMessage(91,$alloc_to_user_code,$stage_smpl_cd); #Destination
 
 					// For Maintaining Action Log by Akash (28-07-2022)
 					$this->LimsUserActionLogs->saveActionLog('Sample Forwarded to Lab Incharge','Success');
@@ -1070,9 +1070,14 @@ use Cake\View;
 		$conn = ConnectionManager::get('default');
 		$this->loadModel('ActualTestData');
 		$this->loadModel('CommodityTest');
+		$this->loadModel('IlcOrgSmplcdMaps');
 		$commodity_code=$_POST['commodity_code'];
 		$sample_code1=trim($_POST['sample_code']);
-		$alloc_by_user_code11=$_POST['alloc_to_user_code'];
+	    $alloc_by_user_code11=$_POST['alloc_to_user_code'];
+
+		/* added new component for ILC Flow done 09/11/2022 by shreeya*/
+		//create sample type
+		$sampleTypeCode = $this->Customfunctions->createSampleType($sample_code1);
 
 		if (!is_numeric($sample_code1) || $sample_code1=='' ){
 			echo '#[error]~Invalid Sample Code#';
@@ -1128,6 +1133,18 @@ use Cake\View;
 											AND a.test_code ".$arr." GROUP BY a.test_code,a.test_name");
 			}
 
+			/*to show selected  test parameter ILC FLOW done by shreeya on 16-11-22*/
+			if($sampleTypeCode == 9){
+
+				$category = $conn->execute("SELECT a.test_name,a.test_code
+				FROM ilc_org_smplcd_maps AS sm
+				INNER JOIN ilc_save_test_parameters AS stp ON stp.sample_code = sm.org_sample_code
+				INNER JOIN m_test AS a ON a.test_code = stp.testname
+				INNER JOIN workflow AS w ON w.stage_smpl_cd = '$sample_code1'
+				WHERE sm.ilc_org_sample_cd = w.org_sample_code AND a.test_code ".$arr."
+				GROUP BY a.test_name,a.test_code");
+			}
+
 		} else {
 
 			if (count($testalloc2)>0) {
@@ -1142,6 +1159,19 @@ use Cake\View;
 											INNER JOIN test_formula AS tf ON a.test_code = tf.test_code
 											WHERE ct.commodity_code='$commodity_code'
 											GROUP BY a.test_code,a.test_name");
+			}
+			
+			/*to show selected  test parameter ILC FLOW done by shreeya on 16-11-22*/
+			if($sampleTypeCode == 9){
+
+				$category = $conn->execute("SELECT a.test_name,a.test_code
+				FROM ilc_org_smplcd_maps AS sm
+				INNER JOIN ilc_save_test_parameters AS stp ON stp.sample_code = sm.org_sample_code
+				INNER JOIN m_test AS a ON a.test_code = stp.testname
+				INNER JOIN workflow AS w ON w.stage_smpl_cd = '$sample_code1'
+				WHERE sm.ilc_org_sample_cd = w.org_sample_code 
+				GROUP BY a.test_name,a.test_code");
+
 			}
 
 		}
@@ -1376,7 +1406,8 @@ use Cake\View;
 			$cus_string .= $each."','";
 		}
 		if(!empty($from_dt) && !empty($to_dt)){
-			$dateCondition = " AND date(si.created) >= '$from_dt' AND date(si.created) <= '$to_dt'";
+			#In the below code the si.created is changed to w.created to get the list of the sample to allocation on the default - Amol [11-11-2022]
+			$dateCondition = " AND date(w.created) >= '$from_dt' AND date(w.created) <= '$to_dt'";
 		}else{
 			$dateCondition = "";
 		}
@@ -2130,7 +2161,8 @@ use Cake\View;
 		}
 
 		if(!empty($from_dt) && !empty($to_dt)){
-			$dateCondition = " AND date(si.created) >= '$from_dt' AND date(si.created) <= '$to_dt'";
+			#In the below code the si.created is changed to w.created to get the list of the sample to allocation on the default - Amol [11-11-2022]
+			$dateCondition = " AND date(w.created) >= '$from_dt' AND date(w.created) <= '$to_dt'";
 		}else{
 			$dateCondition = "";
 		}
@@ -2468,9 +2500,9 @@ use Cake\View;
 						$oic = $this->DmiRoOffices->getOfficeIncharge($_SESSION["posted_ro_office"]);
 
 						#SMS: Sample Allocated For Retest
-						$this->DmiSmsEmailTemplates->sendMessage(138,$_SESSION["user_code"],$sample_code); #INWARD
-						$this->DmiSmsEmailTemplates->sendMessage(139,$chemist_code[0]['id'],$sample_code); #CHEMIST
-						$this->DmiSmsEmailTemplates->sendMessage(141,$oic,$sample_code); #OIC
+						$this->DmiSmsEmailTemplates->sendMessage(138,$_SESSION["user_code"],$sample_code); 	#INWARD
+						$this->DmiSmsEmailTemplates->sendMessage(139,$chemist_code[0]['id'],$sample_code); 	#CHEMIST
+						$this->DmiSmsEmailTemplates->sendMessage(141,$oic,$sample_code); 					#OIC
 
 						$this->LimsUserActionLogs->saveActionLog('Sample Reallocate','Success'); #Action
 						$message = 'Sample Code '.$chemist_code[0]['chemist_code'].' is allocated to  '.$chemist_code[0]['f_name'].' '.$chemist_code[0]['l_name'].'('.$chemist_code[0]['role'].'). ';
@@ -2601,8 +2633,7 @@ use Cake\View;
 
 					$conn->execute("UPDATE sample_inward SET status_flag='RIF' WHERE org_sample_code='$ogrsample'");
 
-					//call to the common SMS/Email sending method
-					$this->loadModel('DmiSmsEmailTemplates');
+					#SMS: Sample Forward For Retest
 					//$this->DmiSmsEmailTemplates->sendMessage(2009,$sample_code);
 
 					$this->LimsUserActionLogs->saveActionLog('Sample Forward Retest','Success'); #Action

@@ -74,6 +74,10 @@
 												</div>
 												</div>
 											</div>
+											<!-- added for if select ilc sample type done 03/06/2022 by shreeya -->
+											<?php if($sampleTypeCode==9){  ?>
+												<?php echo $this->element('ilc_forward_element');?>
+											<?php } ?>
 										</div>
 										<div class="card-footer">
 											<div class="col-md-12">

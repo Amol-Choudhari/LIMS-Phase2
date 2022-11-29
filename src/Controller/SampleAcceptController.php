@@ -58,6 +58,8 @@ class SampleAcceptController extends AppController
 			$this->loadModel('Workflow');
 			$this->loadModel('DmiUsers');
 			$this->loadModel('DmiUserRoles');
+			$this->loadModel("IlcSelectedRals");
+			$this->loadModel("IlcOrgSmplcdMaps");
 			$this->loadModel('MUnitWeight');
 			$conn = ConnectionManager::get('default');
 
@@ -78,6 +80,31 @@ class SampleAcceptController extends AppController
 			
 			$unit = $unit_query[0]['unit_weight'];
 
+
+			/************************    [ILC FLOW  START ] DONE BY SHREEYA ON 16-11-2022 *******************************/
+
+			//call Customfunctions component to create sample type
+			$sampleTypeCode = $this->Customfunctions->createSampleType($sample_code);
+			 if($sampleTypeCode == 9){
+
+				// added for fetch orignal sample code  
+				$get_org_code = $this->IlcOrgSmplcdMaps->find('all',array('fields'=>'org_sample_code','conditions'=>array('ilc_org_sample_cd IS'=>$sample_code,'status IS' => '1')))->first();
+				$orgsamplecode = $get_org_code['org_sample_code'];
+				
+				// added for fetch save selected quantity  
+				$query = $conn->execute("SELECT sm.inwd_off_val,sr.qty FROM ilc_org_smplcd_maps AS sm 
+				
+								INNER JOIN ilc_selected_rals AS sr ON sm.inwd_off_val = sr.inwd_off_val
+								WHERE sr.stage_sample_code = '$orgsamplecode' AND sm.ilc_org_sample_cd = '$sample_code' ORDER BY sr.id DESC");
+								
+				$selectedqty = $query->fetchAll('assoc');
+				$this->set('selectedqty',$selectedqty);
+				
+			 }
+			
+			/************************    [ ILC FLOW END ] *******************************/
+
+			
 			$this->set('getqty',$getqty);
 			$this->set('unit',$unit);
 			$this->set('samples_list',array($accpt_sample_cd=>$accpt_sample_cd));

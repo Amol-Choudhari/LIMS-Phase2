@@ -2,24 +2,49 @@
 	//Starting Validations 
 	$(document).ready(function(){
 
-		$("#stage_sample_code").change(function(e){
-
-			if(getsampledetails()==false){
-				e.preventDefault();
-			}else{
-				if(enable_disble()==false){
-					e.preventDefault();
-				}
-			}
+		$("#get_zscore").click(function () {//first save the zscore then show forward button
+			$('#frd_to_oic').show();
+			
 		});
 
+			$("#stage_sample_code").change(function(e){
+
+			
+				if(getsampledetails()==false){
+					e.preventDefault();
+				}else{
+					if(enable_disble()==false){
+						e.preventDefault();
+					}
+				}
+				/* added for ilc sample Done by shreeya on 17-11-2022*/
+				var sampletype = $("#sample_type").val();
+
+				if(sampletype == 9){
+						
+					$('#frd_to_oic').hide();//final inward window hide forward button on 18-11-22
+
+					if(getdetailsilc()==false){
+						e.preventDefault();
+					}
+				}
+					
+				
+						
+					
+			});
+
+			
 
 		$("#grd_standrd").change(function(e){
+
+			var sampletype = $("#sample_type").val();
 
 			if(getdetails()==false){
 				e.preventDefault();
 			}
 		});
+
 	})
 
 	var arr = new Array();
@@ -173,6 +198,96 @@
 										}
 
 									//});
+
+								});
+
+								rowcontent = rowcontent+"</tr>";
+								$("#d1 tbody").append(rowcontent);
+							  i++;
+							});
+
+							$("#d1").show();
+							$(".fsStyle1").show();
+
+						}else{
+							$("#d1").hide();
+							$(".fsStyle1").hide();
+							var msg="Fill the grade for commodity!";
+							$.alert(msg);
+							$("#save").attr("disabled", true);
+						}
+					}
+				}
+			});
+		}
+	}
+
+	//added for ilc flow click  grd standard details 
+	//show the  non grade table list to get the details of final result
+	// Done By Shreeya on 17-11-2022
+	function getdetailsilc(){
+
+		$("#save").attr("disabled", false);
+		$("#delete").attr("disabled", true);
+		$("#method_code").attr("disabled", false);
+		$("#grd_standrd").attr("disabled", false);
+
+		var sample_code = $("#sample_code").val();
+		var grd_standrd = 2;// it is requried but not used for ilc so given default value intentionaly
+		var category_code=  $("#category_code").val();
+		var commodity_code=  $("#commodity_code").val();
+
+		$("#d1 tbody").find('tr').remove();
+		
+		if (sample_code != ""){
+
+			$.ajax({
+				type: "POST",
+				url: 'getfinal_result',
+				data: {sample_code: sample_code,grd_standrd:grd_standrd,category_code:category_code,commodity_code:commodity_code},
+				beforeSend: function (xhr) { // Add this line
+						xhr.setRequestHeader('X-CSRF-Token', $('[name="_csrfToken"]').val());
+				},
+				success: function (data) {
+
+					var resArray = data.match(/#([^']+)#/)[1];//getting data bitween ## from response
+
+					$("#d1 tbody").find('tr').remove();
+
+					if(resArray.indexOf('[error]') !== -1){
+						var msg = resArray.split('~');
+						alert(msg[1]);
+						return;
+					}else{
+
+						var array = resArray.split("~");
+
+						if(array[1]!='1'){
+
+							$("#save").attr("disabled", false);
+							var i=1;
+
+							resArray = JSON.parse(resArray);//response is JSOn encoded to parse JSON
+
+							$.each(resArray, function (key, value){
+
+								var rowcontent="<tr><td>"+i+"</td>";
+
+								var j=0;
+								$.each( value,function (key1, value1){
+
+									//$.each( value1,function (key2, value2){
+
+										if(key1!='test_code' && j<3){//for ilc sample show only two td
+											$("#first").show();
+
+											rowcontent=rowcontent+"<td>"+value1+"</td>";
+											arr.push(value1);
+										}
+
+									//});
+
+									j++;
 
 								});
 

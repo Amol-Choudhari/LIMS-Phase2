@@ -1,6 +1,3 @@
-
-	
-	
 	var global_user;
 	var global_designation;
 	var designation;
@@ -177,14 +174,16 @@
 
 	$("#no_of_packets").focusout(function(e){
 
-		var sample_type = $("#sample_type").val();
+		var sample_type = $("#sample_type_code").val();
+		//This condition i.e sample type 3 is added because to restrict the replica entry on the
+		//on the packet entries as there is no replica entry for Commercial
+		//sample type suggested by the DMI - Akash [29-11-2022]
 
 		if (sample_type != 3) {
 			if(get_serial_no()==false){
 				e.preventDefault();
 			}
 		}
-		
 	});
 
 

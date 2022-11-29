@@ -377,13 +377,39 @@
 	</section>
 </div>
 
-<?php  if(empty($sample_inward_data['users'])){ $receivedfrom = $_SESSION['user_code']; }else{ $receivedfrom = $sample_inward_data['users']; } ?>
-<?php if (isset($_SESSION['org_sample_code'])) { $org_sample_code = $_SESSION['org_sample_code']; }else{ $org_sample_code = '' ; } ?>
+<?php //Hidden Values//
+
+	if(empty($sample_inward_data['users'])){ 
+		$receivedfrom = $_SESSION['user_code']; 
+	}else{ 
+		$receivedfrom = $sample_inward_data['users']; 
+	} 
+	
+	if (isset($_SESSION['org_sample_code'])) { 
+		$org_sample_code = $_SESSION['org_sample_code']; 
+	}else{ 
+		$org_sample_code = '' ; 
+	}
+	
+	if(empty($sample_type_code)){ 
+		$sample_type = ''; 
+	}else{ 
+		$sample_type = $sample_type_code; 
+	} 
+?>
+
+
 <input type="hidden" id="acc_rej_flg" value="<?php echo $sample_inward_data['acc_rej_flg']; ?> ">
 <input type="hidden" id="org_sample_code" value="<?php echo $org_sample_code; ?> ">
 <input type="hidden" id="sample_status" value="<?php echo trim($sample_inward_data['status_flag']); ?>">
 <input type="hidden" id="receivedfrom" value="<?php echo $receivedfrom; ?>">
-<?php if(empty($sample_type_code)){ $sample_type = ''; }else{ $sample_type = $sample_type_code; } ?>
 <input type="hidden" id="sample_type" value="<?php echo $sample_type; ?>">
-<?php echo $this->Html->script('inward/sample_inward'); ?>
-<?php echo $this->Html->script('sample_reg_form'); ?>
+<input type="hidden" id="user_flag_id" value="<?php echo $_SESSION['user_flag']; ?>">
+
+
+
+
+<?php // Include JS 
+	echo $this->Html->script('inward/sample_inward'); 
+ 	echo $this->Html->script('sample_reg_form'); 
+?>

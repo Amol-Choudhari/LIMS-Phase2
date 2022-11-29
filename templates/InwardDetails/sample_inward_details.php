@@ -137,9 +137,9 @@
 													<span id="error_remark" class="error invalid-feedback"></span>
 												</div>
 											</div>
-
-											<div class="col-md-12 row mb-3" id="elementRow">
-												<?php  if (isset($sample_Details_data['replica_serial_no'])) {
+											<?php if($sample_type != 3){ ?>
+												<div class="col-md-12 row mb-3" id="elementRow">
+													<?php  if (isset($sample_Details_data['replica_serial_no'])) {
 														$repArray = explode(',',$sample_Details_data['replica_serial_no']);
 														for ($r=0;$r<count($repArray);$r++) {
 															$incrmt = $r+1; ?>
@@ -148,8 +148,10 @@
 																<?php echo $this->Form->control('replica_serial_no'.$incrmt, array('type'=>'text', 'id'=>'replica_serial_no'.$incrmt, 'value'=>$repArray[$r], 'label'=>false,'class'=>'form-control','required'=>true)); ?>
 																<span id="error_replica_serial_no" class="error invalid-feedback"></span>
 															</div>
-												<?php } }?>
-											</div>
+													<?php } }?>
+												</div>
+											<?php } ?>
+										
 										</div>
 									</div>
 								</div>
@@ -196,4 +198,5 @@
 <input type="hidden" id="sample_status" value="<?php echo trim((string) $sample_Details_data['status_flag']); ?>">
 <?php if(empty($sample_type)){ $sample_type = ''; }else{ $sample_type = $_SESSION['sample']; }?>
 <input type="hidden" id="sample_type" value="<?php echo $sample_type; ?>">
+<input type="hidden" id="user_flag_id" value="<?php echo $_SESSION['user_flag']; ?>">
 <?php echo $this->Html->script('sample_reg_form'); ?>

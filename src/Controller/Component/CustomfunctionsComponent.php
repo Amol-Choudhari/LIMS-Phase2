@@ -3,13 +3,14 @@ namespace app\Controller\Component;
 use Cake\Controller\Controller;
 use Cake\Controller\Component;
 use Cake\Controller\ComponentRegistry;
+use Cake\Datasource\ConnectionManager;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Datasource\EntityInterface;
 use QRcode;
 class CustomfunctionsComponent extends Component {
 
-	public $components= array('Session','PaymentDetails');
+	public $components= array('Session','PaymentDetails','Ilc');
 	public $controller = null;
 	public $session = null;
 
@@ -810,44 +811,73 @@ class CustomfunctionsComponent extends Component {
 		
 		require_once(ROOT . DS .'vendor' . DS . 'phpqrcode' . DS . 'qrlib.php');
 
-		// $data = "MECARD:N:".'Certificate No:'.$result[0].";EMAIL:".'Grant Date:'.$result[1]." Valid up to date:".$result[2][0].";";
-		$data = "Name of customer:".$sample_forwarded_office[0]['user_flag'].",".$sample_forwarded_office[0]['ro_office']."##"."Address of customer :".$sample_forwarded_office[0]['ro_office']."##"."Sample Code No :".$Sample_code_as."##"."Commodity of Sample :".$test_report[0]['commodity_name']."##"."Grade:".$test_report[0]['grade_desc'];
-		
-		$qrimgname = rand();
-		
-		$server_imagpath = '/writereaddata/LIMS/QRCodes/'.$qrimgname.".png";
-		
-		$file_path = $_SERVER["DOCUMENT_ROOT"].'/writereaddata/LIMS/QRCodes/'.$qrimgname.".png";
-		
-		$file_name = $file_path;
-		
-		QRcode::png($data,$file_name);
-				
-		$date = date('Y-m-d H:i:s');
-		
-		$workflow = TableRegistry::getTableLocator()->get('workflow');
-		
-		//$sample_code = $workflow->find('all',array(,'conditions'=>array('org_sample_code'=>$Sample_code_as),'order'=>'id asc'))->toArray();
-		$sample_code = $workflow->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('stage_smpl_cd IS'=>$Sample_code_as)))->first();
-		
-		$stage_smpl_code = $sample_code['org_sample_code'];
-		
-		$SampleReportAdd = $LimsReportsQrcodes->newEntity([
-			'sample_code'=>$stage_smpl_code,
-			'qr_code_path'=>$server_imagpath,
-			'created'=>$date,
-			'modified'=>$date
-		]);
+		// call to component for sample type Done by Shreeya on 15-11-2022
+		$sampleTypeCode = $this->createSampleType($Sample_code_as);
+		// added if conditon for ILC sample non grading sample done by Shreeya on 15-11-2022
+		if($sampleTypeCode!=9){
 
-		$LimsReportsQrcodes->save($SampleReportAdd);
+			//updated by shankhpal on 21/11/2022
+			$data = "Name of RO/SO:".$sample_forwarded_office[0]['user_flag'].",".$sample_forwarded_office[0]['ro_office']."##"."Address of RO/SO :".$sample_forwarded_office[0]['ro_office']."##"."Sample Code No :".$Sample_code_as."##"."Commodity :".$test_report[0]['commodity_name']."##"."Grade:".$test_report[0]['grade_desc'];
+			
+			$qrimgname = rand();
+			
+			$server_imagpath = '/writereaddata/LIMS/QRCodes/'.$qrimgname.".png";
+			
+			$file_path = $_SERVER["DOCUMENT_ROOT"].'/writereaddata/LIMS/QRCodes/'.$qrimgname.".png";
+			
+			$file_name = $file_path;
+			
+			QRcode::png($data,$file_name);
+					
+			$date = date('Y-m-d H:i:s');
+			
+			$workflow = TableRegistry::getTableLocator()->get('workflow');
+			
+			//$sample_code = $workflow->find('all',array(,'conditions'=>array('org_sample_code'=>$Sample_code_as),'order'=>'id asc'))->toArray();
+			$sample_code = $workflow->find('all',array('fields'=>'org_sample_code', 'conditions'=>array('stage_smpl_cd IS'=>$Sample_code_as)))->first();
+			
+			$stage_smpl_code = $sample_code['org_sample_code'];
+			
+			$SampleReportAdd = $LimsReportsQrcodes->newEntity([
+				'sample_code'=>$stage_smpl_code,
+				'qr_code_path'=>$server_imagpath,
+				'created'=>$date,
+				'modified'=>$date
+			]);
+
+			$LimsReportsQrcodes->save($SampleReportAdd);
+			
+			$qrimage = $LimsReportsQrcodes->find('all',array('field'=>'qr_code_path','conditions'=>array('sample_code'=>$stage_smpl_code),'order'=>'id desc'))->first();
 		
-		$qrimage = $LimsReportsQrcodes->find('all',array('field'=>'qr_code_path','conditions'=>array('sample_code'=>$stage_smpl_code),'order'=>'id desc'))->first();
-	
-		return $qrimage;
+			return $qrimage;
+		}
 
 	}
 
+/***************************************************************************************************************************************************************************************************/
 
+	// CREATE SAMPLE TYPE
+	// Contributer : Shreeya Bondre
+	// Description : This will return Sample Type code for Sample 
+	// Date : 16/06/2022
+
+	public function createSampleType($forw_sample_cd) {
+
+		$conn = ConnectionManager::get('default');
+		$SampleInward = TableRegistry::getTableLocator()->get('SampleInward');
+		$query="SELECT org_sample_code FROM workflow WHERE stage_smpl_cd = '$forw_sample_cd' AND display='Y' ";
+	
+		$sample_cd1 = $conn->execute($query);
+		$sample_cd1 = $sample_cd1->fetchAll('assoc');
+		$sample_cd = $sample_cd1[0]['org_sample_code'];
+		$getSampleType = $SampleInward->find('all',array('fields'=>'sample_type_code','conditions'=>array('org_sample_code IS' => $sample_cd)))->first();
+		$sampleTypeCode = $getSampleType['sample_type_code'];
+		$this->Controller->set('sampleTypeCode',$sampleTypeCode );
+		
+		return $sampleTypeCode;
+	}
+	
+	
 
 
 }

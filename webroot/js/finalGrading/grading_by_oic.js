@@ -121,14 +121,18 @@
 						if(resArray == 11 || resArray==2 ){
 							window.location = 'available_for_grading_to_oic';
 
-						}else if(resArray==0)
-						{
-							$.alert("Sample has been marked for retest and sent back to respective Inward Officer/Lab Incharge!!");
-							window.location = 'available_for_grading_to_oic';
+						}else if(resArray==0){
 
-						}
-						else
-						{
+							$.alert({
+								content: "Sample has been marked for retest and sent back to respective Inward Officer/Lab Incharge!!",
+								closeIcon: true,
+								columnClass: 'm',
+								onClose: function () {
+									window.location = 'available_for_grading_to_oic';
+								}
+							});
+
+						}else{
 							$.each(resArray, function (key, value) {
 								$.alert(value);
 								return false;

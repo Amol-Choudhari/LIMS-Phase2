@@ -1,22 +1,41 @@
-	//call to login validations
+   
+   $(document).ready(function () {
+
+        // This below block is added to remove the ILC option from the dropdown list if the User flag
+        // is RO or SO as the ILC is only filled by RAL and CALs - Akash[29-11-2022].
+        var userFlag = $('#user_flag_id').val();
+    
+        if (userFlag == 'RO' || userFlag == 'SO') {
+            
+            dropdownElement = $("#sample_type_code");
+            dropdownElement.find('option[value=9]').remove();
+        }   
+    });
+
+
+    //call to login validations
 	$('#save').click(function (e) {
 		
 		if (sample_details_form_validations() == false) {
 			e.preventDefault();
 		} else {
-		$('#frm_sample_inward').submit();  
+		    $('#frm_sample_inward').submit();  
 		}     
 	});
 
     // ADDED THIS BELOW CODE TO GRAY OUT THE SAMPLE TYPE SELECTION AFTER SAVE.
-	var sample_type = $("#sample_type").val();
-	if(sample_type != ''){
+	var sample_type = $("#sample_type_code").val();
+	if(sample_type != '' && sample_type != null ){
 		$('#sample_type_code').addClass('disText');
 	}
-
     
-    /// For Comercial Type Sample ///
+   
+   
 
+
+
+
+    /// For Comercial Type Sample ///
 	$('#sample_type_code').change(function (e) {
 		e.preventDefault();
 		var sample_type_code = $('#sample_type_code').val();
@@ -25,21 +44,26 @@
 
 			$.confirm({
 				title: 'Commercial Sample',
-				content: 'Please Note: As you have selected <b>Commercial</b> Sample Type the payment details to be filled in <i>Payment Section</i>. <br>After saving the <i>Inward Section</i> the Payment Section will be avaible to fill.',
+				content: 'Please Note:<br> As you have selected <b>Commercial</b> Sample Type the payment details to be filled in <i>Payment Section</i>. <br>After saving the <i>Sample Details</i> Section the Payment Section will be avaible to fill.',
 				icon: 'glyphicon glyphicon-info-sign',
 				type: 'info',
-				columnClass: 'm',
+				columnClass: 'l',
 				buttons: {
 					OK: {
 						btnClass: 'btn-info',
-						action: function(){}
+						action: function(){
+                            $("#elementRow").hide(); // This added to HIDE the replica boxes if the commerical sample is selected - Akash[29-11-2022]
+                        }
 					},
 					cancel: function () {
 						$("#sample_type_code option:eq(0)").prop("selected", true);
 					}
 				}
 			});
-		}
+        
+        }else{
+            $("#elementRow").show(); // This added to SHOW the replica boxes if the commerical sample is selected - Akash[29-11-2022]
+        }
 	});
 
 

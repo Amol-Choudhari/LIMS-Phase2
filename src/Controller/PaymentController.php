@@ -161,17 +161,16 @@ class PaymentController extends AppController{
 							$this->DmiSmsEmailTemplates->sendMessage(120,$s_user,$org_sample_code); #Source
 							$this->DmiSmsEmailTemplates->sendMessage(123,$d_user,$org_sample_code); #DDO 
 							$this->DmiSmsEmailTemplates->sendMessage(122,$ro_so,$org_sample_code);  #RO
-							$this->DmiSmsEmailTemplates->sendMessage(141,$oic,$org_sample_code);    #OIC	
+							$this->DmiSmsEmailTemplates->sendMessage(156,$oic,$org_sample_code);    #OIC	
 						}
 						
 
 						$this->LimsUserActionLogs->saveActionLog('Payment Section Confirm','Success'); #Action
-
 						$message = 'Note :
-						</br>The Commercial Sample Inward is saved with payment details and sent to <b>PAO/DDO :
-						</br> '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification, 
-						</br>If the <b>DDO</b> user confirms the payment then it will be available to RO/SO OIC to forward.
-						</br>If <b>DDO</b> user referred back  then you need to update details as per requirement and send again.';
+									</br>You have registered the Commercial Sample successfully having Sample Code : '.$org_sample_code.' and it is saved with payment details.
+									</br>The Sample in now sent to the <b>PAO/DDO : '.base64_decode($user['email']).'  ('.$office[0].')</b> for payment verification. 
+									</br>If the <b>PAO/DDO</b> user verify the payment then it will be available to the forward the sample .
+									</br>If the <b>PAO/DDO</b> user referred back  then you need to update details as per requirement and send again.';
 						$message_theme = 'success';
 						$redirect_to = '../inward/confirmed_samples';
 			
