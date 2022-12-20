@@ -18,6 +18,10 @@ class SampleForwardController extends AppController {
 		$this->viewBuilder()->setLayout('admin_dashboard');
 		$this->viewBuilder()->setHelpers(['Form','Html']);
 		$this->loadComponent('Customfunctions');
+		$this->loadModel('DmiSmsEmailTemplates');
+		$this->loadModel('LimsUserActionLogs');
+		$this->loadComponent('Ilc');
+
 	}
 
 /************************************************************************************************************************************************************************************************************************/
@@ -72,15 +76,37 @@ class SampleForwardController extends AppController {
 
 			$this->set('current_user_roles',$current_user_roles);
 
-			//getting sample code list with status confirmed and aceeptd flag
-			//$samples = $this->SampleInward->find('all', array('order' => array('stage_sample_code' => 'ASC'),'fields' => array('stage_sample_code'),'conditions'=>array('display'=>'Y','user_code'=>$usr,'status_flag'=>'S','acc_rej_flg'=>'A')))->toArray();
+			/* added new component for ILC Flow done 03/06/2022 by shreeya*/
+			//create sample type
+			$sampleTypeCode = $this->Customfunctions->createSampleType($forw_sample_cd);
+			
+			if($sampleTypeCode==9){
 
-			// create function to get sample list that are ready for forwarding,
-			//$sort_sample_codes = $this->sampleForwardList();
+				$this->Ilc->getSavedSelectedRALs($sampleTypeCode);
+				$this->Ilc->SavedSelectedTestname($sampleTypeCode); /*select save test name on 09-11-22*/
 
-			//asort($sort_sample_codes);
-			//$this->set('res',$sort_sample_codes);$forw_sample_cd
+				//to get commodity code & sample available qnt , unit done by shreeya on 11-11-2022
+				$query = $conn->execute("SELECT mc.commodity_name,mc.commodity_code,muw.unit_id,muw.unit_weight,si.sample_total_qnt
+					FROM sample_inward AS si
+					INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+					INNER JOIN m_unit_weight AS muw ON si.parcel_size=muw.unit_id
+				 	WHERE  si.org_sample_code='$forw_sample_cd' AND si.sample_type_code=$sampleTypeCode ");
 
+				$getcommodity = $query->fetch('assoc');
+
+				$this->set('getcommodity',$getcommodity);
+
+				//added for Test name show the list by shreeya on 07-11-2022
+				$test_name = $conn->execute("SELECT m.test_code,m.test_name FROM commodity_test AS ct
+										   INNER JOIN m_test AS m ON m.test_code = ct.test_code
+											WHERE ct.commodity_code='".$getcommodity['commodity_code']."' ORDER BY m.test_code"); 
+
+				
+				$this->set('test_name',$test_name);
+			
+				
+			}
+			
 			$this->set('res',array($forw_sample_cd=>$forw_sample_cd));
 
 			$offices = "";
@@ -114,152 +140,198 @@ class SampleForwardController extends AppController {
 
 			if (null !==($this->request->getData('forward_sample'))) {
 
-				$sample_code	= $this->request->getData('stage_sample_code');
+				if($sampleTypeCode==9){
 
-				//Checked Empty Conditions on Post Data
-				if($this->request->getData('dst_usr_cd') != '' && $this->request->getData('ral_cal') != '' && $this->request->getData('dst_loc_id') != '' ) {
+					$checkexist=$this->Ilc->checkSavedornot($forw_sample_cd);
+					if ($checkexist ==false) {
 
-					//Check Post Data Validations
-					$validate_err = $this->forwardPostValidations($this->request->getData());
-
-					if ($validate_err != '') {
-
-						$this->set('validate_err',$validate_err);
+						$this->set('validate_err',"Please save the selected RALs/CALs & Select Test Name then proceed to forward sample");
 						return null;
 					}
 
-					//HTML Encoding
-					$postdata = $this->request->getData();
+					// added for check save or not for test name done by shreeya on 09-11-2022
+					$checkedsave=$this->Ilc->savedornot($forw_sample_cd);
+					if ($checkedsave ==false) {
 
-					foreach ($postdata as $key => $value) {
-
-						$postdata[$key] = htmlentities($postdata[$key], ENT_QUOTES);
+						$this->set('validate_err',"Please save the Selected Test Name then proceed to forward sample");
+						return null;
 					}
-
-					$this->loadModel('Workflow');
-					$this->loadModel('DmiUsers');
-					$this->loadModel('SampleInward');
-
-
-					$ogrsample1	= $this->SampleInward->find('all', array('conditions'=> array('stage_sample_code IS' => $sample_code)))->first();
 					
-					$ogrsample	= $ogrsample1['org_sample_code'];
+					// save record with new generating map code by shreeya 22-06-2022
+					$this->Ilc->SelectSavedMapping($sampleTypeCode);
+					// save to workflow and sample inward table by shreeya 
+					$this->Ilc->SavedToSampleInward($sampleTypeCode);
+					//forward to ilc sample type done by shreeya on 22-06-2022
+					$ilcforwardres=$this->Ilc->ilcsampleForward($sampleTypeCode);
+					if($ilcforwardres==true){
+						
+						$get_user_codes = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$sampleTypeCode)))->first();
+						$ralcaloic = $this->DmiRoOffices->getOfficeIncharge($get_user_codes['dst_loc_id']);
 
-					$user_code	= $this->request->getData('dst_usr_cd');
+						#SMS: Sample Forward
+						$this->DmiSmsEmailTemplates->sendMessage(90,$get_user_codes['src_usr_cd'],$sampleTypeCode); #Source
+						$this->DmiSmsEmailTemplates->sendMessage(91,$get_user_codes['dst_usr_cd'],$sampleTypeCode); #Destination
+						$this->DmiSmsEmailTemplates->sendMessage(141,$ralcaloic,$sampleTypeCode); #OIC
+						
+						// For Maintaining Action Log by Akash (26-04-2022)
+						$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
+					
+						$message = 'The ILC sample with registration code '.$this->request->getData('stage_sample_code').' is forwarded to selected RALs/CALs';
+						$message_theme = 'success';
+						$redirect_to = 'forwarded_list';
 
-					$user_code_pattern	= '/^[0-9]+$/';
-
-					$office_code	= $this->request->getData('ral_cal');
-
-					$dst_user_office = $this->request->getData('dst_loc_id');
-
-					$tran_date		= date('Y-m-d');
-					$dispatch_date	= date("Y/m/d");
-
-					//Generate New Stage Sample Code
-					$new_sample_code	= $this->Customfunctions->createStageSampleCode();
-
-					if ($office_code == 'HO') {
-
-						$flag = "HF";
-
-					} else {
-
-						$flag = "OF";
 					}
+	
+				}
+				else  //else all other samples forwarded normaly
+				{
+					$sample_code	= $this->request->getData('stage_sample_code');
 
-					//Checks if the Sample is Already Forwarded.
-					$already_forwarded = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_flag IN'=>array('HF','OF'),'org_sample_code'=>$ogrsample)))->first();
+					//Checked Empty Conditions on Post Data
+					if($this->request->getData('dst_usr_cd') != '' && $this->request->getData('ral_cal') != '' && $this->request->getData('dst_loc_id') != '' ) {
 
-					if (empty($already_forwarded)) {
+						//Check Post Data Validations
+						$validate_err = $this->forwardPostValidations($this->request->getData());
 
-						$workflow_data	= array("org_sample_code"=>$ogrsample,
-													  "src_loc_id"=>$_SESSION["posted_ro_office"],
-													  "src_usr_cd"=>$_SESSION["user_code"],
-													  "dst_loc_id"=>$dst_user_office,
-													  "dst_usr_cd"=>$user_code,
-													  "stage_smpl_cd"=>$new_sample_code,
-													  "tran_date"=>$tran_date,
-													  "user_code"=>$_SESSION["user_code"],
-													  "stage"=>"4",
-													  "stage_smpl_flag"=>$flag);
+						if ($validate_err != '') {
 
-						$workflowEntity = $this->Workflow->newEntity($workflow_data);
+							$this->set('validate_err',$validate_err);
+							return null;
+						}
+
+						//HTML Encoding
+						$postdata = $this->request->getData();
+
+						foreach ($postdata as $key => $value) {
+
+							$postdata[$key] = htmlentities($postdata[$key], ENT_QUOTES);
+						}
+
+						$this->loadModel('Workflow');
+						$this->loadModel('DmiUsers');
+						$this->loadModel('SampleInward');
+
+
+						$ogrsample1	= $this->SampleInward->find('all', array('conditions'=> array('stage_sample_code IS' => $sample_code)))->first();
+						
+						$ogrsample	= $ogrsample1['org_sample_code'];
+
+						$user_code	= $this->request->getData('dst_usr_cd');
+
+						$user_code_pattern	= '/^[0-9]+$/';
+
+						$office_code	= $this->request->getData('ral_cal');
+
+						$dst_user_office = $this->request->getData('dst_loc_id');
+
+						$tran_date		= date('Y-m-d');
+						$dispatch_date	= date("Y/m/d");
+
+						//Generate New Stage Sample Code
+						$new_sample_code	= $this->Customfunctions->createStageSampleCode();
+
+						if ($office_code == 'HO') {
+
+							$flag = "HF";
+
+						} else {
+
+							$flag = "OF";
+						}
+
+						//Checks if the Sample is Already Forwarded.
+						$already_forwarded = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_flag IN'=>array('HF','OF'),'org_sample_code'=>$ogrsample)))->first();
+
+						if (empty($already_forwarded)) {
+
+							$workflow_data	= array("org_sample_code"=>$ogrsample,
+														"src_loc_id"=>$_SESSION["posted_ro_office"],
+														"src_usr_cd"=>$_SESSION["user_code"],
+														"dst_loc_id"=>$dst_user_office,
+														"dst_usr_cd"=>$user_code,
+														"stage_smpl_cd"=>$new_sample_code,
+														"tran_date"=>$tran_date,
+														"user_code"=>$_SESSION["user_code"],
+														"stage"=>"4",
+														"stage_smpl_flag"=>$flag);
+
+							$workflowEntity = $this->Workflow->newEntity($workflow_data);
+					
+							//Save the Data
+							if ($this->Workflow->save($workflowEntity)) {
+
+								if ($office_code=='HO') {
+
+									$str="UPDATE sample_inward SET status_flag='H',dispatch_date='$dispatch_date' WHERE stage_sample_code='$ogrsample'";
+
+								} elseif ($office_code=='CAL') {
+
+									$str="UPDATE sample_inward SET status_flag='F',chlng_smpl_disptch_cal_dt='$tran_date',dispatch_date='$dispatch_date'   WHERE stage_sample_code='$ogrsample'";
+
+								} else {
+
+									$str="UPDATE sample_inward SET status_flag='F',dispatch_date='$dispatch_date' WHERE stage_sample_code='$ogrsample'";
+								}
+
+								$query = $conn->execute("SELECT user_flag,ro_office FROM workflow
+															INNER JOIN dmi_users ON workflow.dst_usr_cd=dmi_users.id
+															INNER JOIN dmi_user_roles ON dmi_users.email=dmi_user_roles.user_email_id
+															INNER JOIN dmi_ro_offices ON dmi_users.posted_ro_office=dmi_ro_offices.id
+															INNER JOIN sample_inward ON workflow.org_sample_code=sample_inward.org_sample_code
+															WHERE workflow.org_sample_code='$ogrsample'AND workflow.dst_usr_cd = $user_code");
+
+								$user_flag1 = $query->fetchAll('assoc');
+								
+								$this->set('user_flag1',$user_flag1);
+
+								$user_flag_new = $user_flag1[0]['user_flag'];
+								$ro_office_new = $user_flag1[0]['ro_office'];
+								
 				
-						//Save the Data
-						if ($this->Workflow->save($workflowEntity)) {
+								$conn->execute($str);
 
-							if ($office_code=='HO') {
+								$get_user_codes = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$new_sample_code)))->first();
+								$ralcaloic = $this->DmiRoOffices->getOfficeIncharge($get_user_codes['dst_loc_id']);
 
-								$str="UPDATE sample_inward SET status_flag='H',dispatch_date='$dispatch_date' WHERE stage_sample_code='$ogrsample'";
+								#SMS: Sample Forward
+								$this->DmiSmsEmailTemplates->sendMessage(90,$get_user_codes['src_usr_cd'],$new_sample_code); #Source
+								$this->DmiSmsEmailTemplates->sendMessage(91,$get_user_codes['dst_usr_cd'],$new_sample_code); #Destination
+								$this->DmiSmsEmailTemplates->sendMessage(141,$ralcaloic,$new_sample_code); #OIC
+								
+								// For Maintaining Action Log by Akash (26-04-2022)
+								$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
 
-							} elseif ($office_code=='CAL') {
-
-								$str="UPDATE sample_inward SET status_flag='F',chlng_smpl_disptch_cal_dt='$tran_date',dispatch_date='$dispatch_date'   WHERE stage_sample_code='$ogrsample'";
+								$message = 'The sample with registration code '.$this->request->getData('stage_sample_code').' is forwarded to '.$user_flag_new.' '.$ro_office_new.' with code as '.$new_sample_code;
+								$message_theme = 'success';
+								$redirect_to = 'forwarded_list';
 
 							} else {
 
-								$str="UPDATE sample_inward SET status_flag='F',dispatch_date='$dispatch_date' WHERE stage_sample_code='$ogrsample'";
+								// For Maintaining Action Log by Akash (26-04-2022)
+								$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
+								$message = 'Sorry... The Sample not forwarded properly. Please check.';
+								$message_theme = 'failed';
+								$redirect_to = 'available_to_forward_list';
 							}
-
-							$query = $conn->execute("SELECT user_flag,ro_office FROM workflow
-														INNER JOIN dmi_users ON workflow.dst_usr_cd=dmi_users.id
-														INNER JOIN dmi_user_roles ON dmi_users.email=dmi_user_roles.user_email_id
-														INNER JOIN dmi_ro_offices ON dmi_users.posted_ro_office=dmi_ro_offices.id
-														INNER JOIN sample_inward ON workflow.org_sample_code=sample_inward.org_sample_code
-														WHERE workflow.org_sample_code='$ogrsample'AND workflow.dst_usr_cd = $user_code");
-
-							$user_flag1 = $query->fetchAll('assoc');
-							
-							$this->set('user_flag1',$user_flag1);
-
-							$user_flag_new = $user_flag1[0]['user_flag'];
-							$ro_office_new = $user_flag1[0]['ro_office'];
-							
-			
-							$conn->execute($str);
-
-							$get_user_codes = $this->Workflow->find('all',array('conditions'=>array('stage_smpl_cd IS'=>$new_sample_code)))->first();
-							$ralcaloic = $this->DmiRoOffices->getOfficeIncharge($get_user_codes['dst_loc_id']);
-
-							#SMS: Sample Forward
-							$this->DmiSmsEmailTemplates->sendMessage(90,$get_user_codes['src_usr_cd'],$new_sample_code); #Source
-							$this->DmiSmsEmailTemplates->sendMessage(91,$get_user_codes['dst_usr_cd'],$new_sample_code); #Destination
-							$this->DmiSmsEmailTemplates->sendMessage(141,$ralcaloic,$new_sample_code); #OIC
-							
-							// For Maintaining Action Log by Akash (26-04-2022)
-							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Success');
-
-							$message = 'The sample with registration code '.$this->request->getData('stage_sample_code').' is forwarded to '.$user_flag_new.' '.$ro_office_new.' with code as '.$new_sample_code;
-							$message_theme = 'success';
-							$redirect_to = 'forwarded_list';
 
 						} else {
 
 							// For Maintaining Action Log by Akash (26-04-2022)
 							$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
-							$message = 'Sorry... The Sample not forwarded properly. Please check.';
-							$message_theme = 'failed';
+							$message = 'The selected sample is already forwarded.';
+							$message_theme = 'alertinfo';
 							$redirect_to = 'available_to_forward_list';
 						}
-
+						
 					} else {
 
-						// For Maintaining Action Log by Akash (26-04-2022)
-						$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed');
-						$message = 'The selected sample is already forwarded.';
-						$message_theme = 'alertinfo';
+						$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed'); #Action
+						$message = 'Sorry... Please select proper inputs';
+						$message_theme = 'warning';
 						$redirect_to = 'available_to_forward_list';
 					}
-					
-				} else {
-
-					$this->LimsUserActionLogs->saveActionLog('Sample Forward','Failed'); #Action
-					$message = 'Sorry... Please select proper inputs';
-					$message_theme = 'warning';
-					$redirect_to = 'available_to_forward_list';
 				}
-			}
+		}
 
 			//Set Variables to Show Pop-up Messages From View File
 			$this->set('message',$message);
@@ -776,7 +848,46 @@ class SampleForwardController extends AppController {
 
 
 /************************************************************************************************************************************************************************************************************************/
+	//GENEREATE FORWARDED SAMPLE LETTER WITH PDF For ILC FLOW done 06-07-2022 by shreeya
+	public function ilcGnrtSmplFrwdLtr(){
 
+		$ltr_sample_cd = trim($this->Session->read('ltr_sample_cd'));
+		$conn = ConnectionManager::get('default');
+		if (!empty($ltr_sample_cd)) {
+
+			$this->viewBuilder()->setLayout('admin_dashboard');
+			$this->loadModel('SampleInward');
+			$this->loadModel('MSampleType');
+
+			//Set Variables to Show Pop-up Messages From View File
+			$message = '';
+			$redirect_to = '';
+			$message_theme = '';
+
+			$this->set('samples_list',array($ltr_sample_cd=>$ltr_sample_cd));
+
+			$sam_type=$this->MSampleType->find('all',array('conditions' => array('display' => 'Y')))->toArray();
+			$this->set('Sample_Type',$sam_type);
+
+				$query2 = $conn->execute("SELECT w.stage_smpl_cd,du.email,du.f_name,du.l_name
+					FROM ilc_org_smplcd_maps AS sm
+					INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
+					INNER JOIN dmi_users AS du ON sm.inwd_off_val=du.id
+					WHERE  w.stage_smpl_flag='OF' AND sm.org_sample_code='$ltr_sample_cd' AND sm.status = 1 ");
+						
+					$subsmplres = $query2->fetchAll('assoc');	
+					$subsamplelist= array();
+					foreach ($subsmplres as $each1) {
+						$subsamplelist[$each1['stage_smpl_cd']] = $each1['stage_smpl_cd'];
+					}
+				
+				$this->set('subsamplelist',$subsamplelist);
+			}
+
+		
+	}
+
+  /*******************************************************************************************************************************************************************************************************/
 
 
 	//FORWARD LETTER PDF VIEW
@@ -788,6 +899,9 @@ class SampleForwardController extends AppController {
 		$this->loadModel('SampleInward');
 		$conn = ConnectionManager::get('default');
 
+		#Below Query is Changed - Amol [11-11-2022]
+		//Reason: The WHERE clause is changed to generate the forward letter pdf. As it was taking the flags from the SampleInward Table and the 'F' an 'H' flags are changes on next stage
+		//So the qyery changed to workflow AS and OF flags to genretae the letter after the forward and accept and lettre on.
 		$query = $conn->execute("SELECT si.*,b.sample_type_desc,c.container_desc, a.unit_weight,w.dst_usr_cd,w.dst_loc_id,w.src_usr_cd, w.src_loc_id,w.stage_smpl_cd,m.commodity_name
 								 FROM sample_inward AS si
 								 INNER JOIN m_sample_type AS b ON b.sample_type_code = si.sample_type_code
@@ -795,7 +909,8 @@ class SampleForwardController extends AppController {
 								 INNER JOIN m_unit_weight AS a ON a.unit_id = si.parcel_size
 								 INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
 								 INNER JOIN m_commodity AS m ON m.commodity_code = si.commodity_code
-								 WHERE w.stage IN('3','4') AND si.display='Y' AND si.status_flag IN('F','H') AND w.stage_smpl_cd='$sample_code'");
+								 WHERE w.stage IN('3','4') AND si.display='Y' AND w.stage_smpl_flag IN('OF','AS') AND w.stage_smpl_cd='$sample_code'");
+								 //WHERE w.stage IN('3','4') AND si.display='Y' AND si.status_flag IN('F','H') AND w.stage_smpl_cd='$sample_code'");
 
 		$str_data = $query->fetchAll('assoc');
 		$this->set('str_data',$str_data);
@@ -879,6 +994,9 @@ class SampleForwardController extends AppController {
 
 			$sample_code = $each;
 
+			#Below Query is Changed - Amol [11-11-2022]
+			//Reason: The WHERE clause is changed to generate the forward letter pdf. As it was taking the flags from the SampleInward Table and the 'F' an 'H' flags are changes on next stage
+			//So the qyery changed to workflow AS and OF flags to genretae the letter after the forward and accept and lettre on.
 			$query = $conn->execute("SELECT si.*,b.sample_type_desc,c.container_desc,a.unit_weight,w.dst_usr_cd,w.dst_loc_id,w.src_usr_cd,w.src_loc_id,w.stage_smpl_cd,m.commodity_name
 										FROM sample_inward AS si
 										INNER JOIN m_sample_type AS b ON b.sample_type_code = si.sample_type_code
@@ -886,7 +1004,8 @@ class SampleForwardController extends AppController {
 										INNER JOIN m_unit_weight AS a ON a.unit_id = si.parcel_size
 										INNER JOIN workflow AS w ON w.org_sample_code = si.org_sample_code
 										INNER JOIN m_commodity AS m ON m.commodity_code = si.commodity_code
-										WHERE w.stage IN('3','4') AND si.display='Y' AND si.status_flag IN('F','H') AND w.stage_smpl_cd='$sample_code'");
+										WHERE w.stage IN('3','4') AND si.display='Y' AND w.stage_smpl_flag IN('OF','AS') AND w.stage_smpl_cd='$sample_code'");
+										//WHERE w.stage IN('3','4') AND si.display='Y' AND si.status_flag IN('F','H') AND w.stage_smpl_cd='$sample_code'");
 
 			$str_data = $query->fetchAll('assoc');
 
@@ -1087,12 +1206,23 @@ class SampleForwardController extends AppController {
 
 	}
 
+	//TO RE-DIRECT ON GENERATE SAMPLE FORWARD LETTER ILC FLOW by shreeya on 11-07-2022
+	public function redirectToGnrtLtrIlc($ltr_sample_cd){
+
+		$this->Session->write('ltr_sample_cd',$ltr_sample_cd);
+		$this->redirect(array('controller'=>'SampleForward','action'=>'ilc_gnrt_smpl_frwd_ltr'));
+
+	}
+	
+
 /************************************************************************************************************************************************************************************************************************/
 
 	//GET FORWARDED SAMPLE LIST
 	public function forwardedList(){
 
 		$conn = ConnectionManager::get('default');
+		$user_code = $_SESSION['user_code'];
+
 
 		//To Get User's Name & User'a Email Id
 		$query = $conn->execute("SELECT si.stage_sample_code, w.stage_smpl_cd, mc.commodity_name, st.sample_type_desc, w.tran_date, du.f_name, du.l_name, du.email
@@ -1101,7 +1231,7 @@ class SampleForwardController extends AppController {
 									INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
 									INNER JOIN workflow AS w ON w.org_sample_code=si.org_sample_code
 									INNER JOIN dmi_users AS du ON du.id=w.dst_usr_cd
-									WHERE w.stage_smpl_flag='OF'  AND w.src_usr_cd='".$_SESSION['user_code']."' ORDER BY w.tran_date DESC");
+									WHERE w.stage_smpl_flag='OF' AND si.sample_type_code != 9 AND si.entry_type IS NULL AND w.src_usr_cd='$user_code' ORDER BY w.tran_date DESC");//added sample type and entery flag contn by shreeya
 
 		$res3 = $query->fetchAll('assoc');
 	
@@ -1109,6 +1239,55 @@ class SampleForwardController extends AppController {
 
 			$this->set('res3',$res3);
 		}
+		
+			//below query is added by shreeya on 04-07-2022
+			// for ILC flow show the list of ilc samples
+			//To Get User's Name & User'a Email Id
+			$query1 = $conn->execute("SELECT si.stage_sample_code, w.stage_smpl_cd,mc.commodity_name, st.sample_type_desc, w.tran_date, du.f_name, du.l_name, du.email
+			FROM sample_inward AS si
+			INNER JOIN m_sample_type AS st ON si.sample_type_code=st.sample_type_code
+			INNER JOIN m_commodity AS mc ON si.commodity_code=mc.commodity_code
+			INNER JOIN workflow AS w ON w.org_sample_code=si.org_sample_code
+			INNER JOIN dmi_users AS du ON du.id=w.dst_usr_cd
+			WHERE  w.stage_smpl_flag='OF' AND si.sample_type_code = 9 AND si.entry_type IS NULL AND w.src_usr_cd='$user_code'  ORDER BY w.tran_date DESC");
+			//above query changed by shreeya for ILC flow on 04-07-2022
+		
+			$result = $query1->fetchAll('assoc');
+			if (count($result)>0) {
+
+				$this->set('result',$result);
+				
+				//added for fetch min 5 RAL's records in ilc table list using dropdown 
+				//done 05-07-2022 by shreeya
+				$i=1;
+
+				$subsamplelist= array();
+				$userdetailslist= array();
+				
+				foreach ($result as $each) {
+
+					$query2 = $conn->execute("SELECT w.stage_smpl_cd,du.email,du.f_name,du.l_name
+								FROM ilc_org_smplcd_maps AS sm
+					 			INNER JOIN workflow AS w ON sm.ilc_org_sample_cd=w.org_sample_code
+					 			INNER JOIN dmi_users AS du ON sm.inwd_off_val=du.id
+					 			WHERE  w.stage_smpl_flag='OF' AND sm.org_sample_code='".$each['stage_sample_code']."' AND sm.status = 1 ");
+					
+					$subsmplres = $query2->fetchAll('assoc');
+
+					foreach ($subsmplres as $each1) {
+						
+						$subsamplelist[$i][] = $each1['stage_smpl_cd'];
+						$userdetailslist[$i][] = $each1['f_name'].' '.$each1['l_name'].' ('. base64_decode($each1['email']).')';
+						
+					}
+
+					$i++;
+				}
+
+				$this->set('subsamplelist',$subsamplelist);
+				$this->set('userdetailslist',$userdetailslist);
+			}
+
 	}
 
 /************************************************************************************************************************************************************************************************************************/
@@ -1167,8 +1346,8 @@ class SampleForwardController extends AppController {
 
 					if ($this->SmpRejectAtFwdStage->save($SmpRejectEntity)) {
 						
-						#SMS: Sample Reverted
-						//$this->DmiSmsEmailTemplates->sendMessage(149,$_SESSION['user_code'],$_POST['sample_code']); #Source
+						#SMS: Sample Reverted [YTR]
+						$this->DmiSmsEmailTemplates->sendMessage(149,$_SESSION['user_code'],$_POST['sample_code']); #Source
 						$this->LimsUserActionLogs->saveActionLog('Sample Reverted','Success'); #Action
 
 						echo '~1~';

@@ -27,14 +27,15 @@
 					</div>
 				</div>
 			
-				<table class="table table-bordered">
+				<table class="table table-bordered table-responsive">
 					<thead>
 						<tr>
 							<th scope="col">Sr.No</th>
 							<th scope="col">Test</th>
 							<?php
 							foreach($result as $eachoff){ ?>
-								<th scope="col"><?php echo $eachoff['ro_office']; ?></th>
+							 	<th scope="col">Value</th>
+								<th scope="col"><?php echo $eachoff['ro_office']; ?> (<?php echo $eachoff['office_type']; ?>)</th>
 							<?php
 							}
 							
@@ -64,6 +65,7 @@
 										$format = round($num, 2);
 									?>
 									
+									<td><?php echo $org_val[$l]; ?> </td>
 									<td><?php echo $format; ?> </td>
 
 								<?php $l++;	} ?>

@@ -48,7 +48,7 @@ class UsersController extends AppController{
 
 		} else {
 
-			$this->viewBuilder()->setLayout('admin_dashboard1');
+			$this->viewBuilder()->setLayout('admin_dashboard');
 			$usr = $_SESSION['user_code'];
 			unset($_SESSION['stage_sample_code']);
 		}

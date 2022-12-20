@@ -2306,9 +2306,10 @@ class FinalGradingController extends AppController
 					$result_grade	=	'';
 					$grade_code_vs=$this->request->getData('grade_code');
 
-					$tran_date=$this->request->getData("tran_date");
+					//$tran_date=$this->request->getData("tran_date");
 					$ogrsample1= $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $sample_code)))->first();
-					$ogrsample=$ogrsample1['org_sample_code'];;
+					$ogrsample=$ogrsample1['org_sample_code'];
+					$tran_date=$ogrsample1['tran_date'];
 
 					$src_usr_cd = $conn->execute("SELECT src_usr_cd FROM workflow WHERE org_sample_code='$ogrsample' AND stage_smpl_flag='TA' ");
 					$src_usr_cd = $src_usr_cd->fetchAll('assoc');
@@ -2649,6 +2650,7 @@ class FinalGradingController extends AppController
 			//get org samle code
 			$ogrsample1= $this->Workflow->find('all', array('conditions'=> array('stage_smpl_cd IS' => $grading_sample_code)))->first();
 			$ogrsample = $ogrsample1['org_sample_code'];
+			$tran_date = $ogrsample1['tran_date'];
 
 			//to get commodity code for report pdf
 			$getcommoditycd = $this->SampleInward->find('all',array('fields'=>'commodity_code','conditions'=>array('org_sample_code IS'=>$ogrsample),'order'=>'inward_id desc'))->first();
@@ -2690,7 +2692,7 @@ class FinalGradingController extends AppController
 					$result_grade	=	'';
 					$grade_code_vs=$this->request->getData('grade_code');
 
-					$tran_date=$this->request->getData("tran_date");
+					//$tran_date=$this->request->getData("tran_date");
 
 					if ($result_flg=='R') {
 
@@ -2972,9 +2974,12 @@ class FinalGradingController extends AppController
 			
 			$j=0;
 			$zscore_cal = array();
+			$org_val = array();
+
 			foreach($smplList as $sample) {
 				
-				$finalresult = $this->FinalTestResult->find('all', array('fields' => array('final_result'),'conditions' =>array('test_code IS' => $row1['test_code'],'org_sample_code IS'=>$sample['ilc_org_sample_cd'],'display'=>'Y')))->first();
+				$finalresult = $this->FinalTestResult->find('all', array('fields' => array('final_result'),'conditions' =>array('test_code IS' => $row1['testname'],'org_sample_code IS'=>$sample['ilc_org_sample_cd'],'display'=>'Y')))->first();
+				
 				if(!empty($finalresult)){
 					
 					if(!empty($meanvalue[$i])){
@@ -2982,9 +2987,12 @@ class FinalGradingController extends AppController
 					}else{
 						$zscore_cal[$j] = "NA";
 					}	
+
+					$org_val[$j] = $finalresult['final_result'];
 						
 				}else{
 					$zscore_cal[$j] = "NA";
+					$org_val[$j] = "NA";
 				}
 				$j++;
 			}
@@ -2997,6 +3005,7 @@ class FinalGradingController extends AppController
 		$this->set('testarr',$test);
 		$this->set('smplList',$smplList);
 		$this->set('zscorearr',$zscorearr);
+		$this->set('org_val',$org_val);
 		
 
 

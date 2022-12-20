@@ -51,18 +51,21 @@
 			<td><span style="font-family: krutidev010; font-size:10px;">uewus dh çkIr ek=k</span> / Quantum of Sample Received</td>
 			<td><?php if(isset($test_report)) {echo $test_report[0]['sample_total_qnt']." ".$test_report[0]['unit_weight'];} ?></td>
 		</tr>
-		<tr>
-			<td><span style="font-family: krutidev010; font-size:10px;">ç;ksx'kkyk esa uewuk dh çkfIr dh frfFk</span> / Date of receipt of sample in the laboratory</td>
-			<td><?php if(isset($test_report)) { echo $test_report[0]['phy_accept_sample_date']; } ?></td>
-		</tr>
+		<!--added for if condition for ilc flow when main sample is present could not show sample_free_from_list element 30-11-2022 by shreeya-->
+		<?php if($sampleTypeCode !=9 && !empty($checkifmainilc)){ ?>
+			<tr>
+				<td><span style="font-family: krutidev010; font-size:10px;">ç;ksx'kkyk esa uewuk dh çkfIr dh frfFk</span> / Date of receipt of sample in the laboratory</td>
+				<td><?php if(isset($test_report)) { echo $test_report[0]['phy_accept_sample_date']; } ?></td>
+			</tr>
+			
+			<?php echo $this->element('/final_sample_test_report/sample_free_from_list'); ?>
+											
 
-        <?php echo $this->element('/final_sample_test_report/sample_free_from_list'); ?>
-										
-
-		<tr>
-			<td><span style="font-family: krutidev010; font-size:10px;">fo'ys"k.k ds çkjaHk gksus fd frFkh</span> / Date of commencement of analysis</td>
-			<td><?php if(isset($comm_date)) {echo $comm_date;} ?></td>
-		</tr>
+			<tr>
+				<td><span style="font-family: krutidev010; font-size:10px;">fo'ys"k.k ds çkjaHk gksus fd frFkh</span> / Date of commencement of analysis</td>
+				<td><?php if(isset($comm_date)) {echo $comm_date;} ?></td>
+			</tr>
+		<?php } ?>
 		<tr>
 			<td><span style="font-family: krutidev010; font-size:10px;">fo'ys"k.kkRed ifj.kkeks dks çLrqr djus dh frFkh</span> / Date of submission of analytical results</td>
 			<td><?php if(isset($test_report) && $test_report[0]['grade_user_flag']=="RAL" ) { echo $test_report[0]['ral_anltc_rslt_rcpt_dt']; } else { echo $test_report[0]['cal_anltc_rslt_rcpt_dt']; } ?></td>

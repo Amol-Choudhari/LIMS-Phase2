@@ -1,11 +1,12 @@
 
+<h6 style="text-align:centet;font-size:12px">Final Zscore Result</h6>
 <tr>
     <td width="5%"><b>S.No.</b></td>											
     <td witdh="20%"><b>Name Of Parameter</b></td>
     
     <?php
     foreach($result as $eachoff){ ?>
-        <td witdh="10%">value</td>
+        <td witdh="10%">Value</td>
         <td><?php echo $eachoff['ro_office']; ?> (<?php echo $eachoff['office_type']; ?>)</td>
     <?php
     }
@@ -34,7 +35,7 @@
                     $num = (int) $zscorearr[$i][$l];
                     $format = round($num, 2);
                 ?>
-                <td>20.1</td>
+                <td><?php echo $org_val[$l]; ?> </td>
                 <td><?php echo $format; ?> </td>
                 
             <?php $l++;	} ?>

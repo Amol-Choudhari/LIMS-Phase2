@@ -122,7 +122,7 @@
 
 <?php echo $this->element('ilc_zscore_modal_element');?>
 
- <?php echo $this->Html->Script('sample_grading_by_oic'); ?> 
+ <?php echo $this->Html->Script('finalGrading/sample_grading_by_inward'); ?> 
 <?php echo $this->Html->Script('finalGrading/finalized_sample_list'); ?> 
 <?php echo $this->Html->Script('finalGrading/ilc_grading_by_inward'); ?>
 
